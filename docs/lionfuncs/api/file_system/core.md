@@ -4,7 +4,8 @@ title: "lionfuncs.file_system.core"
 
 # lionfuncs.file_system.core
 
-The `file_system.core` module provides core file system operations, including reading and writing files, listing directories, and chunking content.
+The `file_system.core` module provides core file system operations, including
+reading and writing files, listing directories, and chunking content.
 
 ## Functions
 
@@ -24,21 +25,29 @@ def chunk_content(
 
 Splits content by characters or tokens with configurable overlap and threshold.
 
-This function is useful for processing large text content in smaller chunks, with options for overlapping chunks to maintain context across chunk boundaries.
+This function is useful for processing large text content in smaller chunks,
+with options for overlapping chunks to maintain context across chunk boundaries.
 
 #### Parameters
 
 - **content** (`str`): The text content to chunk.
-- **chunk_by** (`Literal["chars", "tokens"]`, optional): Whether to chunk by characters or tokens. Defaults to `"chars"`.
-- **tokenizer** (`Callable[[str], list[str]]`, optional): Function to tokenize the content when `chunk_by="tokens"`. Defaults to `lambda x: x.split()`.
-- **chunk_size** (`int`, optional): The size of each chunk in characters or tokens. Defaults to `1024`.
-- **overlap_ratio** (`float`, optional): The ratio of overlap between adjacent chunks. Defaults to `0.1`.
-- **threshold** (`int`, optional): Minimum size for the last chunk. If the last chunk is smaller than this threshold, it will be merged with the previous chunk. Defaults to `100`.
+- **chunk_by** (`Literal["chars", "tokens"]`, optional): Whether to chunk by
+  characters or tokens. Defaults to `"chars"`.
+- **tokenizer** (`Callable[[str], list[str]]`, optional): Function to tokenize
+  the content when `chunk_by="tokens"`. Defaults to `lambda x: x.split()`.
+- **chunk_size** (`int`, optional): The size of each chunk in characters or
+  tokens. Defaults to `1024`.
+- **overlap_ratio** (`float`, optional): The ratio of overlap between adjacent
+  chunks. Defaults to `0.1`.
+- **threshold** (`int`, optional): Minimum size for the last chunk. If the last
+  chunk is smaller than this threshold, it will be merged with the previous
+  chunk. Defaults to `100`.
 - **\*\*kwargs** (`Any`): Additional keyword arguments to pass to the tokenizer.
 
 #### Returns
 
-- `list[dict[str, Any]]`: A list of dictionaries, each representing a chunk with the following keys:
+- `list[dict[str, Any]]`: A list of dictionaries, each representing a chunk with
+  the following keys:
   - `chunk_content`: The text content of the chunk.
   - `chunk_id`: The 1-based index of the chunk.
   - `total_chunks`: The total number of chunks.
@@ -46,7 +55,8 @@ This function is useful for processing large text content in smaller chunks, wit
 
 #### Raises
 
-- `LionFileError`: If the content is not a string or if the overlap ratio is invalid.
+- `LionFileError`: If the content is not a string or if the overlap ratio is
+  invalid.
 
 #### Example
 
@@ -108,7 +118,8 @@ Asynchronously reads the contents of a file.
 
 #### Raises
 
-- `LionFileError`: If the file is not found, permission is denied, or other I/O errors occur.
+- `LionFileError`: If the file is not found, permission is denied, or other I/O
+  errors occur.
 
 #### Example
 
@@ -145,8 +156,10 @@ Asynchronously saves text to a file.
 - **text** (`str`): The text to save.
 - **directory** (`Union[str, Path]`): The directory to save the file in.
 - **filename** (`str`): The name of the file to save.
-- **file_exist_ok** (`bool`, optional): Whether to overwrite the file if it already exists. Defaults to `False`.
-- **verbose** (`bool`, optional): Whether to log the save operation. Defaults to `False`.
+- **file_exist_ok** (`bool`, optional): Whether to overwrite the file if it
+  already exists. Defaults to `False`.
+- **verbose** (`bool`, optional): Whether to log the save operation. Defaults to
+  `False`.
 
 #### Returns
 
@@ -154,7 +167,8 @@ Asynchronously saves text to a file.
 
 #### Raises
 
-- `LionFileError`: If the file already exists and `file_exist_ok` is `False`, or if other I/O errors occur.
+- `LionFileError`: If the file already exists and `file_exist_ok` is `False`, or
+  if other I/O errors occur.
 
 #### Example
 
@@ -192,9 +206,12 @@ Lists files in a directory, optionally filtering by extension and recursively.
 
 #### Parameters
 
-- **dir_path** (`Union[str, Path]`): The path to the directory to list files from.
-- **extension** (`str | None`, optional): The file extension to filter by (e.g., "txt", "py"). Defaults to `None`.
-- **recursive** (`bool`, optional): Whether to list files recursively. Defaults to `False`.
+- **dir_path** (`Union[str, Path]`): The path to the directory to list files
+  from.
+- **extension** (`str | None`, optional): The file extension to filter by (e.g.,
+  "txt", "py"). Defaults to `None`.
+- **recursive** (`bool`, optional): Whether to list files recursively. Defaults
+  to `False`.
 
 #### Returns
 
@@ -241,14 +258,22 @@ Asynchronously concatenates multiple files.
 
 #### Parameters
 
-- **data_paths** (`Union[str, Path, list[Union[str, Path]]]`): The path(s) to the file(s) or directory(ies) to concatenate.
-- **file_types** (`list[str]`): The file extensions to include (e.g., [".txt", ".md"]).
-- **output_dir** (`Union[str, Path, None]`, optional): The directory to save the concatenated file in. Defaults to `None`.
-- **output_filename** (`str | None`, optional): The name of the concatenated file. Defaults to `None`.
-- **file_exist_ok** (`bool`, optional): Whether to overwrite the output file if it already exists. Defaults to `True`.
-- **recursive** (`bool`, optional): Whether to search for files recursively. Defaults to `True`.
-- **verbose** (`bool`, optional): Whether to log the operation. Defaults to `False`.
-- **content_threshold** (`int`, optional): Minimum content size to include a file. Defaults to `0`.
+- **data_paths** (`Union[str, Path, list[Union[str, Path]]]`): The path(s) to
+  the file(s) or directory(ies) to concatenate.
+- **file_types** (`list[str]`): The file extensions to include (e.g., [".txt",
+  ".md"]).
+- **output_dir** (`Union[str, Path, None]`, optional): The directory to save the
+  concatenated file in. Defaults to `None`.
+- **output_filename** (`str | None`, optional): The name of the concatenated
+  file. Defaults to `None`.
+- **file_exist_ok** (`bool`, optional): Whether to overwrite the output file if
+  it already exists. Defaults to `True`.
+- **recursive** (`bool`, optional): Whether to search for files recursively.
+  Defaults to `True`.
+- **verbose** (`bool`, optional): Whether to log the operation. Defaults to
+  `False`.
+- **content_threshold** (`int`, optional): Minimum content size to include a
+  file. Defaults to `0`.
 
 #### Returns
 
@@ -299,11 +324,16 @@ Recursively lists files in a directory, optionally filtering by file types.
 
 #### Parameters
 
-- **directory** (`Union[str, Path]`): The path to the directory to list files from.
-- **file_types** (`list[str] | None`, optional): The file extensions to include (e.g., [".txt", ".md"]). Defaults to `None`.
-- **ignore_errors** (`bool`, optional): Whether to ignore permission and other errors. Defaults to `False`.
-- **verbose** (`bool`, optional): Whether to log the operation. Defaults to `False`.
-- **recursive** (`bool`, optional): Whether to search for files recursively. Defaults to `True`.
+- **directory** (`Union[str, Path]`): The path to the directory to list files
+  from.
+- **file_types** (`list[str] | None`, optional): The file extensions to include
+  (e.g., [".txt", ".md"]). Defaults to `None`.
+- **ignore_errors** (`bool`, optional): Whether to ignore permission and other
+  errors. Defaults to `False`.
+- **verbose** (`bool`, optional): Whether to log the operation. Defaults to
+  `False`.
+- **recursive** (`bool`, optional): Whether to search for files recursively.
+  Defaults to `True`.
 
 #### Returns
 
@@ -311,7 +341,8 @@ Recursively lists files in a directory, optionally filtering by file types.
 
 #### Raises
 
-- `LionFileError`: If the path is not a directory or if permission errors occur and `ignore_errors` is `False`.
+- `LionFileError`: If the path is not a directory or if permission errors occur
+  and `ignore_errors` is `False`.
 
 #### Example
 
@@ -333,8 +364,12 @@ print(f"Files in docs: {verbose_files}")
 
 ## Internal Functions
 
-The following functions are used internally by the module and are not part of the public API:
+The following functions are used internally by the module and are not part of
+the public API:
 
-- `_create_path(directory, filename, ...)`: Creates a path for a file, handling directory creation and file existence checks.
-- `_chunk_by_chars_internal(text, chunk_size, slice_overlap, threshold)`: Internal function for chunking text by characters.
-- `_chunk_by_tokens_internal(tokens, chunk_size, slice_overlap, threshold)`: Internal function for chunking text by tokens.
+- `_create_path(directory, filename, ...)`: Creates a path for a file, handling
+  directory creation and file existence checks.
+- `_chunk_by_chars_internal(text, chunk_size, slice_overlap, threshold)`:
+  Internal function for chunking text by characters.
+- `_chunk_by_tokens_internal(tokens, chunk_size, slice_overlap, threshold)`:
+  Internal function for chunking text by tokens.

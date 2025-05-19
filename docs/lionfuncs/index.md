@@ -4,7 +4,9 @@ title: "lionfuncs Documentation"
 
 # lionfuncs
 
-`lionfuncs` is a Python package that provides a core set of reusable utilities for asynchronous operations, file system interactions, network calls, concurrency management, error handling, and general utilities.
+`lionfuncs` is a Python package that provides a core set of reusable utilities
+for asynchronous operations, file system interactions, network calls,
+concurrency management, error handling, and general utilities.
 
 ## Installation
 
@@ -16,7 +18,8 @@ pip install lionfuncs
 
 ### Installation with Media Utilities
 
-To use the media utilities (e.g., `pdf_to_images`), install with the `media` extra:
+To use the media utilities (e.g., `pdf_to_images`), install with the `media`
+extra:
 
 ```bash
 pip install lionfuncs[media]
@@ -26,18 +29,27 @@ pip install lionfuncs[media]
 
 `lionfuncs` is organized into several modules:
 
-- **[utils](api/utils.md)**: General utility functions like `is_coro_func`, `force_async`, `get_env_bool`, `get_env_dict`, and `to_list`.
+- **[utils](api/utils.md)**: General utility functions like `is_coro_func`,
+  `force_async`, `get_env_bool`, `get_env_dict`, and `to_list`.
 - **[errors](api/errors.md)**: Custom exception classes for the package.
-- **[file_system](api/file_system/index.md)**: File system utilities for reading, writing, listing, and processing files.
+- **[file_system](api/file_system/index.md)**: File system utilities for
+  reading, writing, listing, and processing files.
   - **[core](api/file_system/core.md)**: Core file system operations.
-  - **[media](api/file_system/media.md)**: Media-specific file operations (images, PDFs).
-- **[concurrency](api/concurrency.md)**: Concurrency primitives and utilities like `BoundedQueue` and `WorkQueue`.
-- **[async_utils](api/async_utils.md)**: Asynchronous utilities like `alcall`, `bcall`, `@max_concurrent`, and `@throttle`.
-- **[network](api/network/index.md)**: Network utilities for making HTTP requests and handling resilience patterns.
-  - **[client](api/network/client.md)**: `AsyncAPIClient` for making HTTP requests.
-  - **[resilience](api/network/resilience.md)**: Resilience patterns like circuit breaker and retry with backoff.
+  - **[media](api/file_system/media.md)**: Media-specific file operations
+    (images, PDFs).
+- **[concurrency](api/concurrency.md)**: Concurrency primitives and utilities
+  like `BoundedQueue` and `WorkQueue`.
+- **[async_utils](api/async_utils.md)**: Asynchronous utilities like `alcall`,
+  `bcall`, `@max_concurrent`, and `@throttle`.
+- **[network](api/network/index.md)**: Network utilities for making HTTP
+  requests and handling resilience patterns.
+  - **[client](api/network/client.md)**: `AsyncAPIClient` for making HTTP
+    requests.
+  - **[resilience](api/network/resilience.md)**: Resilience patterns like
+    circuit breaker and retry with backoff.
   - **[adapters](api/network/adapters.md)**: SDK adapters for third-party APIs.
-  - **[primitives](api/network/primitives.md)**: Network primitives like `Endpoint` and rate limiters.
+  - **[primitives](api/network/primitives.md)**: Network primitives like
+    `Endpoint` and rate limiters.
 
 ## Quick Start
 
@@ -69,10 +81,10 @@ from lionfuncs.file_system import read_file, save_to_file
 async def main():
     # Read a file
     content = await read_file("example.txt")
-    
+
     # Process the content
     processed_content = content.upper()
-    
+
     # Save the processed content
     await save_to_file(processed_content, "output", "example_processed.txt")
 
@@ -114,8 +126,11 @@ For detailed API documentation, see the [API Reference](api/index.md).
 
 ## Contributing
 
-Interested in contributing to `lionfuncs`? Check out the [Contribution Guidelines](contributing.md).
+Interested in contributing to `lionfuncs`? Check out the
+[Contribution Guidelines](contributing.md).
 
 ## License
 
-`lionfuncs` is licensed under the Apache License 2.0. See the [LICENSE](https://github.com/khive-ai/lionfuncs/blob/main/LICENSE) file for details.
+`lionfuncs` is licensed under the Apache License 2.0. See the
+[LICENSE](https://github.com/khive-ai/lionfuncs/blob/main/LICENSE) file for
+details.

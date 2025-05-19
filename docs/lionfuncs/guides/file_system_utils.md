@@ -4,11 +4,16 @@ title: "File System Utilities Guide"
 
 # File System Utilities Guide
 
-This guide covers how to use the `lionfuncs.file_system` module for file operations, including reading, writing, listing, and processing files, as well as media-specific operations.
+This guide covers how to use the `lionfuncs.file_system` module for file
+operations, including reading, writing, listing, and processing files, as well
+as media-specific operations.
 
 ## Introduction
 
-The `lionfuncs.file_system` module provides a set of utilities for working with files and directories. It includes both synchronous and asynchronous functions for common file operations, as well as specialized utilities for media files like images and PDFs.
+The `lionfuncs.file_system` module provides a set of utilities for working with
+files and directories. It includes both synchronous and asynchronous functions
+for common file operations, as well as specialized utilities for media files
+like images and PDFs.
 
 ## Core File Operations
 
@@ -30,7 +35,8 @@ asyncio.run(main())
 
 ### Writing Files
 
-The `save_to_file` function allows you to asynchronously write content to a file:
+The `save_to_file` function allows you to asynchronously write content to a
+file:
 
 ```python
 import asyncio
@@ -39,7 +45,7 @@ from lionfuncs.file_system import save_to_file
 async def main():
     # Create some content
     content = "Hello, world!"
-    
+
     # Save to a file
     file_path = await save_to_file(
         content,
@@ -48,13 +54,14 @@ async def main():
         file_exist_ok=False,  # Will raise an error if file exists
         verbose=True,         # Log when file is saved
     )
-    
+
     print(f"File saved to: {file_path}")
 
 asyncio.run(main())
 ```
 
-The `save_to_file` function automatically creates the directory if it doesn't exist, and can handle various file naming options:
+The `save_to_file` function automatically creates the directory if it doesn't
+exist, and can handle various file naming options:
 
 ```python
 import asyncio
@@ -62,7 +69,7 @@ from lionfuncs.file_system import save_to_file
 
 async def main():
     content = "Example content"
-    
+
     # Save with timestamp in filename
     file_path = await save_to_file(
         content,
@@ -73,7 +80,7 @@ async def main():
         time_prefix=True,         # Put timestamp before filename
         file_exist_ok=True,       # Overwrite if file exists
     )
-    
+
     print(f"Log saved to: {file_path}")  # e.g., logs/20250519_123045_log.txt
 
 asyncio.run(main())
@@ -120,7 +127,8 @@ print(f"Found {len(image_files)} image files")
 
 ### Chunking Content
 
-The `chunk_content` function allows you to split large text content into manageable chunks:
+The `chunk_content` function allows you to split large text content into
+manageable chunks:
 
 ```python
 from lionfuncs.file_system import chunk_content, read_file
@@ -129,7 +137,7 @@ import asyncio
 async def main():
     # Read a large file
     content = await read_file("large_document.txt")
-    
+
     # Split by characters
     chunks = chunk_content(
         content,
@@ -138,11 +146,11 @@ async def main():
         overlap_ratio=0.1,    # 10% overlap between chunks
         threshold=100,        # Minimum size for the last chunk
     )
-    
+
     print(f"Split into {len(chunks)} chunks")
     for i, chunk in enumerate(chunks):
         print(f"Chunk {i+1}/{len(chunks)}: {len(chunk['chunk_content'])} characters")
-    
+
     # Split by tokens (words)
     token_chunks = chunk_content(
         content,
@@ -151,7 +159,7 @@ async def main():
         overlap_ratio=0.1,    # 10% overlap
         threshold=50,         # Minimum size for last chunk
     )
-    
+
     print(f"Split into {len(token_chunks)} token chunks")
 
 asyncio.run(main())
@@ -159,7 +167,8 @@ asyncio.run(main())
 
 ### Concatenating Files
 
-The `concat_files` function allows you to combine multiple files into a single text:
+The `concat_files` function allows you to combine multiple files into a single
+text:
 
 ```python
 import asyncio
@@ -177,7 +186,7 @@ async def main():
         verbose=True,         # Log progress
         content_threshold=10, # Skip files with less than 10 characters
     )
-    
+
     print(f"Combined text length: {len(combined_text)} characters")
 
 asyncio.run(main())
@@ -185,11 +194,13 @@ asyncio.run(main())
 
 ## Media Operations
 
-The `lionfuncs.file_system.media` module provides utilities for working with media files like images and PDFs.
+The `lionfuncs.file_system.media` module provides utilities for working with
+media files like images and PDFs.
 
 ### Working with Images
 
-The `read_image_to_base64` function allows you to read an image file and convert it to a base64 string:
+The `read_image_to_base64` function allows you to read an image file and convert
+it to a base64 string:
 
 ```python
 import asyncio
@@ -198,14 +209,14 @@ from lionfuncs.file_system.media import read_image_to_base64
 async def main():
     # Read an image and convert to base64
     base64_data = await read_image_to_base64("image.jpg")
-    
+
     # Use in HTML
     html = f'<img src="data:image/jpeg;base64,{base64_data}" alt="Image">'
-    
+
     # Save the HTML
     with open("image.html", "w") as f:
         f.write(html)
-    
+
     print(f"HTML with embedded image saved to image.html")
 
 asyncio.run(main())
@@ -250,10 +261,10 @@ from pathlib import Path
 async def process_file(file_path):
     # Read the file
     content = await read_file(file_path)
-    
+
     # Process the content (e.g., convert to uppercase)
     processed_content = content.upper()
-    
+
     # Save the processed content
     output_path = await save_to_file(
         processed_content,
@@ -261,20 +272,20 @@ async def process_file(file_path):
         f"processed_{Path(file_path).name}",
         file_exist_ok=True,
     )
-    
+
     return output_path
 
 async def main():
     # List of files to process
     files = ["file1.txt", "file2.txt", "file3.txt"]
-    
+
     # Process all files concurrently with a max concurrency of 2
     output_paths = await alcall(
         files,
         process_file,
         max_concurrent=2,
     )
-    
+
     print(f"Processed files: {output_paths}")
 
 asyncio.run(main())
@@ -291,7 +302,7 @@ async def download_file(url, filename):
     async with AsyncAPIClient() as client:
         # Download the file
         response = await client.request("GET", url)
-        
+
         # Save the response content
         file_path = await save_to_file(
             response,
@@ -299,7 +310,7 @@ async def download_file(url, filename):
             filename,
             file_exist_ok=True,
         )
-        
+
         return file_path
 
 async def main():
@@ -308,7 +319,7 @@ async def main():
         "https://example.com/sample.txt",
         "sample.txt"
     )
-    
+
     print(f"Downloaded file to: {file_path}")
 
 asyncio.run(main())
@@ -316,18 +327,27 @@ asyncio.run(main())
 
 ## Best Practices
 
-1. **Use Async Functions**: Prefer the asynchronous functions (`read_file`, `save_to_file`) for I/O operations to avoid blocking the event loop.
+1. **Use Async Functions**: Prefer the asynchronous functions (`read_file`,
+   `save_to_file`) for I/O operations to avoid blocking the event loop.
 
-2. **Handle Errors**: Always handle potential errors like `LionFileError` when working with files.
+2. **Handle Errors**: Always handle potential errors like `LionFileError` when
+   working with files.
 
-3. **Create Directories**: The file system functions automatically create directories as needed, but be explicit about where files are saved.
+3. **Create Directories**: The file system functions automatically create
+   directories as needed, but be explicit about where files are saved.
 
-4. **Manage Concurrency**: When processing multiple files, use `alcall` from `lionfuncs.async_utils` to control concurrency.
+4. **Manage Concurrency**: When processing multiple files, use `alcall` from
+   `lionfuncs.async_utils` to control concurrency.
 
-5. **Chunk Large Files**: Use `chunk_content` for processing large files to avoid memory issues.
+5. **Chunk Large Files**: Use `chunk_content` for processing large files to
+   avoid memory issues.
 
-6. **Media Handling**: Install the media extras (`pip install lionfuncs[media]`) when working with images and PDFs.
+6. **Media Handling**: Install the media extras (`pip install lionfuncs[media]`)
+   when working with images and PDFs.
 
 ## Conclusion
 
-The `lionfuncs.file_system` module provides a comprehensive set of utilities for working with files and directories. By combining these utilities with other `lionfuncs` modules, you can build robust and efficient file processing workflows.
+The `lionfuncs.file_system` module provides a comprehensive set of utilities for
+working with files and directories. By combining these utilities with other
+`lionfuncs` modules, you can build robust and efficient file processing
+workflows.

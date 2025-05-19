@@ -4,7 +4,8 @@ title: "lionfuncs.utils"
 
 # lionfuncs.utils
 
-The `utils` module provides general utility functions for the `lionfuncs` package.
+The `utils` module provides general utility functions for the `lionfuncs`
+package.
 
 ## Functions
 
@@ -16,7 +17,8 @@ def is_coro_func(func: Callable[..., Any]) -> bool
 
 Checks if a callable is a coroutine function.
 
-This function properly handles wrapped callables (e.g., those wrapped with `functools.partial`) by unwrapping them to get to the original function.
+This function properly handles wrapped callables (e.g., those wrapped with
+`functools.partial`) by unwrapping them to get to the original function.
 
 #### Parameters
 
@@ -56,11 +58,13 @@ print(is_coro_func(wrapped_async))  # True
 def force_async(func: Callable[..., R]) -> Callable[..., Coroutine[Any, Any, R]]
 ```
 
-Wraps a synchronous function to be called asynchronously in a thread pool. If the function is already async, it's returned unchanged.
+Wraps a synchronous function to be called asynchronously in a thread pool. If
+the function is already async, it's returned unchanged.
 
 #### Parameters
 
-- **func** (`Callable[..., R]`): The synchronous or asynchronous function to wrap.
+- **func** (`Callable[..., R]`): The synchronous or asynchronous function to
+  wrap.
 
 #### Returns
 
@@ -97,13 +101,14 @@ def get_env_bool(var_name: str, default: bool = False) -> bool
 
 Gets a boolean environment variable.
 
-True values (case-insensitive): 'true', '1', 'yes', 'y', 'on'.
-False values (case-insensitive): 'false', '0', 'no', 'n', 'off'.
+True values (case-insensitive): 'true', '1', 'yes', 'y', 'on'. False values
+(case-insensitive): 'false', '0', 'no', 'n', 'off'.
 
 #### Parameters
 
 - **var_name** (`str`): The name of the environment variable.
-- **default** (`bool`, optional): The default value if the variable is not set or is not a recognized boolean. Defaults to `False`.
+- **default** (`bool`, optional): The default value if the variable is not set
+  or is not a recognized boolean. Defaults to `False`.
 
 #### Returns
 
@@ -138,11 +143,13 @@ Gets a dictionary environment variable (expected to be a JSON string).
 #### Parameters
 
 - **var_name** (`str`): The name of the environment variable.
-- **default** (`dict[Any, Any] | None`, optional): The default value if the variable is not set or is not valid JSON. Defaults to `None`.
+- **default** (`dict[Any, Any] | None`, optional): The default value if the
+  variable is not set or is not valid JSON. Defaults to `None`.
 
 #### Returns
 
-- `dict[Any, Any] | None`: The dictionary value of the environment variable or the default.
+- `dict[Any, Any] | None`: The dictionary value of the environment variable or
+  the default.
 
 #### Example
 
@@ -179,16 +186,22 @@ def to_list(
 
 Convert input to a list with optional transformations.
 
-Transforms various input types into a list with configurable processing options for flattening, filtering, and value extraction.
+Transforms various input types into a list with configurable processing options
+for flattening, filtering, and value extraction.
 
 #### Parameters
 
 - **input_** (`Any`): Value to convert to list.
-- **flatten** (`bool`, optional): If True, recursively flatten nested iterables. Defaults to `False`.
-- **dropna** (`bool`, optional): If True, remove None and undefined values. Defaults to `False`.
-- **unique** (`bool`, optional): If True, remove duplicates (requires flatten=True). Defaults to `False`.
-- **use_values** (`bool`, optional): If True, extract values from enums/mappings. Defaults to `False`.
-- **flatten_tuple_set** (`bool`, optional): If True, include tuples and sets in flattening. Defaults to `False`.
+- **flatten** (`bool`, optional): If True, recursively flatten nested iterables.
+  Defaults to `False`.
+- **dropna** (`bool`, optional): If True, remove None and undefined values.
+  Defaults to `False`.
+- **unique** (`bool`, optional): If True, remove duplicates (requires
+  flatten=True). Defaults to `False`.
+- **use_values** (`bool`, optional): If True, extract values from
+  enums/mappings. Defaults to `False`.
+- **flatten_tuple_set** (`bool`, optional): If True, include tuples and sets in
+  flattening. Defaults to `False`.
 
 #### Returns
 
@@ -236,7 +249,10 @@ print(to_list(d, use_values=True))  # [1, 2, 3]
 
 ## Internal Functions
 
-The following functions are used internally by the module and are not part of the public API:
+The following functions are used internally by the module and are not part of
+the public API:
 
-- `hash_dict(data: Any) -> int`: Simple hash for dict-like objects for to_list's unique functionality.
-- `_run_sync_in_executor(func: Callable[..., R], *args: Any, **kwargs: Any) -> R`: Helper to run a sync function in the default executor.
+- `hash_dict(data: Any) -> int`: Simple hash for dict-like objects for to_list's
+  unique functionality.
+- `_run_sync_in_executor(func: Callable[..., R], *args: Any, **kwargs: Any) -> R`:
+  Helper to run a sync function in the default executor.

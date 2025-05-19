@@ -4,7 +4,8 @@ title: "lionfuncs API Reference"
 
 # API Reference
 
-This section provides detailed documentation for all public modules, classes, functions, and decorators in the `lionfuncs` package.
+This section provides detailed documentation for all public modules, classes,
+functions, and decorators in the `lionfuncs` package.
 
 ## Modules
 
@@ -62,7 +63,8 @@ The `lionfuncs` package exposes the following public APIs:
 - `force_async(func)`: Wrap a synchronous function to be called asynchronously.
 - `get_env_bool(var_name, default=False)`: Get a boolean environment variable.
 - `get_env_dict(var_name, default=None)`: Get a dictionary environment variable.
-- `to_list(input_, flatten=False, dropna=False, unique=False, use_values=False, flatten_tuple_set=False)`: Convert input to a list with optional transformations.
+- `to_list(input_, flatten=False, dropna=False, unique=False, use_values=False, flatten_tuple_set=False)`:
+  Convert input to a list with optional transformations.
 
 ### lionfuncs.errors
 
@@ -75,12 +77,15 @@ The `lionfuncs` package exposes the following public APIs:
 
 ### lionfuncs.file_system
 
-- `chunk_content(content, chunk_by="chars", ...)`: Split content by chars or tokens.
+- `chunk_content(content, chunk_by="chars", ...)`: Split content by chars or
+  tokens.
 - `read_file(path)`: Read file content.
 - `save_to_file(text, directory, filename, ...)`: Save text to a file.
-- `list_files(dir_path, extension=None, recursive=False)`: List files in a directory.
+- `list_files(dir_path, extension=None, recursive=False)`: List files in a
+  directory.
 - `concat_files(data_path, file_types, ...)`: Concatenate multiple files.
-- `dir_to_files(directory, file_types=None, ...)`: Recursively list files in a directory.
+- `dir_to_files(directory, file_types=None, ...)`: Recursively list files in a
+  directory.
 - `read_image_to_base64(image_path)`: Read an image and encode to base64.
 - `pdf_to_images(pdf_path, output_folder, ...)`: Convert PDF pages to images.
 
@@ -88,17 +93,23 @@ The `lionfuncs` package exposes the following public APIs:
 
 - `BoundedQueue`: Bounded async queue with backpressure support.
 - `WorkQueue`: High-level wrapper around BoundedQueue.
-- `Lock`, `Semaphore`, `CapacityLimiter`, `Event`, `Condition`: Concurrency primitives.
+- `Lock`, `Semaphore`, `CapacityLimiter`, `Event`, `Condition`: Concurrency
+  primitives.
 
 ### lionfuncs.async_utils
 
-- `alcall(input_, func, ...)`: Asynchronously call a function for each item in a list.
-- `bcall(input_, func, batch_size, ...)`: Asynchronously call a function in batches.
-- `@max_concurrent(limit)`: Decorator to limit the concurrency of an async function.
+- `alcall(input_, func, ...)`: Asynchronously call a function for each item in a
+  list.
+- `bcall(input_, func, batch_size, ...)`: Asynchronously call a function in
+  batches.
+- `@max_concurrent(limit)`: Decorator to limit the concurrency of an async
+  function.
 - `@throttle(period)`: Decorator to throttle function execution.
-- `parallel_map(func, items, max_concurrency=10)`: Apply an async function to each item in a list in parallel.
+- `parallel_map(func, items, max_concurrency=10)`: Apply an async function to
+  each item in a list in parallel.
 - `CancelScope`: Wrapper around anyio.CancelScope for structured cancellation.
-- `TaskGroup`: Wrapper around anyio.create_task_group for managing groups of tasks.
+- `TaskGroup`: Wrapper around anyio.create_task_group for managing groups of
+  tasks.
 
 ### lionfuncs.network
 
@@ -109,4 +120,5 @@ The `lionfuncs` package exposes the following public APIs:
 - `OpenAIAdapter`, `AnthropicAdapter`: SDK adapters for specific APIs.
 - `EndpointConfig`, `Endpoint`: Classes for defining and calling API endpoints.
 - `HeaderFactory`: Utility for creating auth/content headers.
-- `TokenBucketRateLimiter`, `EndpointRateLimiter`, `AdaptiveRateLimiter`: Rate limiting classes.
+- `TokenBucketRateLimiter`, `EndpointRateLimiter`, `AdaptiveRateLimiter`: Rate
+  limiting classes.

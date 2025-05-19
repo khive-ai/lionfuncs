@@ -4,7 +4,9 @@ title: "lionfuncs.network.primitives"
 
 # lionfuncs.network.primitives
 
-The `network.primitives` module provides network primitives for API interactions, including endpoint configuration, header factories, and rate limiting.
+The `network.primitives` module provides network primitives for API
+interactions, including endpoint configuration, header factories, and rate
+limiting.
 
 ## Classes
 
@@ -29,9 +31,11 @@ def get_content_type_header(
 
 Get content type header.
 
-- **content_type** (`str`, optional): The content type to use. Defaults to `"application/json"`.
+- **content_type** (`str`, optional): The content type to use. Defaults to
+  `"application/json"`.
 
 **Returns**:
+
 - `dict[str, str]`: A dictionary with the Content-Type header.
 
 ##### get_bearer_auth_header
@@ -46,6 +50,7 @@ Get Bearer authentication header.
 - **api_key** (`str`): The API key to use.
 
 **Returns**:
+
 - `dict[str, str]`: A dictionary with the Authorization header.
 
 ##### get_x_api_key_header
@@ -60,6 +65,7 @@ Get X-API-Key header.
 - **api_key** (`str`): The API key to use.
 
 **Returns**:
+
 - `dict[str, str]`: A dictionary with the x-api-key header.
 
 ##### get_header
@@ -76,16 +82,23 @@ def get_header(
 
 Get headers for API requests.
 
-- **auth_type** (`AUTH_TYPES`): The authentication type to use ("bearer" or "x-api-key").
-- **content_type** (`str`, optional): The content type to use. Defaults to `"application/json"`.
-- **api_key** (`Optional[str]`, optional): The API key to use. Defaults to `None`.
-- **default_headers** (`Optional[dict[str, str]]`, optional): Default headers to include. Defaults to `None`.
+- **auth_type** (`AUTH_TYPES`): The authentication type to use ("bearer" or
+  "x-api-key").
+- **content_type** (`str`, optional): The content type to use. Defaults to
+  `"application/json"`.
+- **api_key** (`Optional[str]`, optional): The API key to use. Defaults to
+  `None`.
+- **default_headers** (`Optional[dict[str, str]]`, optional): Default headers to
+  include. Defaults to `None`.
 
 **Returns**:
+
 - `dict[str, str]`: A dictionary with the headers.
 
 **Raises**:
-- `ValueError`: If API key is required but not provided, or if auth type is unsupported.
+
+- `ValueError`: If API key is required but not provided, or if auth type is
+  unsupported.
 
 #### Example
 
@@ -122,10 +135,12 @@ Configuration for an API endpoint.
 
 - **name** (`str`): The name of the endpoint.
 - **provider** (`str`): The provider name.
-- **transport_type** (`Literal["http", "sdk"]`): The transport type. Default: `"http"`.
+- **transport_type** (`Literal["http", "sdk"]`): The transport type. Default:
+  `"http"`.
 - **base_url** (`Optional[str]`): The base URL for the API. Default: `None`.
 - **endpoint** (`str`): The endpoint path.
-- **endpoint_params** (`Optional[list[str]]`): Parameters for the endpoint path. Default: `None`.
+- **endpoint_params** (`Optional[list[str]]`): Parameters for the endpoint path.
+  Default: `None`.
 - **method** (`str`): The HTTP method. Default: `"POST"`.
 - **params** (`dict[str, str]`): Query parameters. Default: `{}`.
 - **content_type** (`str`): The content type. Default: `"application/json"`.
@@ -135,7 +150,8 @@ Configuration for an API endpoint.
 - **timeout** (`int`): The timeout in seconds. Default: `300`.
 - **max_retries** (`int`): The maximum number of retries. Default: `3`.
 - **kwargs** (`dict[str, Any]`): Additional keyword arguments. Default: `{}`.
-- **client_kwargs** (`dict[str, Any]`): Additional keyword arguments for the client. Default: `{}`.
+- **client_kwargs** (`dict[str, Any]`): Additional keyword arguments for the
+  client. Default: `{}`.
 
 #### Properties
 
@@ -149,6 +165,7 @@ def full_url(self) -> str
 Get the full URL for the endpoint.
 
 **Returns**:
+
 - `str`: The full URL with base URL and endpoint path.
 
 #### Methods
@@ -199,7 +216,8 @@ class Endpoint
 
 API endpoint for making requests.
 
-This class represents an API endpoint and provides methods for making requests to that endpoint.
+This class represents an API endpoint and provides methods for making requests
+to that endpoint.
 
 #### Constructor
 
@@ -211,10 +229,12 @@ def __init__(
 )
 ```
 
-- **config** (`Union[dict[str, Any], EndpointConfig]`): The endpoint configuration.
+- **config** (`Union[dict[str, Any], EndpointConfig]`): The endpoint
+  configuration.
 - **\*\*kwargs**: Additional keyword arguments to update the configuration.
 
 **Raises**:
+
 - `TypeError`: If config is not a dict or EndpointConfig.
 
 #### Methods
@@ -232,11 +252,14 @@ def create_payload(
 
 Create payload and headers for a request.
 
-- **request** (`Union[dict[str, Any], BaseModel]`): The request parameters or model.
-- **extra_headers** (`Optional[dict[str, str]]`, optional): Additional headers to include. Defaults to `None`.
+- **request** (`Union[dict[str, Any], BaseModel]`): The request parameters or
+  model.
+- **extra_headers** (`Optional[dict[str, str]]`, optional): Additional headers
+  to include. Defaults to `None`.
 - **\*\*kwargs**: Additional keyword arguments for the request.
 
 **Returns**:
+
 - `tuple[dict[str, Any], dict[str, str]]`: A tuple of (payload, headers).
 
 #### Example
@@ -276,7 +299,10 @@ class TokenBucketRateLimiter
 
 Rate limiter using the token bucket algorithm.
 
-The token bucket algorithm allows for controlled bursts of requests while maintaining a long-term rate limit. Tokens are added to the bucket at a constant rate, and each request consumes one or more tokens. If the bucket is empty, requests must wait until enough tokens are available.
+The token bucket algorithm allows for controlled bursts of requests while
+maintaining a long-term rate limit. Tokens are added to the bucket at a constant
+rate, and each request consumes one or more tokens. If the bucket is empty,
+requests must wait until enough tokens are available.
 
 #### Constructor
 
@@ -292,8 +318,10 @@ def __init__(
 
 - **rate** (`float`): Maximum number of tokens per period.
 - **period** (`float`, optional): Time period in seconds. Defaults to `1.0`.
-- **max_tokens** (`Optional[float]`, optional): Maximum token bucket capacity (defaults to rate). Defaults to `None`.
-- **initial_tokens** (`Optional[float]`, optional): Initial token count (defaults to max_tokens). Defaults to `None`.
+- **max_tokens** (`Optional[float]`, optional): Maximum token bucket capacity
+  (defaults to rate). Defaults to `None`.
+- **initial_tokens** (`Optional[float]`, optional): Initial token count
+  (defaults to max_tokens). Defaults to `None`.
 
 #### Methods
 
@@ -305,10 +333,13 @@ async def acquire(self, tokens: float = 1.0) -> float
 
 Acquire tokens from the bucket.
 
-- **tokens** (`float`, optional): Number of tokens to acquire. Defaults to `1.0`.
+- **tokens** (`float`, optional): Number of tokens to acquire. Defaults to
+  `1.0`.
 
 **Returns**:
-- `float`: Wait time in seconds before tokens are available. Returns 0.0 if tokens are immediately available.
+
+- `float`: Wait time in seconds before tokens are available. Returns 0.0 if
+  tokens are immediately available.
 
 ##### execute
 
@@ -320,9 +351,12 @@ Execute a coroutine with rate limiting.
 
 - **func** (`Callable[..., Any]`): Async function to execute.
 - **\*args** (`Any`): Positional arguments for func.
-- **\*\*kwargs** (`Any`): Keyword arguments for func. tokens: Optional number of tokens to acquire (default: 1.0). This will be removed from kwargs before calling func.
+- **\*\*kwargs** (`Any`): Keyword arguments for func. tokens: Optional number of
+  tokens to acquire (default: 1.0). This will be removed from kwargs before
+  calling func.
 
 **Returns**:
+
 - `Any`: Result from func.
 
 #### Example
@@ -339,7 +373,7 @@ async def api_call(i: int):
 async def main():
     # Create a rate limiter with 5 requests per second
     rate_limiter = TokenBucketRateLimiter(rate=5, period=1.0)
-    
+
     # Execute 10 API calls with rate limiting
     tasks = []
     for i in range(10):
@@ -348,11 +382,11 @@ async def main():
             rate_limiter.execute(api_call, i)
         )
         tasks.append(task)
-    
+
     # Wait for all tasks to complete
     results = await asyncio.gather(*tasks)
     print(f"Results: {results}")
-    
+
     # Option 2: Use acquire method directly
     for i in range(10, 20):
         # Acquire tokens (waiting if necessary)
@@ -360,7 +394,7 @@ async def main():
         if wait_time > 0:
             print(f"Rate limited: waiting {wait_time:.2f}s before call {i}")
             await asyncio.sleep(wait_time)
-        
+
         # Make the API call
         result = await api_call(i)
         print(f"Result: {result}")
@@ -376,7 +410,8 @@ class EndpointRateLimiter
 
 Rate limiter that manages multiple endpoints with different rate limits.
 
-This class maintains separate rate limiters for different API endpoints, allowing for fine-grained control over rate limiting.
+This class maintains separate rate limiters for different API endpoints,
+allowing for fine-grained control over rate limiting.
 
 #### Constructor
 
@@ -384,8 +419,10 @@ This class maintains separate rate limiters for different API endpoints, allowin
 def __init__(self, default_rate: float = 10.0, default_period: float = 1.0)
 ```
 
-- **default_rate** (`float`, optional): Default rate for unknown endpoints. Defaults to `10.0`.
-- **default_period** (`float`, optional): Default period for unknown endpoints. Defaults to `1.0`.
+- **default_rate** (`float`, optional): Default rate for unknown endpoints.
+  Defaults to `10.0`.
+- **default_period** (`float`, optional): Default period for unknown endpoints.
+  Defaults to `1.0`.
 
 #### Methods
 
@@ -400,6 +437,7 @@ Get or create a rate limiter for the endpoint.
 - **endpoint** (`str`): API endpoint identifier.
 
 **Returns**:
+
 - `TokenBucketRateLimiter`: The rate limiter for the specified endpoint.
 
 ##### execute
@@ -419,9 +457,11 @@ Execute a coroutine with endpoint-specific rate limiting.
 - **endpoint** (`str`): API endpoint identifier.
 - **func** (`Callable[..., Any]`): Async function to execute.
 - **\*args** (`Any`): Positional arguments for func.
-- **\*\*kwargs** (`Any`): Keyword arguments for func. tokens: Optional number of tokens to acquire (default: 1.0).
+- **\*\*kwargs** (`Any`): Keyword arguments for func. tokens: Optional number of
+  tokens to acquire (default: 1.0).
 
 **Returns**:
+
 - `Any`: Result from func.
 
 ##### update_rate_limit
@@ -440,10 +480,14 @@ async def update_rate_limit(
 Update the rate limit parameters for an endpoint.
 
 - **endpoint** (`str`): API endpoint identifier.
-- **rate** (`Optional[float]`, optional): New maximum operations per period (if None, keep current). Defaults to `None`.
-- **period** (`Optional[float]`, optional): New time period in seconds (if None, keep current). Defaults to `None`.
-- **max_tokens** (`Optional[float]`, optional): New maximum token capacity (if None, keep current). Defaults to `None`.
-- **reset_tokens** (`bool`, optional): If True, reset current tokens to max_tokens. Defaults to `False`.
+- **rate** (`Optional[float]`, optional): New maximum operations per period (if
+  None, keep current). Defaults to `None`.
+- **period** (`Optional[float]`, optional): New time period in seconds (if None,
+  keep current). Defaults to `None`.
+- **max_tokens** (`Optional[float]`, optional): New maximum token capacity (if
+  None, keep current). Defaults to `None`.
+- **reset_tokens** (`bool`, optional): If True, reset current tokens to
+  max_tokens. Defaults to `False`.
 
 #### Example
 
@@ -459,28 +503,28 @@ async def api_call(endpoint: str, i: int):
 async def main():
     # Create an endpoint rate limiter
     rate_limiter = EndpointRateLimiter(default_rate=10.0)
-    
+
     # Update rate limits for specific endpoints
     await rate_limiter.update_rate_limit("users", rate=5.0)
     await rate_limiter.update_rate_limit("orders", rate=2.0)
-    
+
     # Execute API calls to different endpoints
     tasks = []
-    
+
     # 10 calls to /users endpoint (rate limit: 5 per second)
     for i in range(10):
         task = asyncio.create_task(
             rate_limiter.execute("users", api_call, "users", i)
         )
         tasks.append(task)
-    
+
     # 5 calls to /orders endpoint (rate limit: 2 per second)
     for i in range(5):
         task = asyncio.create_task(
             rate_limiter.execute("orders", api_call, "orders", i)
         )
         tasks.append(task)
-    
+
     # Wait for all tasks to complete
     results = await asyncio.gather(*tasks)
     print(f"Results: {results}")
@@ -496,7 +540,9 @@ class AdaptiveRateLimiter(TokenBucketRateLimiter)
 
 Rate limiter that can adapt its limits based on API response headers.
 
-This class extends TokenBucketRateLimiter to automatically adjust rate limits based on response headers from API calls. It supports common rate limit header patterns used by various APIs.
+This class extends TokenBucketRateLimiter to automatically adjust rate limits
+based on response headers from API calls. It supports common rate limit header
+patterns used by various APIs.
 
 #### Constructor
 
@@ -512,10 +558,14 @@ def __init__(
 ```
 
 - **initial_rate** (`float`): Initial maximum operations per period.
-- **initial_period** (`float`, optional): Initial time period in seconds. Defaults to `1.0`.
-- **max_tokens** (`Optional[float]`, optional): Maximum token capacity (defaults to initial_rate). Defaults to `None`.
-- **min_rate** (`float`, optional): Minimum rate to maintain even with strict API limits. Defaults to `1.0`.
-- **safety_factor** (`float`, optional): Factor to multiply API limits by for safety margin. Defaults to `0.9`.
+- **initial_period** (`float`, optional): Initial time period in seconds.
+  Defaults to `1.0`.
+- **max_tokens** (`Optional[float]`, optional): Maximum token capacity (defaults
+  to initial_rate). Defaults to `None`.
+- **min_rate** (`float`, optional): Minimum rate to maintain even with strict
+  API limits. Defaults to `1.0`.
+- **safety_factor** (`float`, optional): Factor to multiply API limits by for
+  safety margin. Defaults to `0.9`.
 
 #### Methods
 
@@ -528,6 +578,7 @@ def update_from_headers(self, headers: dict[str, str]) -> None
 Update rate limits based on API response headers.
 
 Supports common header patterns:
+
 - X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
 - X-Rate-Limit-Limit, X-Rate-Limit-Remaining, X-Rate-Limit-Reset
 - RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset
@@ -549,7 +600,7 @@ async def main():
         safety_factor=0.8,
         min_rate=1.0
     )
-    
+
     # Create an API client
     async with AsyncAPIClient(base_url="https://api.example.com") as client:
         for i in range(5):
@@ -560,11 +611,11 @@ async def main():
                 "/users",
                 tokens=1.0
             )
-            
+
             # Update rate limiter based on response headers
             if hasattr(response, "headers"):
                 rate_limiter.update_from_headers(response.headers)
-            
+
             print(f"Response: {response}")
 
 asyncio.run(main())
@@ -635,7 +686,8 @@ The `TokenBucketRateLimiter` implements the token bucket algorithm:
 
 #### Adaptive Rate Limiting
 
-The `AdaptiveRateLimiter` extends the token bucket algorithm to adapt to API rate limits:
+The `AdaptiveRateLimiter` extends the token bucket algorithm to adapt to API
+rate limits:
 
 1. It parses rate limit headers from API responses.
 2. It adjusts the rate based on the remaining calls and reset time.
@@ -646,7 +698,8 @@ The `AdaptiveRateLimiter` extends the token bucket algorithm to adapt to API rat
 
 The `AdaptiveRateLimiter` supports common rate limit header patterns:
 
-- X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset (GitHub, many others)
+- X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset (GitHub, many
+  others)
 - X-Rate-Limit-Limit, X-Rate-Limit-Remaining, X-Rate-Limit-Reset (Twitter)
 - RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset (RFC 6585)
 - ratelimit-limit, ratelimit-remaining, ratelimit-reset (lowercase variants)

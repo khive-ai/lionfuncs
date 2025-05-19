@@ -4,7 +4,8 @@ title: "lionfuncs.network.resilience"
 
 # lionfuncs.network.resilience
 
-The `network.resilience` module provides resilience patterns for API clients, including the circuit breaker pattern and retry with exponential backoff.
+The `network.resilience` module provides resilience patterns for API clients,
+including the circuit breaker pattern and retry with exponential backoff.
 
 ## Classes
 
@@ -30,7 +31,10 @@ class CircuitBreaker
 
 Circuit breaker pattern implementation for preventing calls to failing services.
 
-The circuit breaker pattern prevents repeated calls to a failing service, based on the principle of "fail fast" for better system resilience. When a service fails repeatedly, the circuit opens and rejects requests for a period of time, then transitions to a half-open state to test if the service has recovered.
+The circuit breaker pattern prevents repeated calls to a failing service, based
+on the principle of "fail fast" for better system resilience. When a service
+fails repeatedly, the circuit opens and rejects requests for a period of time,
+then transitions to a half-open state to test if the service has recovered.
 
 #### Constructor
 
@@ -45,11 +49,16 @@ def __init__(
 )
 ```
 
-- **failure_threshold** (`int`, optional): Number of failures before opening the circuit. Defaults to `5`.
-- **recovery_time** (`float`, optional): Time in seconds to wait before transitioning to half-open. Defaults to `30.0`.
-- **half_open_max_calls** (`int`, optional): Maximum number of calls allowed in half-open state. Defaults to `1`.
-- **excluded_exceptions** (`Optional[set[type[Exception]]]`, optional): Set of exception types that should not count as failures. Defaults to `None`.
-- **name** (`str`, optional): Name of the circuit breaker for logging and metrics. Defaults to `"default"`.
+- **failure_threshold** (`int`, optional): Number of failures before opening the
+  circuit. Defaults to `5`.
+- **recovery_time** (`float`, optional): Time in seconds to wait before
+  transitioning to half-open. Defaults to `30.0`.
+- **half_open_max_calls** (`int`, optional): Maximum number of calls allowed in
+  half-open state. Defaults to `1`.
+- **excluded_exceptions** (`Optional[set[type[Exception]]]`, optional): Set of
+  exception types that should not count as failures. Defaults to `None`.
+- **name** (`str`, optional): Name of the circuit breaker for logging and
+  metrics. Defaults to `"default"`.
 
 #### Properties
 
@@ -72,9 +81,11 @@ Execute a coroutine with circuit breaker protection.
 - **\*\*kwargs** (`Any`): Keyword arguments for the function.
 
 **Returns**:
+
 - `T`: The result of the function execution.
 
 **Raises**:
+
 - `CircuitBreakerOpenError`: If the circuit is open.
 - `Exception`: Any exception raised by the function.
 
@@ -98,7 +109,7 @@ async def main():
         recovery_time=5.0,
         name="api-circuit-breaker"
     )
-    
+
     # Make some failing calls
     for i in range(5):
         try:
@@ -108,11 +119,11 @@ async def main():
             print(f"Call {i+1} rejected: {e}")
         except Exception as e:
             print(f"Call {i+1} failed: {e}")
-    
+
     # Wait for recovery time
     print("Waiting for recovery...")
     await asyncio.sleep(5)
-    
+
     # Try again
     try:
         result = await breaker.execute(api_call, succeed=True)
@@ -121,7 +132,7 @@ async def main():
         print(f"Call after recovery rejected: {e}")
     except Exception as e:
         print(f"Call after recovery failed: {e}")
-    
+
     # Check metrics
     print(f"Circuit breaker metrics: {breaker.metrics}")
 
@@ -152,14 +163,22 @@ def __init__(
 )
 ```
 
-- **max_retries** (`int`, optional): Maximum number of retry attempts. Defaults to `3`.
-- **base_delay** (`float`, optional): Initial delay between retries in seconds. Defaults to `1.0`.
-- **max_delay** (`float`, optional): Maximum delay between retries in seconds. Defaults to `60.0`.
-- **backoff_factor** (`float`, optional): Multiplier applied to delay after each retry. Defaults to `2.0`.
-- **jitter** (`bool`, optional): Whether to add randomness to delay timings. Defaults to `True`.
-- **jitter_factor** (`float`, optional): How much randomness to add as a percentage. Defaults to `0.2`.
-- **retry_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of exception types that should trigger retry. Defaults to `(Exception,)`.
-- **exclude_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of exception types that should not be retried. Defaults to `()`.
+- **max_retries** (`int`, optional): Maximum number of retry attempts. Defaults
+  to `3`.
+- **base_delay** (`float`, optional): Initial delay between retries in seconds.
+  Defaults to `1.0`.
+- **max_delay** (`float`, optional): Maximum delay between retries in seconds.
+  Defaults to `60.0`.
+- **backoff_factor** (`float`, optional): Multiplier applied to delay after each
+  retry. Defaults to `2.0`.
+- **jitter** (`bool`, optional): Whether to add randomness to delay timings.
+  Defaults to `True`.
+- **jitter_factor** (`float`, optional): How much randomness to add as a
+  percentage. Defaults to `0.2`.
+- **retry_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of
+  exception types that should trigger retry. Defaults to `(Exception,)`.
+- **exclude_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of
+  exception types that should not be retried. Defaults to `()`.
 
 #### Methods
 
@@ -172,6 +191,7 @@ def as_kwargs(self) -> dict[str, Any]
 Convert configuration to keyword arguments for retry_with_backoff.
 
 **Returns**:
+
 - `dict[str, Any]`: Dictionary of keyword arguments.
 
 #### Example
@@ -223,14 +243,21 @@ Retry an async function with exponential backoff.
 
 - **func** (`Callable[..., Awaitable[T]]`): The async function to retry.
 - **\*args** (`Any`): Positional arguments for the function.
-- **retry_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of exception types to retry. Defaults to `(Exception,)`.
-- **exclude_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of exception types to not retry. Defaults to `()`.
+- **retry_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of
+  exception types to retry. Defaults to `(Exception,)`.
+- **exclude_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of
+  exception types to not retry. Defaults to `()`.
 - **max_retries** (`int`, optional): Maximum number of retries. Defaults to `3`.
-- **base_delay** (`float`, optional): Initial delay between retries in seconds. Defaults to `1.0`.
-- **max_delay** (`float`, optional): Maximum delay between retries in seconds. Defaults to `60.0`.
-- **backoff_factor** (`float`, optional): Factor to increase delay with each retry. Defaults to `2.0`.
-- **jitter** (`bool`, optional): Whether to add randomness to the delay. Defaults to `True`.
-- **jitter_factor** (`float`, optional): How much randomness to add as a percentage. Defaults to `0.2`.
+- **base_delay** (`float`, optional): Initial delay between retries in seconds.
+  Defaults to `1.0`.
+- **max_delay** (`float`, optional): Maximum delay between retries in seconds.
+  Defaults to `60.0`.
+- **backoff_factor** (`float`, optional): Factor to increase delay with each
+  retry. Defaults to `2.0`.
+- **jitter** (`bool`, optional): Whether to add randomness to the delay.
+  Defaults to `True`.
+- **jitter_factor** (`float`, optional): How much randomness to add as a
+  percentage. Defaults to `0.2`.
 - **\*\*kwargs** (`Any`): Keyword arguments for the function.
 
 #### Returns
@@ -289,15 +316,21 @@ Decorator to apply circuit breaker pattern to an async function.
 
 #### Parameters
 
-- **failure_threshold** (`int`, optional): Number of failures before opening the circuit. Defaults to `5`.
-- **recovery_time** (`float`, optional): Time in seconds to wait before transitioning to half-open. Defaults to `30.0`.
-- **half_open_max_calls** (`int`, optional): Maximum number of calls allowed in half-open state. Defaults to `1`.
-- **excluded_exceptions** (`Optional[set[type[Exception]]]`, optional): Set of exception types that should not count as failures. Defaults to `None`.
-- **name** (`Optional[str]`, optional): Name of the circuit breaker for logging and metrics. Defaults to `None`.
+- **failure_threshold** (`int`, optional): Number of failures before opening the
+  circuit. Defaults to `5`.
+- **recovery_time** (`float`, optional): Time in seconds to wait before
+  transitioning to half-open. Defaults to `30.0`.
+- **half_open_max_calls** (`int`, optional): Maximum number of calls allowed in
+  half-open state. Defaults to `1`.
+- **excluded_exceptions** (`Optional[set[type[Exception]]]`, optional): Set of
+  exception types that should not count as failures. Defaults to `None`.
+- **name** (`Optional[str]`, optional): Name of the circuit breaker for logging
+  and metrics. Defaults to `None`.
 
 #### Returns
 
-- `Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]`: A decorator that applies circuit breaker pattern.
+- `Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]`: A
+  decorator that applies circuit breaker pattern.
 
 #### Example
 
@@ -328,7 +361,7 @@ async def main():
             print(f"Call {i+1} rejected: {e}")
         except Exception as e:
             print(f"Call {i+1} failed: {e}")
-        
+
         # Add a small delay between calls
         await asyncio.sleep(0.5)
 
@@ -354,18 +387,27 @@ Decorator to apply retry with backoff pattern to an async function.
 
 #### Parameters
 
-- **max_retries** (`int`, optional): Maximum number of retry attempts. Defaults to `3`.
-- **base_delay** (`float`, optional): Initial delay between retries in seconds. Defaults to `1.0`.
-- **max_delay** (`float`, optional): Maximum delay between retries in seconds. Defaults to `60.0`.
-- **backoff_factor** (`float`, optional): Multiplier applied to delay after each retry. Defaults to `2.0`.
-- **jitter** (`bool`, optional): Whether to add randomness to delay timings. Defaults to `True`.
-- **jitter_factor** (`float`, optional): How much randomness to add as a percentage. Defaults to `0.2`.
-- **retry_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of exception types that should trigger retry. Defaults to `(Exception,)`.
-- **exclude_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of exception types that should not be retried. Defaults to `()`.
+- **max_retries** (`int`, optional): Maximum number of retry attempts. Defaults
+  to `3`.
+- **base_delay** (`float`, optional): Initial delay between retries in seconds.
+  Defaults to `1.0`.
+- **max_delay** (`float`, optional): Maximum delay between retries in seconds.
+  Defaults to `60.0`.
+- **backoff_factor** (`float`, optional): Multiplier applied to delay after each
+  retry. Defaults to `2.0`.
+- **jitter** (`bool`, optional): Whether to add randomness to delay timings.
+  Defaults to `True`.
+- **jitter_factor** (`float`, optional): How much randomness to add as a
+  percentage. Defaults to `0.2`.
+- **retry_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of
+  exception types that should trigger retry. Defaults to `(Exception,)`.
+- **exclude_exceptions** (`tuple[type[Exception], ...]`, optional): Tuple of
+  exception types that should not be retried. Defaults to `()`.
 
 #### Returns
 
-- `Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]`: A decorator that applies retry pattern.
+- `Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]`: A
+  decorator that applies retry pattern.
 
 #### Example
 
@@ -405,7 +447,8 @@ asyncio.run(main())
 
 ## Combining Resilience Patterns
 
-The circuit breaker and retry patterns can be combined for more robust resilience:
+The circuit breaker and retry patterns can be combined for more robust
+resilience:
 
 ```python
 import asyncio
@@ -440,7 +483,7 @@ async def main():
             print(f"Call {i+1} rejected by circuit breaker: {e}")
         except Exception as e:
             print(f"Call {i+1} failed after retries: {e}")
-        
+
         await asyncio.sleep(0.5)
 
 asyncio.run(main())
@@ -453,8 +496,10 @@ asyncio.run(main())
 The circuit breaker has three states:
 
 1. **CLOSED**: Normal operation, requests are allowed.
-2. **OPEN**: Failing state, requests are rejected with `CircuitBreakerOpenError`.
-3. **HALF_OPEN**: Testing if service has recovered, limited requests are allowed.
+2. **OPEN**: Failing state, requests are rejected with
+   `CircuitBreakerOpenError`.
+3. **HALF_OPEN**: Testing if service has recovered, limited requests are
+   allowed.
 
 State transitions:
 
@@ -471,5 +516,7 @@ The retry with backoff algorithm:
 2. If it fails with a retryable exception, wait for `base_delay` seconds.
 3. Retry the operation.
 4. If it fails again, wait for `base_delay * backoff_factor` seconds.
-5. Continue retrying with increasing delays until `max_retries` is reached or `max_delay` is hit.
-6. If `jitter` is enabled, add randomness to the delay to prevent thundering herd problems.
+5. Continue retrying with increasing delays until `max_retries` is reached or
+   `max_delay` is hit.
+6. If `jitter` is enabled, add randomness to the delay to prevent thundering
+   herd problems.

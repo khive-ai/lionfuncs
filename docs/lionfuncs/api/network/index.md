@@ -4,46 +4,65 @@ title: "lionfuncs.network"
 
 # lionfuncs.network
 
-The `network` module provides utilities for making HTTP requests, handling resilience patterns, and adapting to different SDK interfaces. It includes an async HTTP client, circuit breaker and retry decorators, SDK adapters, and network primitives.
+The `network` module provides utilities for making HTTP requests, handling
+resilience patterns, and adapting to different SDK interfaces. It includes an
+async HTTP client, circuit breaker and retry decorators, SDK adapters, and
+network primitives.
 
 ## Submodules
 
 - [**client**](client.md): Async HTTP client for API interactions.
-- [**resilience**](resilience.md): Resilience patterns like circuit breaker and retry with backoff.
+- [**resilience**](resilience.md): Resilience patterns like circuit breaker and
+  retry with backoff.
 - [**adapters**](adapters.md): SDK adapters for third-party APIs.
-- [**primitives**](primitives.md): Network primitives like `Endpoint` and rate limiters.
+- [**primitives**](primitives.md): Network primitives like `Endpoint` and rate
+  limiters.
 
 ## Components
 
-The `network` module re-exports all components from its submodules, so you can import them directly from `lionfuncs.network`:
+The `network` module re-exports all components from its submodules, so you can
+import them directly from `lionfuncs.network`:
 
 ### From client
 
-- [`AsyncAPIClient`](client.md#asyncapiclient): Generic async HTTP client for API interactions.
+- [`AsyncAPIClient`](client.md#asyncapiclient): Generic async HTTP client for
+  API interactions.
 
 ### From resilience
 
-- [`@circuit_breaker`](resilience.md#circuit_breaker): Decorator for circuit breaker pattern.
+- [`@circuit_breaker`](resilience.md#circuit_breaker): Decorator for circuit
+  breaker pattern.
 - [`@with_retry`](resilience.md#with_retry): Decorator for retry with backoff.
-- [`CircuitBreaker`](resilience.md#circuitbreaker): Class for implementing the circuit breaker pattern.
+- [`CircuitBreaker`](resilience.md#circuitbreaker): Class for implementing the
+  circuit breaker pattern.
 - [`RetryConfig`](resilience.md#retryconfig): Configuration for retry behavior.
 
 ### From adapters
 
-- [`AbstractSDKAdapter`](adapters.md#abstractsdkadapter): Protocol defining the interface for SDK adapters.
+- [`AbstractSDKAdapter`](adapters.md#abstractsdkadapter): Protocol defining the
+  interface for SDK adapters.
 - [`OpenAIAdapter`](adapters.md#openai-adapter): Adapter for the OpenAI API.
-- [`AnthropicAdapter`](adapters.md#anthropic-adapter): Adapter for the Anthropic API.
-- [`create_sdk_adapter`](adapters.md#create_sdk_adapter): Factory function for creating SDK adapters.
+- [`AnthropicAdapter`](adapters.md#anthropic-adapter): Adapter for the Anthropic
+  API.
+- [`create_sdk_adapter`](adapters.md#create_sdk_adapter): Factory function for
+  creating SDK adapters.
 
 ### From primitives
 
-- [`Endpoint`](primitives.md#endpoint): Class for defining and calling specific API endpoints.
-- [`EndpointConfig`](primitives.md#endpointconfig): Configuration for an API endpoint.
-- [`HeaderFactory`](primitives.md#headerfactory): Utility for creating auth/content headers.
-- [`TokenBucketRateLimiter`](primitives.md#tokenbucketratelimiter): Rate limiter using the token bucket algorithm.
-- [`EndpointRateLimiter`](primitives.md#endpointratelimiter): Rate limiter for different endpoints.
-- [`AdaptiveRateLimiter`](primitives.md#adaptiveratelimiter): Rate limiter that adapts based on API response headers.
-- [`match_endpoint`](primitives.md#match_endpoint): Function to select an `Endpoint` instance.
+- [`Endpoint`](primitives.md#endpoint): Class for defining and calling specific
+  API endpoints.
+- [`EndpointConfig`](primitives.md#endpointconfig): Configuration for an API
+  endpoint.
+- [`HeaderFactory`](primitives.md#headerfactory): Utility for creating
+  auth/content headers.
+- [`TokenBucketRateLimiter`](primitives.md#tokenbucketratelimiter): Rate limiter
+  using the token bucket algorithm.
+- [`EndpointRateLimiter`](primitives.md#endpointratelimiter): Rate limiter for
+  different endpoints.
+- [`AdaptiveRateLimiter`](primitives.md#adaptiveratelimiter): Rate limiter that
+  adapts based on API response headers.
+- [`match_endpoint`](primitives.md#match_endpoint): Function to select an
+  `Endpoint` instance.
 
 ## Installation
 
@@ -53,7 +72,8 @@ The network utilities are included in the base `lionfuncs` package:
 pip install lionfuncs
 ```
 
-For using specific SDK adapters, you may need to install the corresponding SDK libraries:
+For using specific SDK adapters, you may need to install the corresponding SDK
+libraries:
 
 ```bash
 # For OpenAI adapter
@@ -81,15 +101,15 @@ async def main():
         # Make a GET request
         response = await client.request("GET", "/users")
         print(f"Users: {response}")
-        
+
         # Make a POST request with JSON data
         response = await client.request(
-            "POST", 
-            "/users", 
+            "POST",
+            "/users",
             json={"name": "John Doe", "email": "john@example.com"}
         )
         print(f"Created user: {response}")
-        
+
         # Using the call method with a request dictionary
         response = await client.call({
             "method": "GET",
@@ -135,7 +155,7 @@ async def main():
     # Create an OpenAI adapter
     openai_api_key = os.environ.get("OPENAI_API_KEY")
     openai_adapter = create_sdk_adapter("openai", openai_api_key)
-    
+
     # Use the adapter
     async with openai_adapter as adapter:
         response = await adapter.call(
@@ -147,11 +167,11 @@ async def main():
             ]
         )
         print(f"OpenAI response: {response}")
-    
+
     # Create an Anthropic adapter
     anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
     anthropic_adapter = create_sdk_adapter("anthropic", anthropic_api_key)
-    
+
     # Use the adapter
     async with anthropic_adapter as adapter:
         response = await adapter.call(
@@ -172,8 +192,8 @@ asyncio.run(main())
 ```python
 import asyncio
 from lionfuncs.network import (
-    AsyncAPIClient, 
-    Endpoint, 
+    AsyncAPIClient,
+    Endpoint,
     EndpointConfig,
     TokenBucketRateLimiter
 )
@@ -181,7 +201,7 @@ from lionfuncs.network import (
 async def main():
     # Create a rate limiter
     rate_limiter = TokenBucketRateLimiter(rate=10, period=1.0)
-    
+
     # Create an endpoint configuration
     endpoint_config = EndpointConfig(
         name="get_users",
@@ -192,10 +212,10 @@ async def main():
         auth_type="bearer",
         api_key="YOUR_API_KEY"
     )
-    
+
     # Create an endpoint
     endpoint = Endpoint(endpoint_config)
-    
+
     # Create an API client
     async with AsyncAPIClient(base_url="https://api.example.com") as client:
         # Use the rate limiter to execute a request
@@ -248,3 +268,4 @@ async def main():
             print(f"API error: {e}")
 
 asyncio.run(main())
+```

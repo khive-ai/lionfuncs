@@ -4,7 +4,9 @@ title: "lionfuncs.errors"
 
 # lionfuncs.errors
 
-The `errors` module provides custom exception classes for the `lionfuncs` package. These exceptions are used throughout the package to provide specific error information and maintain a consistent error handling approach.
+The `errors` module provides custom exception classes for the `lionfuncs`
+package. These exceptions are used throughout the package to provide specific
+error information and maintain a consistent error handling approach.
 
 ## Exception Hierarchy
 
@@ -33,7 +35,8 @@ LionError
 class LionError(Exception)
 ```
 
-Base exception for all lionfuncs errors. All other exceptions in the package inherit from this class.
+Base exception for all lionfuncs errors. All other exceptions in the package
+inherit from this class.
 
 #### Example
 
@@ -57,7 +60,8 @@ except LionError as e:
 class LionFileError(LionError)
 ```
 
-Exception raised for file system operation errors, such as file not found, permission denied, or other I/O errors.
+Exception raised for file system operation errors, such as file not found,
+permission denied, or other I/O errors.
 
 #### Example
 
@@ -84,7 +88,8 @@ asyncio.run(read_nonexistent_file())
 class LionNetworkError(LionError)
 ```
 
-Base exception for network operation errors, such as connection issues or non-HTTP errors.
+Base exception for network operation errors, such as connection issues or
+non-HTTP errors.
 
 #### Example
 
@@ -111,8 +116,10 @@ Base exception for HTTP client errors from AsyncAPIClient.
 #### Parameters
 
 - **message** (`str`): The error message.
-- **status_code** (`int | None`, optional): The HTTP status code. Defaults to `None`.
-- **response_content** (`str | bytes | None`, optional): The response content. Defaults to `None`.
+- **status_code** (`int | None`, optional): The HTTP status code. Defaults to
+  `None`.
+- **response_content** (`str | bytes | None`, optional): The response content.
+  Defaults to `None`.
 
 #### Example
 
@@ -156,8 +163,10 @@ Exception raised for 429 status codes, indicating rate limiting.
 
 #### Parameters
 
-- **message** (`str`, optional): The error message. Defaults to "Rate limit exceeded".
-- **retry_after** (`int | None`, optional): The time in seconds to wait before retrying. Defaults to `None`.
+- **message** (`str`, optional): The error message. Defaults to "Rate limit
+  exceeded".
+- **retry_after** (`int | None`, optional): The time in seconds to wait before
+  retrying. Defaults to `None`.
 - **\*\*kwargs**: Additional keyword arguments to pass to the parent class.
 
 #### Example
@@ -181,7 +190,8 @@ except RateLimitError as e:
 class AuthenticationError(APIClientError)
 ```
 
-Exception raised for 401/403 status codes, indicating authentication/authorization issues.
+Exception raised for 401/403 status codes, indicating
+authentication/authorization issues.
 
 ### ResourceNotFoundError
 
@@ -210,7 +220,8 @@ Exception raised when an operation is blocked by an open circuit breaker.
 #### Parameters
 
 - **message** (`str`): The error message.
-- **retry_after** (`float | None`, optional): The time in seconds to wait before retrying. Defaults to `None`.
+- **retry_after** (`float | None`, optional): The time in seconds to wait before
+  retrying. Defaults to `None`.
 
 #### Example
 
@@ -249,7 +260,8 @@ Exception raised for invalid operations on a queue given its current state.
 #### Parameters
 
 - **message** (`str`): The error message.
-- **current_state** (`str | None`, optional): The current state of the queue. Defaults to `None`.
+- **current_state** (`str | None`, optional): The current state of the queue.
+  Defaults to `None`.
 
 #### Example
 
@@ -280,12 +292,14 @@ asyncio.run(queue_operation())
 class LionSDKError(LionError)
 ```
 
-Base exception for errors originating from SDK interactions. Specific SDK errors should inherit from this class (e.g., `OpenAISDKError`, `AnthropicSDKError`).
+Base exception for errors originating from SDK interactions. Specific SDK errors
+should inherit from this class (e.g., `OpenAISDKError`, `AnthropicSDKError`).
 
 #### Parameters
 
 - **message** (`str`): The error message.
-- **original_exception** (`Exception | None`, optional): The original exception that was caught. Defaults to `None`.
+- **original_exception** (`Exception | None`, optional): The original exception
+  that was caught. Defaults to `None`.
 
 #### Example
 
@@ -305,3 +319,4 @@ except LionSDKError as e:
     print(f"SDK error: {e}")
     if e.original_exception:
         print(f"Original exception: {e.original_exception}")
+```

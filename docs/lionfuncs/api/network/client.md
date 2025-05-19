@@ -4,7 +4,8 @@ title: "lionfuncs.network.client"
 
 # lionfuncs.network.client
 
-The `network.client` module provides the `AsyncAPIClient` class, which is a robust async HTTP client for API interactions with proper resource management.
+The `network.client` module provides the `AsyncAPIClient` class, which is a
+robust async HTTP client for API interactions with proper resource management.
 
 ## Classes
 
@@ -16,7 +17,9 @@ class AsyncAPIClient
 
 Generic async HTTP client for API interactions with proper resource management.
 
-This client handles session management, connection pooling, and proper resource cleanup. It implements the async context manager protocol for resource management.
+This client handles session management, connection pooling, and proper resource
+cleanup. It implements the async context manager protocol for resource
+management.
 
 #### Constructor
 
@@ -35,13 +38,20 @@ def __init__(
 ```
 
 - **base_url** (`str`): The base URL for the API.
-- **timeout** (`float`, optional): The timeout for requests in seconds. Defaults to `10.0`.
-- **headers** (`Optional[dict[str, str]]`, optional): Default headers to include with every request. Defaults to `None`.
-- **auth** (`Optional[httpx.Auth]`, optional): Authentication to use for requests. Defaults to `None`.
-- **client** (`Optional[httpx.AsyncClient]`, optional): An existing httpx.AsyncClient to use instead of creating a new one. Defaults to `None`.
-- **circuit_breaker** (`Optional[CircuitBreaker]`, optional): Optional circuit breaker for resilience. Defaults to `None`.
-- **retry_config** (`Optional[RetryConfig]`, optional): Optional retry configuration for resilience. Defaults to `None`.
-- **\*\*client_kwargs**: Additional keyword arguments to pass to httpx.AsyncClient.
+- **timeout** (`float`, optional): The timeout for requests in seconds. Defaults
+  to `10.0`.
+- **headers** (`Optional[dict[str, str]]`, optional): Default headers to include
+  with every request. Defaults to `None`.
+- **auth** (`Optional[httpx.Auth]`, optional): Authentication to use for
+  requests. Defaults to `None`.
+- **client** (`Optional[httpx.AsyncClient]`, optional): An existing
+  httpx.AsyncClient to use instead of creating a new one. Defaults to `None`.
+- **circuit_breaker** (`Optional[CircuitBreaker]`, optional): Optional circuit
+  breaker for resilience. Defaults to `None`.
+- **retry_config** (`Optional[RetryConfig]`, optional): Optional retry
+  configuration for resilience. Defaults to `None`.
+- **\*\*client_kwargs**: Additional keyword arguments to pass to
+  httpx.AsyncClient.
 
 #### Methods
 
@@ -65,12 +75,15 @@ Make a request to the API.
 
 - **method** (`str`): The HTTP method to use.
 - **url** (`str`): The URL to request.
-- **\*\*kwargs**: Additional keyword arguments to pass to httpx.AsyncClient.request.
+- **\*\*kwargs**: Additional keyword arguments to pass to
+  httpx.AsyncClient.request.
 
 **Returns**:
+
 - `Any`: The parsed response data.
 
 **Raises**:
+
 - `APIConnectionError`: If a connection error occurs.
 - `APITimeoutError`: If the request times out.
 - `RateLimitError`: If a rate limit is exceeded.
@@ -87,17 +100,20 @@ async def call(self, request: dict[str, Any], **kwargs) -> Any
 
 Make a call to the API using the ResourceClient protocol.
 
-This method is part of the ResourceClient protocol and provides a generic way to make API calls.
+This method is part of the ResourceClient protocol and provides a generic way to
+make API calls.
 
 - **request** (`dict[str, Any]`): The request parameters.
 - **\*\*kwargs**: Additional keyword arguments for the request.
 
 **Returns**:
+
 - `Any`: The parsed response data.
 
 #### Context Manager
 
-`AsyncAPIClient` implements the async context manager protocol (`__aenter__` and `__aexit__`), allowing it to be used with `async with`:
+`AsyncAPIClient` implements the async context manager protocol (`__aenter__` and
+`__aexit__`), allowing it to be used with `async with`:
 
 ```python
 async with AsyncAPIClient(base_url="https://api.example.com") as client:
@@ -122,11 +138,11 @@ async def main():
         # Make a GET request
         response = await client.request("GET", "/users")
         print(f"Users: {response}")
-        
+
         # Make a POST request with JSON data
         response = await client.request(
-            "POST", 
-            "/users", 
+            "POST",
+            "/users",
             json={"name": "John Doe", "email": "john@example.com"}
         )
         print(f"Created user: {response}")
@@ -149,7 +165,7 @@ async def main():
             "params": {"category": "electronics"}
         })
         print(f"Products: {response}")
-        
+
         # POST request with the call method
         response = await client.call({
             "method": "POST",
@@ -177,14 +193,14 @@ async def main():
         recovery_time=10.0,
         name="api-circuit-breaker"
     )
-    
+
     retry_config = RetryConfig(
         max_retries=3,
         base_delay=1.0,
         backoff_factor=2.0,
         jitter=True
     )
-    
+
     # Create a client with resilience patterns
     async with AsyncAPIClient(
         base_url="https://api.example.com",
@@ -242,7 +258,9 @@ asyncio.run(main())
 
 ### HTTP Client
 
-`AsyncAPIClient` uses [httpx](https://www.python-httpx.org/) as its underlying HTTP client. httpx is a fully featured HTTP client for Python 3, which provides sync and async APIs, and support for HTTP/1.1 and HTTP/2.
+`AsyncAPIClient` uses [httpx](https://www.python-httpx.org/) as its underlying
+HTTP client. httpx is a fully featured HTTP client for Python 3, which provides
+sync and async APIs, and support for HTTP/1.1 and HTTP/2.
 
 ### Resource Management
 
@@ -250,27 +268,31 @@ The client properly manages resources by:
 
 1. Creating a shared httpx.AsyncClient instance when needed
 2. Properly closing the client when the context manager exits
-3. Ensuring that responses are properly closed, even if the coroutine is cancelled
+3. Ensuring that responses are properly closed, even if the coroutine is
+   cancelled
 
 ### Resilience Patterns
 
 The client can be configured with resilience patterns:
 
 1. **Circuit Breaker**: Prevents repeated calls to a failing service
-2. **Retry with Backoff**: Automatically retries failed requests with exponential backoff
+2. **Retry with Backoff**: Automatically retries failed requests with
+   exponential backoff
 
-These patterns can be used individually or together. When both are used, the circuit breaker wraps the retry logic.
+These patterns can be used individually or together. When both are used, the
+circuit breaker wraps the retry logic.
 
 ### Error Mapping
 
 The client maps HTTP errors to specific exception types from `lionfuncs.errors`:
 
-| HTTP Status | Exception |
-| --- | --- |
-| 401, 403 | `AuthenticationError` |
-| 404 | `ResourceNotFoundError` |
-| 429 | `RateLimitError` |
-| 5xx | `ServerError` |
-| Other | `APIClientError` |
+| HTTP Status | Exception               |
+| ----------- | ----------------------- |
+| 401, 403    | `AuthenticationError`   |
+| 404         | `ResourceNotFoundError` |
+| 429         | `RateLimitError`        |
+| 5xx         | `ServerError`           |
+| Other       | `APIClientError`        |
 
-Connection errors are mapped to `APIConnectionError`, and timeouts to `APITimeoutError`.
+Connection errors are mapped to `APIConnectionError`, and timeouts to
+`APITimeoutError`.

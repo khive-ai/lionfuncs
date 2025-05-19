@@ -4,7 +4,8 @@ title: "lionfuncs.file_system.media"
 
 # lionfuncs.file_system.media
 
-The `file_system.media` module provides utilities for working with media files, such as images and PDFs.
+The `file_system.media` module provides utilities for working with media files,
+such as images and PDFs.
 
 ## Installation
 
@@ -14,7 +15,8 @@ The media utilities require additional dependencies. Install them with:
 pip install lionfuncs[media]
 ```
 
-This will install the required dependencies, including `pdf2image` for PDF processing.
+This will install the required dependencies, including `pdf2image` for PDF
+processing.
 
 ## Functions
 
@@ -26,7 +28,8 @@ async def read_image_to_base64(image_path: Union[str, Path]) -> str
 
 Asynchronously reads an image file and encodes its content to a base64 string.
 
-This function is useful for preparing images for embedding in HTML, JSON, or sending over APIs that accept base64-encoded images.
+This function is useful for preparing images for embedding in HTML, JSON, or
+sending over APIs that accept base64-encoded images.
 
 #### Parameters
 
@@ -50,19 +53,19 @@ async def main():
     try:
         # Read an image and encode it to base64
         base64_data = await read_image_to_base64("image.jpg")
-        
+
         # Print the first 50 characters of the base64 string
         print(f"Base64 data (first 50 chars): {base64_data[:50]}...")
-        
+
         # Use the base64 data in an HTML img tag
         html = f'<img src="data:image/jpeg;base64,{base64_data}" alt="Image" />'
         print(f"HTML img tag created")
-        
+
         # Save the HTML to a file
         with open("image.html", "w") as f:
             f.write(html)
         print("HTML file saved")
-        
+
     except Exception as e:
         print(f"Error: {e}")
 
@@ -81,17 +84,22 @@ def pdf_to_images(
 ) -> list[Path]
 ```
 
-Converts pages of a PDF file to images. Requires the 'pdf2image' library and its dependencies (like Poppler) to be installed.
+Converts pages of a PDF file to images. Requires the 'pdf2image' library and its
+dependencies (like Poppler) to be installed.
 
-This function is useful for visualizing PDF content, extracting images from PDFs, or preparing PDFs for OCR processing.
+This function is useful for visualizing PDF content, extracting images from
+PDFs, or preparing PDFs for OCR processing.
 
 #### Parameters
 
 - **pdf_path** (`Union[str, Path]`): Path to the input PDF file.
 - **output_folder** (`Union[str, Path]`): Directory to save the output images.
-- **fmt** (`str`, optional): Output image format (e.g., "jpeg", "png"). Defaults to `"jpeg"`.
-- **dpi** (`int`, optional): Dots per inch for the output images. Defaults to `200`.
-- **\*\*kwargs** (`Any`): Additional keyword arguments to pass to pdf2image.convert_from_path.
+- **fmt** (`str`, optional): Output image format (e.g., "jpeg", "png"). Defaults
+  to `"jpeg"`.
+- **dpi** (`int`, optional): Dots per inch for the output images. Defaults to
+  `200`.
+- **\*\*kwargs** (`Any`): Additional keyword arguments to pass to
+  pdf2image.convert_from_path.
 
 #### Returns
 
@@ -99,11 +107,13 @@ This function is useful for visualizing PDF content, extracting images from PDFs
 
 #### Raises
 
-- `LionFileError`: If pdf2image is not installed, the PDF file is not found, or conversion fails.
+- `LionFileError`: If pdf2image is not installed, the PDF file is not found, or
+  conversion fails.
 
 #### Additional kwargs
 
-The function accepts all keyword arguments supported by `pdf2image.convert_from_path()`, including:
+The function accepts all keyword arguments supported by
+`pdf2image.convert_from_path()`, including:
 
 - **first_page** (`int`): First page to convert (1-based).
 - **last_page** (`int`): Last page to convert (1-based).
@@ -113,7 +123,8 @@ The function accepts all keyword arguments supported by `pdf2image.convert_from_
 - **use_cropbox** (`bool`): Use cropbox instead of mediabox.
 - **strict** (`bool`): Raise exceptions on PDF syntax errors.
 
-See the [pdf2image documentation](https://github.com/Belval/pdf2image) for more details.
+See the [pdf2image documentation](https://github.com/Belval/pdf2image) for more
+details.
 
 #### Example
 
@@ -132,7 +143,7 @@ try:
     print(f"Generated {len(image_paths)} images:")
     for path in image_paths:
         print(f"  - {path}")
-        
+
     # Convert only the first 3 pages to PNG images with higher DPI
     image_paths = pdf_to_images(
         "document.pdf",
@@ -143,14 +154,15 @@ try:
         last_page=3
     )
     print(f"Generated {len(image_paths)} PNG images")
-    
+
 except Exception as e:
     print(f"Error: {e}")
 ```
 
 ## Error Handling
 
-The media functions raise `LionFileError` (from `lionfuncs.errors`) for file-related errors:
+The media functions raise `LionFileError` (from `lionfuncs.errors`) for
+file-related errors:
 
 ```python
 import asyncio
@@ -163,7 +175,7 @@ async def main():
         await read_image_to_base64("nonexistent.jpg")
     except LionFileError as e:
         print(f"Image error: {e}")
-        
+
     try:
         # Try to convert a non-existent PDF
         pdf_to_images("nonexistent.pdf", "output")
@@ -175,14 +187,20 @@ asyncio.run(main())
 
 ## Dependencies
 
-The `pdf_to_images` function requires the `pdf2image` library, which in turn requires Poppler to be installed on your system:
+The `pdf_to_images` function requires the `pdf2image` library, which in turn
+requires Poppler to be installed on your system:
 
 - **Linux**: `apt-get install poppler-utils`
 - **macOS**: `brew install poppler`
-- **Windows**: Download and install from [poppler-windows](https://github.com/oschwartz10612/poppler-windows)
+- **Windows**: Download and install from
+  [poppler-windows](https://github.com/oschwartz10612/poppler-windows)
 
-If `pdf2image` is not installed, the function will raise a `LionFileError` with a message indicating that the library is required.
+If `pdf2image` is not installed, the function will raise a `LionFileError` with
+a message indicating that the library is required.
 
 ## Implementation Details
 
-The module checks for the availability of the `pdf2image` library at import time and sets a flag `PDF2IMAGE_AVAILABLE`. If the library is not available, dummy exception classes are defined to prevent `NameError` exceptions when the `pdf_to_images` function is called.
+The module checks for the availability of the `pdf2image` library at import time
+and sets a flag `PDF2IMAGE_AVAILABLE`. If the library is not available, dummy
+exception classes are defined to prevent `NameError` exceptions when the
+`pdf_to_images` function is called.
