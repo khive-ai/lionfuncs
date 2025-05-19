@@ -175,32 +175,32 @@ on existing tests to verify that functionality remains intact.
 gantt
     title Implementation Sequence
     dateFormat  YYYY-MM-DD
-    
+
     section Analysis
     Create new branch                   :t1, 2025-05-19, 1d
     Analyze existing docstring patterns :t2, after t1, 1d
     Define excessive comment criteria   :t3, after t1, 1d
     Document docstring standards        :t4, after t2, 1d
-    
+
     section Core Modules
     Polish __init__.py                  :t5, after t4, 1d
     Polish async_utils.py               :t6, after t4, 1d
     Polish concurrency.py               :t7, after t4, 1d
     Polish errors.py                    :t8, after t4, 1d
     Polish utils.py                     :t9, after t4, 1d
-    
+
     section File System Modules
     Polish file_system/__init__.py      :t10, after t9, 1d
     Polish file_system/core.py          :t11, after t9, 1d
     Polish file_system/media.py         :t12, after t9, 1d
-    
+
     section Network Modules
     Polish network/__init__.py          :t13, after t12, 1d
     Polish network/adapters.py          :t14, after t12, 1d
     Polish network/client.py            :t15, after t12, 1d
     Polish network/primitives.py        :t16, after t12, 1d
     Polish network/resilience.py        :t17, after t12, 1d
-    
+
     section Verification
     Run pre-commit checks               :t18, after t17, 1d
     Create pull request                 :t19, after t18, 1d
@@ -254,16 +254,16 @@ predominant pattern in the codebase. We will standardize on this format:
 ```python
 def function_name(param1, param2):
     """Short description of function.
-    
+
     Longer description if needed.
-    
+
     Args:
         param1: Description of param1.
         param2: Description of param2.
-        
+
     Returns:
         Description of return value.
-        
+
     Raises:
         ExceptionType: Description of when this exception is raised.
     """
@@ -275,17 +275,17 @@ For classes:
 ```python
 class ClassName:
     """Short description of class.
-    
+
     Longer description if needed.
-    
+
     Attributes:
         attr1: Description of attr1.
         attr2: Description of attr2.
     """
-    
+
     def __init__(self, param1, param2):
         """Initialize the class.
-        
+
         Args:
             param1: Description of param1.
             param2: Description of param2.
