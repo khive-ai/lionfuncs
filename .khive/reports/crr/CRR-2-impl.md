@@ -261,3 +261,77 @@ the initial pre-commit failures, and the complexity/testability issues in
 The implementer should address the "Critical Fixes" listed above. The "Important
 Improvements" are also highly recommended for enhancing code quality and
 robustness. Once these are addressed, the PR can be re-reviewed.
+
+---
+
+## 11. Follow-up Review (2025-05-19)
+
+**Reviewer:** `@khive-reviewer` **Date:** 2025-05-19 **Pull Request:**
+[PR #4](https://github.com/khive-ai/lionfuncs/pull/4) **Commit Reviewed:**
+`b2db65ed2c6ec298a3b65cedf261d218ffdcca09`
+
+**Overall Status:** 🔴 REQUEST_CHANGES
+
+This is a follow-up review to assess the Implementer's progress on addressing
+the critical issues identified in the initial review.
+
+### 11.1 Progress on Critical Issues
+
+#### Test Coverage
+
+✅ **RESOLVED:** All three modules now meet or exceed the required 80% test
+coverage:
+
+- `src/lionfuncs/file_system/core.py`: 95% (previously 73%)
+- `src/lionfuncs/network/adapters.py`: 90% (previously 73%)
+- `src/lionfuncs/utils.py`: 95% (previously 76%)
+
+The overall project coverage is now 93%, which is excellent. The Implementer has
+successfully addressed the test coverage issues that were blocking approval.
+
+#### Pre-commit Checks
+
+❌ **STILL FAILING:** Pre-commit checks continue to fail:
+
+- `trailing-whitespace`: Failed (files modified by hook)
+- `end-of-file-fixer`: Failed (files modified by hook)
+- `isort`: Failed (files modified by hook)
+- `ruff`: Failed with 3 remaining errors in
+  `tests/unit/network/test_adapters_extended.py`:
+  - Line 25:
+    `F811 Redefinition of unused test_openai_adapter_client_closed from line 16`
+  - Line 47:
+    `F811 Redefinition of unused test_anthropic_adapter_client_closed from line 38`
+  - Line 74: `F841 Local variable client is assigned to but never used`
+- `ruff-format`: Failed (files modified by hook)
+
+### 11.2 Decision and Next Steps
+
+**Decision: 🔴 REQUEST_CHANGES**
+
+According to the "Pass / Fail Rules" in the project guidelines, "khive ci must
+pass (coverage ≥ 80 pct, lint clean, tests green)". While the coverage
+requirement has now been met, the lint is still not clean, which remains a
+blocker for approval.
+
+**Required Actions for Implementer:**
+
+1. Run `uv run pre-commit run --all-files` locally
+2. Commit the changes made automatically by the pre-commit hooks
+3. Manually fix the 3 remaining `ruff` errors in
+   `tests/unit/network/test_adapters_extended.py`:
+   - Remove or rename the redefined test methods at lines 25 and 47
+   - Either use the `client` variable at line 74 or remove the assignment
+
+Once these pre-commit issues are resolved, the PR can be re-reviewed for final
+approval.
+
+### 11.3 Other Observations
+
+A brief check of the "Important Improvements" mentioned in the original review
+(code complexity in `to_list` and `chunk_content`, and `AnthropicAdapter`
+clarification) was not performed in detail due to the blocking pre-commit
+issues. These should be revisited after the pre-commit issues are resolved, if
+they haven't been addressed already.
+
+---
