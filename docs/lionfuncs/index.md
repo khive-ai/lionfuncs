@@ -131,6 +131,6 @@ Interested in contributing to `lionfuncs`? Check out the
 
 ## License
 
-`lionfuncs` is licensed under the Apache License 2.0. See the
+`lionfuncs` is licensed under the MIT License. See the
 [LICENSE](https://github.com/khive-ai/lionfuncs/blob/main/LICENSE) file for
 details.
