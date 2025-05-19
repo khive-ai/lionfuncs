@@ -13,13 +13,17 @@ from pydantic_core import PydanticUndefined
 R = TypeVar("R")
 
 
-def hash_dict(data: Any) -> int:
-    """Simple hash for dict-like objects for to_list's unique functionality."""
-    if isinstance(data, Mapping):
-        return hash(tuple(sorted(data.items())))
-    if isinstance(data, BaseModel):  # pragma: no cover
-        return hash(data.model_dump_json())  # pragma: no cover
-    raise TypeError(f"Unhashable type: {type(data)}")  # pragma: no cover
+def hash_dict(data) -> int:
+    hashable_items = []
+    if isinstance(data, BaseModel):
+        data = data.model_dump()
+    for k, v in data.items():
+        if isinstance(v, (list, dict)):
+            v = json.dumps(v, sort_keys=True)
+        elif not isinstance(v, (str, int, float, bool, type(None))):
+            v = str(v)
+        hashable_items.append((k, v))
+    return hash(frozenset(hashable_items))
 
 
 __all__ = [
