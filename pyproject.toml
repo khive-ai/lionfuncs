@@ -1,0 +1,52 @@
+[project]
+name            = "lionfuncs"
+version         = "0.1.0"
+description     = "Hnady python functions"
+readme          = "README.md"
+requires-python = ">=3.10"
+authors         = [{ name = "HaiyangLi", email = "quantocean.li@gmail.com" }]
+dependencies = [
+]
+
+[dependency-groups]
+dev = [
+    "black[jupyter]>=25.1.0",
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.6",
+    "isort>=6.0.1",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+    "pytest-cov>=4.1.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-mock>=3.14.0",
+    "pre-commit>=4.2.0",
+    "ruff>=0.11.7",
+    "khive>=0.3.2",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lionfuncs"]
+
+[tool.hatch.build]
+exclude = [
+    "dev/*",
+    "data/*",
+    "notebooks/*",
+    "tests/*",
+    "*.pyc",
+    "__pycache__",
+    "temp_logs/*",
+    "logs/*"
+]
