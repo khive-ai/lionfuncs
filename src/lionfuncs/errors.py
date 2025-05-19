@@ -104,7 +104,15 @@ class ServerError(APIClientError):
 class CircuitBreakerOpenError(LionNetworkError):
     """Raised when an operation is blocked by an open circuit breaker."""
 
-    pass
+    def __init__(self, message: str, *, retry_after: float | None = None):
+        super().__init__(message)
+        self.retry_after = retry_after
+
+    def __str__(self) -> str:
+        base_str = super().__str__()
+        if self.retry_after is not None:
+            return f"{base_str} (Retry After: {self.retry_after:.2f}s)"
+        return base_str
 
 
 class LionConcurrencyError(LionError):

@@ -9,29 +9,19 @@ concurrency and throttling, and wrappers for anyio primitives.
 
 import asyncio
 import functools
-import time as std_time  # Standard library time
-from collections.abc import (
-    Awaitable as CAwaitable,  # To avoid clash if Awaitable is used differently
-)
-from typing import (
-    Any,
-    AsyncGenerator,
-    Awaitable,
-    Callable,
-    List,
-    Optional,
-    TypeVar,
-    cast,
-)
+import time as std_time
+from collections.abc import AsyncGenerator
+from collections.abc import Awaitable as CAwaitable
+from typing import Any, Callable, Optional, TypeVar, cast
 
 import anyio
-from pydantic import BaseModel, Field  # For ALCallParams, BCallParams later
-from pydantic_core import PydanticUndefined  # Added import
+from pydantic import BaseModel, Field
+from pydantic_core import PydanticUndefined
 
 # LionError and LionConcurrencyError might be needed for more advanced features later
 # from lionfuncs.errors import LionError, LionConcurrencyError
 # Concurrency primitives might be used by decorators or advanced functions
-from lionfuncs.concurrency import CapacityLimiter, Semaphore  # Added CapacityLimiter
+from lionfuncs.concurrency import CapacityLimiter, Semaphore
 from lionfuncs.utils import force_async, is_coro_func, to_list
 
 T = TypeVar("T")
@@ -234,7 +224,7 @@ class ALCallParams(CallParams):
 
 
 async def alcall(
-    input_: List[Any],
+    input_: list[Any],
     func: Callable[..., T],
     /,
     *,
@@ -254,7 +244,7 @@ async def alcall(
     unique_output: bool = False,
     flatten_tuple_set: bool = False,
     **kwargs: Any,
-) -> List[
+) -> list[
     Any
 ]:  # Return type changed to List[Any] to accommodate retry_default and timing tuple
     if not callable(func):  # pragma: no cover
@@ -268,7 +258,7 @@ async def alcall(
             raise ValueError("Only one callable function is allowed.")
         func = func_list[0]
 
-    processed_input_: List[Any]
+    processed_input_: list[Any]
     if sanitize_input:
         processed_input_ = to_list(
             input_,
@@ -336,7 +326,7 @@ async def alcall(
                     return index, result
             except asyncio.CancelledError:  # pragma: no cover
                 raise
-            except Exception as e:  # Catch broad exceptions for retry logic
+            except Exception:  # Catch broad exceptions for retry logic
                 attempts += 1
                 if attempts <= num_retries:
                     if current_delay_val > 0:  # Allow zero retry_delay
@@ -391,7 +381,7 @@ async def alcall(
 
     completed_results_with_indices.sort(key=lambda x: x[0])  # Sort by original index
 
-    final_results: List[Any]
+    final_results: list[Any]
     if retry_timing:
         # item is (original_index, result_value, duration)
         final_results = [
@@ -494,7 +484,7 @@ async def bcall(
     unique_output: bool = False,
     flatten_tuple_set: bool = False,
     **kwargs: Any,
-) -> AsyncGenerator[List[Any], None]:  # Return type matches alcall's output list
+) -> AsyncGenerator[list[Any], None]:  # Return type matches alcall's output list
     # Input to bcall should be pre-processed if needed before batching
     # The original `dev/concurrency.py` bcall used to_list(input_, flatten=True, dropna=True)
     # This implies the main input_ to bcall is fully flattened and cleaned first.
@@ -645,9 +635,9 @@ class TaskGroup:
 
 async def parallel_map(
     func: Callable[[T], CAwaitable[R]],  # Use CAwaitable for Async TypedDict
-    items: List[T],
+    items: list[T],
     max_concurrency: int = 10,
-) -> List[R]:
+) -> list[R]:
     """
     Apply an async function to each item in a list in parallel, with limited concurrency.
 
@@ -692,4 +682,4 @@ async def parallel_map(
 
     # All results should be populated if no exception was raised and propagated
     # Cast is safe here if no exception was raised.
-    return cast(List[R], results)
+    return cast(list[R], results)

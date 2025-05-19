@@ -11,7 +11,6 @@ import aiofiles
 
 from ..errors import LionFileError
 
-# Attempt to import pdf2image and its exceptions at the module level
 try:
     from pdf2image import convert_from_path
     from pdf2image.exceptions import (

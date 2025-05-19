@@ -6,23 +6,23 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Literal, TypeVar, Union
 
-import aiofiles  # Added for async file operations
+import aiofiles
 
-from ..errors import LionFileError  # Relative import from parent package
+from ..errors import LionFileError
 
 R = TypeVar("R")
 
 __all__ = [
     "chunk_content",
-    "read_file",  # Will become async
-    "save_to_file",  # Will become async
+    "read_file",
+    "save_to_file",
     "list_files",
-    "concat_files",  # Will become async
+    "concat_files",
     "dir_to_files",
 ]
 
 
-# --- Internal helper _create_path (remains synchronous) ---
+# --- Internal helper _create_path (synchronous) ---
 def _create_path(
     directory: Path | str,
     filename: str,
@@ -73,7 +73,7 @@ def _create_path(
     return full_path
 
 
-# --- chunk_content and its helpers (remains synchronous) ---
+# --- chunk_content and its helpers (synchronous) ---
 # n_chunks-based implementation
 def _chunk_by_chars_internal(
     text: str, chunk_size: int, slice_overlap: int, threshold: int

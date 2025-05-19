@@ -2,7 +2,7 @@ import asyncio
 import logging
 from unittest.mock import MagicMock
 
-import anyio  # <-- Add import
+import anyio
 import pytest
 
 from lionfuncs.concurrency import (
@@ -387,12 +387,11 @@ def test_anyio_wrappers_instantiation():
     # Condition requires an anyio.Lock for its internal _condition
     # Our Lock wrapper wraps an anyio.Lock, so we pass its internal _lock
     cond_lock = Lock()
-    condition = WorkQueue[int]().queue._lock  # BoundedQueue uses asyncio.Lock
     # The Condition class in concurrency.py expects our Lock wrapper or None
     # If None, it creates its own Lock wrapper.
-    # cond = Condition(lock=cond_lock)
-    # assert isinstance(cond._condition, anyio.Condition)
-    # assert cond._lock == cond_lock
+    cond = Condition(lock=cond_lock)
+    assert isinstance(cond._condition, anyio.Condition)
+    assert cond._lock == cond_lock
 
     cond_no_lock = Condition()
     assert isinstance(cond_no_lock._lock, Lock)  # It should create its own Lock wrapper

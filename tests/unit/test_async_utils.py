@@ -18,9 +18,6 @@ from lionfuncs.async_utils import (
     parallel_map,
     throttle,
 )
-from lionfuncs.concurrency import (
-    Semaphore,  # For checking internal semaphore usage if needed
-)
 
 
 # Helper function for tests
