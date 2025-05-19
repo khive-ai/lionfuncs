@@ -288,7 +288,7 @@ When adding new features, update the documentation accordingly.
 
 By contributing to `lionfuncs`, you agree that your contributions will be
 licensed under the project's
-[Apache License 2.0](https://github.com/khive-ai/lionfuncs/blob/main/LICENSE).
+[MIT License](https://github.com/khive-ai/lionfuncs/blob/main/LICENSE).
 
 ## Code of Conduct
 
