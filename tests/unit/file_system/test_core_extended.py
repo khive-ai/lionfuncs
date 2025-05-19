@@ -2,7 +2,6 @@
 Extended unit tests for the file_system.core module to increase coverage.
 """
 
-import os
 from pathlib import Path
 from unittest import mock
 
@@ -32,7 +31,7 @@ def test_create_path_with_windows_style_paths(tmp_path: Path):
 def test_create_path_directory_creation_error(tmp_path: Path):
     """Test _create_path when directory creation fails."""
     dir_path = tmp_path / "test_dir"
-    
+
     # Mock os.mkdir to raise OSError
     with mock.patch.object(Path, "mkdir", side_effect=OSError("Permission denied")):
         with pytest.raises(LionFileError, match="Failed to create directory"):
@@ -69,7 +68,7 @@ def test_chunk_by_chars_internal_two_chunks_no_merge():
     chunks = fs_core._chunk_by_chars_internal("abcdefghij", 7, 1, 3)
     assert len(chunks) >= 1
     assert "abcdefghij" in "".join(chunks)
-    
+
     # Only check the first chunk's content
     if len(chunks) > 0:
         assert "abcdefg" in chunks[0]
@@ -143,9 +142,11 @@ def test_dir_to_files_permission_error_not_ignored(tmp_path: Path):
     """Test dir_to_files with permission error and ignore_errors=False."""
     test_dir = tmp_path / "test_perm_error"
     test_dir.mkdir()
-    
+
     # Mock iterdir to raise PermissionError
-    with mock.patch.object(Path, "iterdir", side_effect=PermissionError("Permission denied")):
+    with mock.patch.object(
+        Path, "iterdir", side_effect=PermissionError("Permission denied")
+    ):
         with pytest.raises(LionFileError, match="Permission error scanning"):
             fs_core.dir_to_files(test_dir, ignore_errors=False)
 
@@ -154,9 +155,11 @@ def test_dir_to_files_permission_error_ignored(tmp_path: Path):
     """Test dir_to_files with permission error and ignore_errors=True."""
     test_dir = tmp_path / "test_perm_error"
     test_dir.mkdir()
-    
+
     # Mock iterdir to raise PermissionError
-    with mock.patch.object(Path, "iterdir", side_effect=PermissionError("Permission denied")):
+    with mock.patch.object(
+        Path, "iterdir", side_effect=PermissionError("Permission denied")
+    ):
         # Should not raise an exception
         result = fs_core.dir_to_files(test_dir, ignore_errors=True)
         assert result == []
@@ -166,7 +169,7 @@ def test_dir_to_files_os_error_not_ignored(tmp_path: Path):
     """Test dir_to_files with OS error and ignore_errors=False."""
     test_dir = tmp_path / "test_os_error"
     test_dir.mkdir()
-    
+
     # Mock iterdir to raise OSError
     with mock.patch.object(Path, "iterdir", side_effect=OSError("Some OS error")):
         with pytest.raises(LionFileError, match="OS error scanning"):
@@ -177,7 +180,7 @@ def test_dir_to_files_os_error_ignored(tmp_path: Path):
     """Test dir_to_files with OS error and ignore_errors=True."""
     test_dir = tmp_path / "test_os_error"
     test_dir.mkdir()
-    
+
     # Mock iterdir to raise OSError
     with mock.patch.object(Path, "iterdir", side_effect=OSError("Some OS error")):
         # Should not raise an exception
@@ -191,15 +194,11 @@ async def test_concat_files_with_verbose_logging(tmp_path: Path):
     """Test concat_files with verbose logging."""
     # Create a test file
     create_dummy_file(tmp_path / "test.txt", "test content")
-    
+
     # Test with verbose=True
     # The save_to_file function is not called in this test, so info won't be called
     # Let's check that the function runs without errors
-    result = await fs_core.concat_files(
-        tmp_path,
-        file_types=[".txt"],
-        verbose=True
-    )
+    result = await fs_core.concat_files(tmp_path, file_types=[".txt"], verbose=True)
     assert "test content" in result
 
 
@@ -207,13 +206,11 @@ async def test_concat_files_with_verbose_logging(tmp_path: Path):
 async def test_concat_files_with_invalid_path(tmp_path: Path):
     """Test concat_files with an invalid path."""
     invalid_path = tmp_path / "nonexistent"  # Does not exist
-    
+
     # Should not raise an exception, just log a warning if verbose
     with mock.patch("logging.warning") as mock_warning:
         result = await fs_core.concat_files(
-            invalid_path,
-            file_types=[".txt"],
-            verbose=True
+            invalid_path, file_types=[".txt"], verbose=True
         )
         assert result == ""  # Empty result
         mock_warning.assert_called()
@@ -225,14 +222,14 @@ async def test_concat_files_with_read_error(tmp_path: Path):
     # Create a test file
     test_file = tmp_path / "test.txt"
     create_dummy_file(test_file, "test content")
-    
+
     # Mock read_file to raise an exception
-    with mock.patch("lionfuncs.file_system.core.read_file", side_effect=Exception("Read error")):
+    with mock.patch(
+        "lionfuncs.file_system.core.read_file", side_effect=Exception("Read error")
+    ):
         with mock.patch("logging.warning") as mock_warning:
             result = await fs_core.concat_files(
-                tmp_path,
-                file_types=[".txt"],
-                verbose=True
+                tmp_path, file_types=[".txt"], verbose=True
             )
             assert result == ""  # Empty result
             mock_warning.assert_called()
@@ -243,7 +240,7 @@ async def test_concat_files_with_output_dir_no_filename(tmp_path: Path):
     """Test concat_files with output_dir but no output_filename."""
     # Create a test file
     create_dummy_file(tmp_path / "test.txt", "test content")
-    
+
     # Test with output_dir but no output_filename
     with mock.patch("logging.warning") as mock_warning:
         result = await fs_core.concat_files(
@@ -251,7 +248,7 @@ async def test_concat_files_with_output_dir_no_filename(tmp_path: Path):
             file_types=[".txt"],
             output_dir=tmp_path / "output",
             output_filename=None,
-            verbose=True
+            verbose=True,
         )
         assert "test content" in result
         mock_warning.assert_called_with(
@@ -264,16 +261,19 @@ async def test_concat_files_with_save_error(tmp_path: Path):
     """Test concat_files when save_to_file raises an exception."""
     # Create a test file
     create_dummy_file(tmp_path / "test.txt", "test content")
-    
+
     # Mock save_to_file to raise an exception
-    with mock.patch("lionfuncs.file_system.core.save_to_file", side_effect=LionFileError("Save error")):
+    with mock.patch(
+        "lionfuncs.file_system.core.save_to_file",
+        side_effect=LionFileError("Save error"),
+    ):
         with mock.patch("logging.error") as mock_error:
             result = await fs_core.concat_files(
                 tmp_path,
                 file_types=[".txt"],
                 output_dir=tmp_path / "output",
                 output_filename="output.txt",
-                verbose=True
+                verbose=True,
             )
             assert "test content" in result
             mock_error.assert_called()
