@@ -9,26 +9,40 @@ This directory contains the documentation for the `lionfuncs` package.
   - [**index.md**](api/index.md): Overview of the API reference.
   - [**utils.md**](api/utils.md): Documentation for the `utils` module.
   - [**errors.md**](api/errors.md): Documentation for the `errors` module.
-  - [**file_system/**](api/file_system/): Documentation for the `file_system` module.
-    - [**index.md**](api/file_system/index.md): Overview of the `file_system` module.
-    - [**core.md**](api/file_system/core.md): Documentation for the `file_system.core` module.
-    - [**media.md**](api/file_system/media.md): Documentation for the `file_system.media` module.
-  - [**concurrency.md**](api/concurrency.md): Documentation for the `concurrency` module.
-  - [**async_utils.md**](api/async_utils.md): Documentation for the `async_utils` module.
+  - [**file_system/**](api/file_system/): Documentation for the `file_system`
+    module.
+    - [**index.md**](api/file_system/index.md): Overview of the `file_system`
+      module.
+    - [**core.md**](api/file_system/core.md): Documentation for the
+      `file_system.core` module.
+    - [**media.md**](api/file_system/media.md): Documentation for the
+      `file_system.media` module.
+  - [**concurrency.md**](api/concurrency.md): Documentation for the
+    `concurrency` module.
+  - [**async_utils.md**](api/async_utils.md): Documentation for the
+    `async_utils` module.
   - [**network/**](api/network/): Documentation for the `network` module.
     - [**index.md**](api/network/index.md): Overview of the `network` module.
-    - [**client.md**](api/network/client.md): Documentation for the `network.client` module.
-    - [**resilience.md**](api/network/resilience.md): Documentation for the `network.resilience` module.
-    - [**adapters.md**](api/network/adapters.md): Documentation for the `network.adapters` module.
-    - [**primitives.md**](api/network/primitives.md): Documentation for the `network.primitives` module.
+    - [**client.md**](api/network/client.md): Documentation for the
+      `network.client` module.
+    - [**resilience.md**](api/network/resilience.md): Documentation for the
+      `network.resilience` module.
+    - [**adapters.md**](api/network/adapters.md): Documentation for the
+      `network.adapters` module.
+    - [**primitives.md**](api/network/primitives.md): Documentation for the
+      `network.primitives` module.
 - [**guides/**](guides/): Usage guides and tutorials.
-  - [**async_operations.md**](guides/async_operations.md): Guide to async operations with alcall/bcall.
-  - [**network_client.md**](guides/network_client.md): Guide to using AsyncAPIClient with resilience patterns.
-- [**contributing.md**](contributing.md): Guidelines for contributing to the project.
+  - [**async_operations.md**](guides/async_operations.md): Guide to async
+    operations with alcall/bcall.
+  - [**network_client.md**](guides/network_client.md): Guide to using
+    AsyncAPIClient with resilience patterns.
+- [**contributing.md**](contributing.md): Guidelines for contributing to the
+  project.
 
 ## Building the Documentation
 
-The documentation is written in Markdown format and can be built using a variety of tools:
+The documentation is written in Markdown format and can be built using a variety
+of tools:
 
 ### Using MkDocs
 
@@ -73,24 +87,24 @@ markdown_extensions:
 nav:
   - Home: lionfuncs/index.md
   - API Reference:
-    - Overview: lionfuncs/api/index.md
-    - utils: lionfuncs/api/utils.md
-    - errors: lionfuncs/api/errors.md
-    - file_system:
-      - Overview: lionfuncs/api/file_system/index.md
-      - core: lionfuncs/api/file_system/core.md
-      - media: lionfuncs/api/file_system/media.md
-    - concurrency: lionfuncs/api/concurrency.md
-    - async_utils: lionfuncs/api/async_utils.md
-    - network:
-      - Overview: lionfuncs/api/network/index.md
-      - client: lionfuncs/api/network/client.md
-      - resilience: lionfuncs/api/network/resilience.md
-      - adapters: lionfuncs/api/network/adapters.md
-      - primitives: lionfuncs/api/network/primitives.md
+      - Overview: lionfuncs/api/index.md
+      - utils: lionfuncs/api/utils.md
+      - errors: lionfuncs/api/errors.md
+      - file_system:
+          - Overview: lionfuncs/api/file_system/index.md
+          - core: lionfuncs/api/file_system/core.md
+          - media: lionfuncs/api/file_system/media.md
+      - concurrency: lionfuncs/api/concurrency.md
+      - async_utils: lionfuncs/api/async_utils.md
+      - network:
+          - Overview: lionfuncs/api/network/index.md
+          - client: lionfuncs/api/network/client.md
+          - resilience: lionfuncs/api/network/resilience.md
+          - adapters: lionfuncs/api/network/adapters.md
+          - primitives: lionfuncs/api/network/primitives.md
   - Guides:
-    - Async Operations: lionfuncs/guides/async_operations.md
-    - Network Client: lionfuncs/guides/network_client.md
+      - Async Operations: lionfuncs/guides/async_operations.md
+      - Network Client: lionfuncs/guides/network_client.md
   - Contributing: lionfuncs/contributing.md
 ```
 
@@ -181,7 +195,8 @@ open docs/_build/html/index.html
 
 ## Contributing to the Documentation
 
-If you'd like to contribute to the documentation, please follow these guidelines:
+If you'd like to contribute to the documentation, please follow these
+guidelines:
 
 1. Use Markdown format for all documentation files.
 2. Follow the existing structure and style.
@@ -189,4 +204,5 @@ If you'd like to contribute to the documentation, please follow these guidelines
 4. Use relative links for internal references.
 5. Test all code examples to ensure they work as expected.
 
-See the [contributing guide](contributing.md) for more information on contributing to the project.
+See the [contributing guide](contributing.md) for more information on
+contributing to the project.

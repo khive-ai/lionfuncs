@@ -1,6 +1,6 @@
 [project]
 name            = "lionfuncs"
-version         = "0.1.0"
+version         = "3.0.0"
 description     = "Hnady python functions"
 readme          = "README.md"
 requires-python = ">=3.10"
@@ -55,11 +55,8 @@ line_length = 88
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-# Add other pytest options here if needed, e.g.
-# addopts = "--cov-report term-missing --cov=src"
-# testpaths = [
-#     "tests",
-# ]
+addopts = "-ra --cov=lionfuncs --cov-report=term-missing"
+testpaths = ["tests"]
 
 [build-system]
 requires = ["hatchling"]

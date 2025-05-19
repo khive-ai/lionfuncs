@@ -4,15 +4,21 @@ title: "Network Client Guide"
 
 # Network Client Guide
 
-This guide covers how to use the `lionfuncs.network` module for making HTTP requests, handling resilience patterns, and working with SDK adapters.
+This guide covers how to use the `lionfuncs.network` module for making HTTP
+requests, handling resilience patterns, and working with SDK adapters.
 
 ## Introduction
 
-The `lionfuncs.network` module provides a robust set of tools for interacting with APIs and web services. At its core is the `AsyncAPIClient`, a powerful async HTTP client built on top of `httpx`. The module also includes resilience patterns like circuit breaker and retry with backoff, as well as adapters for third-party SDKs.
+The `lionfuncs.network` module provides a robust set of tools for interacting
+with APIs and web services. At its core is the `AsyncAPIClient`, a powerful
+async HTTP client built on top of `httpx`. The module also includes resilience
+patterns like circuit breaker and retry with backoff, as well as adapters for
+third-party SDKs.
 
 ## Making HTTP Requests with AsyncAPIClient
 
-The `AsyncAPIClient` is a generic async HTTP client for API interactions with proper resource management.
+The `AsyncAPIClient` is a generic async HTTP client for API interactions with
+proper resource management.
 
 ### Basic Usage
 
@@ -30,11 +36,11 @@ async def main():
         # Make a GET request
         response = await client.request("GET", "/users")
         print(f"Users: {response}")
-        
+
         # Make a POST request with JSON data
         response = await client.request(
-            "POST", 
-            "/users", 
+            "POST",
+            "/users",
             json={"name": "John Doe", "email": "john@example.com"}
         )
         print(f"Created user: {response}")
@@ -44,7 +50,8 @@ asyncio.run(main())
 
 ### Request Options
 
-The `request` method supports all the options provided by `httpx.AsyncClient.request`:
+The `request` method supports all the options provided by
+`httpx.AsyncClient.request`:
 
 ```python
 async def main():
@@ -56,7 +63,7 @@ async def main():
             params={"role": "admin", "active": "true"}
         )
         print(f"Admin users: {response}")
-        
+
         # POST request with form data
         response = await client.request(
             "POST",
@@ -64,7 +71,7 @@ async def main():
             data={"username": "john", "password": "secret"}
         )
         print(f"Login response: {response}")
-        
+
         # PUT request with JSON data
         response = await client.request(
             "PUT",
@@ -72,11 +79,11 @@ async def main():
             json={"name": "John Smith", "email": "john.smith@example.com"}
         )
         print(f"Updated user: {response}")
-        
+
         # DELETE request
         response = await client.request("DELETE", "/users/123")
         print(f"Delete response: {response}")
-        
+
         # Request with custom headers
         response = await client.request(
             "GET",
@@ -84,7 +91,7 @@ async def main():
             headers={"Authorization": "Bearer token123"}
         )
         print(f"Protected resource: {response}")
-        
+
         # Request with timeout
         response = await client.request(
             "GET",
@@ -110,7 +117,7 @@ async def main():
             "params": {"category": "electronics"}
         })
         print(f"Products: {response}")
-        
+
         # POST request with the call method
         response = await client.call({
             "method": "POST",
@@ -127,7 +134,8 @@ asyncio.run(main())
 
 ### Error Handling
 
-The `AsyncAPIClient` maps HTTP errors to specific exception types from `lionfuncs.errors`:
+The `AsyncAPIClient` maps HTTP errors to specific exception types from
+`lionfuncs.errors`:
 
 ```python
 import asyncio
@@ -166,7 +174,8 @@ asyncio.run(main())
 
 ## Resilience Patterns
 
-The `lionfuncs.network` module provides resilience patterns to make your API calls more robust.
+The `lionfuncs.network` module provides resilience patterns to make your API
+calls more robust.
 
 ### Circuit Breaker Pattern
 
@@ -195,7 +204,7 @@ async def main():
                 print(f"Circuit is open: {e}")
             except Exception as e:
                 print(f"Error: {e}")
-            
+
             await asyncio.sleep(1)
 
 asyncio.run(main())
@@ -203,7 +212,8 @@ asyncio.run(main())
 
 ### Retry with Backoff Pattern
 
-The retry with backoff pattern automatically retries failed requests with exponential backoff:
+The retry with backoff pattern automatically retries failed requests with
+exponential backoff:
 
 ```python
 import asyncio
@@ -233,7 +243,8 @@ asyncio.run(main())
 
 ### Combining Resilience Patterns
 
-You can combine the circuit breaker and retry patterns for more robust resilience:
+You can combine the circuit breaker and retry patterns for more robust
+resilience:
 
 ```python
 import asyncio
@@ -269,7 +280,8 @@ asyncio.run(main())
 
 ### Using CircuitBreaker and RetryConfig Directly
 
-You can also use the `CircuitBreaker` and `RetryConfig` classes directly with the `AsyncAPIClient`:
+You can also use the `CircuitBreaker` and `RetryConfig` classes directly with
+the `AsyncAPIClient`:
 
 ```python
 import asyncio
@@ -282,14 +294,14 @@ async def main():
         recovery_time=10.0,
         name="api-circuit-breaker"
     )
-    
+
     retry_config = RetryConfig(
         max_retries=3,
         base_delay=1.0,
         backoff_factor=2.0,
         jitter=True
     )
-    
+
     # Create a client with resilience patterns
     async with AsyncAPIClient(
         base_url="https://api.example.com",
@@ -308,7 +320,8 @@ asyncio.run(main())
 
 ## SDK Adapters
 
-The `lionfuncs.network` module provides adapters for third-party SDKs, allowing you to use them with a consistent interface.
+The `lionfuncs.network` module provides adapters for third-party SDKs, allowing
+you to use them with a consistent interface.
 
 ### Using OpenAI Adapter
 
@@ -323,10 +336,10 @@ async def main():
     if not api_key:
         print("OPENAI_API_KEY environment variable not set")
         return
-    
+
     # Create an OpenAI adapter
     adapter = OpenAIAdapter(api_key=api_key)
-    
+
     # Use the adapter
     async with adapter as sdk:
         try:
@@ -359,10 +372,10 @@ async def main():
     if not api_key:
         print("ANTHROPIC_API_KEY environment variable not set")
         return
-    
+
     # Create an Anthropic adapter
     adapter = AnthropicAdapter(api_key=api_key)
-    
+
     # Use the adapter
     async with adapter as sdk:
         try:
@@ -395,7 +408,7 @@ async def main():
     # Get API keys from environment variables
     openai_api_key = os.environ.get("OPENAI_API_KEY")
     anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
-    
+
     # Create adapters using the factory function
     if openai_api_key:
         openai_adapter = create_sdk_adapter("openai", openai_api_key)
@@ -409,7 +422,7 @@ async def main():
                 ]
             )
             print(f"OpenAI response: {response}")
-    
+
     if anthropic_api_key:
         anthropic_adapter = create_sdk_adapter("anthropic", anthropic_api_key)
         async with anthropic_adapter as sdk:
@@ -428,7 +441,8 @@ asyncio.run(main())
 
 ## Rate Limiting
 
-The `lionfuncs.network` module provides rate limiters to control the rate of API calls.
+The `lionfuncs.network` module provides rate limiters to control the rate of API
+calls.
 
 ### Using TokenBucketRateLimiter
 
@@ -439,7 +453,7 @@ from lionfuncs.network import AsyncAPIClient, TokenBucketRateLimiter
 async def main():
     # Create a rate limiter with 5 requests per second
     rate_limiter = TokenBucketRateLimiter(rate=5, period=1.0)
-    
+
     # Create an API client
     async with AsyncAPIClient(base_url="https://api.example.com") as client:
         # Make 10 API calls with rate limiting
@@ -465,11 +479,11 @@ from lionfuncs.network import AsyncAPIClient, EndpointRateLimiter
 async def main():
     # Create an endpoint rate limiter
     rate_limiter = EndpointRateLimiter(default_rate=10.0)
-    
+
     # Update rate limits for specific endpoints
     await rate_limiter.update_rate_limit("users", rate=5.0)
     await rate_limiter.update_rate_limit("orders", rate=2.0)
-    
+
     # Create an API client
     async with AsyncAPIClient(base_url="https://api.example.com") as client:
         # Make API calls to different endpoints
@@ -482,7 +496,7 @@ async def main():
                 "/users"
             )
             print(f"Users response {i}: {users_response}")
-            
+
             # Call the orders endpoint (rate limit: 2 per second)
             orders_response = await rate_limiter.execute(
                 "orders",
@@ -508,7 +522,7 @@ async def main():
         safety_factor=0.8,
         min_rate=1.0
     )
-    
+
     # Create an API client
     async with AsyncAPIClient(base_url="https://api.example.com") as client:
         for i in range(5):
@@ -519,11 +533,11 @@ async def main():
                 "/users",
                 tokens=1.0
             )
-            
+
             # Update rate limiter based on response headers
             if hasattr(response, "headers"):
                 rate_limiter.update_from_headers(response.headers)
-            
+
             print(f"Response {i}: {response}")
 
 asyncio.run(main())
@@ -531,7 +545,8 @@ asyncio.run(main())
 
 ## Endpoints and Header Factories
 
-The `lionfuncs.network` module provides utilities for working with endpoints and headers.
+The `lionfuncs.network` module provides utilities for working with endpoints and
+headers.
 
 ### Using Endpoint and EndpointConfig
 
@@ -550,17 +565,17 @@ async def main():
         auth_type="bearer",
         api_key="your-api-key"
     )
-    
+
     # Create an endpoint
     endpoint = Endpoint(endpoint_config)
-    
+
     # Create payload and headers for a request
     request = {"limit": 10, "offset": 0}
     payload, headers = endpoint.create_payload(
         request,
         extra_headers={"X-Request-ID": "123"}
     )
-    
+
     # Create an API client
     async with AsyncAPIClient(base_url="https://api.example.com") as client:
         # Make the request
@@ -589,7 +604,7 @@ async def main():
         api_key="your-api-key",
         default_headers={"User-Agent": "lionfuncs/0.1.0"}
     )
-    
+
     # Create an API client
     async with AsyncAPIClient(
         base_url="https://api.example.com",
@@ -604,7 +619,8 @@ asyncio.run(main())
 
 ## Combining with Other lionfuncs Modules
 
-The network module can be combined with other `lionfuncs` modules for powerful workflows.
+The network module can be combined with other `lionfuncs` modules for powerful
+workflows.
 
 ### With async_utils
 
@@ -619,7 +635,7 @@ async def fetch_user(user_id):
 
 async def main():
     user_ids = list(range(1, 11))
-    
+
     # Fetch multiple users in parallel
     users = await alcall(
         user_ids,
@@ -627,7 +643,7 @@ async def main():
         max_concurrent=5,  # Limit concurrency
         num_retries=3,     # Retry failed requests
     )
-    
+
     print(f"Fetched {len(users)} users")
 
 asyncio.run(main())
@@ -644,7 +660,7 @@ async def download_file(url, filename):
     async with AsyncAPIClient(base_url="https://api.example.com") as client:
         # Download the file
         response = await client.request("GET", url)
-        
+
         # Save the file
         await save_to_file(
             response,
@@ -652,7 +668,7 @@ async def download_file(url, filename):
             filename,
             file_exist_ok=True,
         )
-        
+
         return f"downloads/{filename}"
 
 async def main():
@@ -665,14 +681,21 @@ asyncio.run(main())
 
 ## Best Practices
 
-1. **Use Async Context Manager**: Always use the `AsyncAPIClient` with the async context manager (`async with`) to ensure proper resource cleanup.
+1. **Use Async Context Manager**: Always use the `AsyncAPIClient` with the async
+   context manager (`async with`) to ensure proper resource cleanup.
 2. **Handle Errors**: Catch specific exceptions for different error types.
-3. **Use Resilience Patterns**: Apply circuit breaker and retry patterns for robust API calls.
+3. **Use Resilience Patterns**: Apply circuit breaker and retry patterns for
+   robust API calls.
 4. **Limit Concurrency**: Use rate limiters to control the rate of API calls.
-5. **Reuse Clients**: Create a single client for multiple requests to the same API.
+5. **Reuse Clients**: Create a single client for multiple requests to the same
+   API.
 6. **Set Timeouts**: Always set appropriate timeouts for requests.
-7. **Use SDK Adapters**: Use SDK adapters for third-party APIs to maintain a consistent interface.
+7. **Use SDK Adapters**: Use SDK adapters for third-party APIs to maintain a
+   consistent interface.
 
 ## Conclusion
 
-The `lionfuncs.network` module provides a robust set of tools for interacting with APIs and web services. By combining the `AsyncAPIClient` with resilience patterns, SDK adapters, and rate limiters, you can build robust and efficient network clients for your applications.
+The `lionfuncs.network` module provides a robust set of tools for interacting
+with APIs and web services. By combining the `AsyncAPIClient` with resilience
+patterns, SDK adapters, and rate limiters, you can build robust and efficient
+network clients for your applications.

@@ -10,9 +10,15 @@ issue: "https://github.com/khive-ai/lionfuncs/issues/2"
 
 ## 1. Overview
 
-This document outlines the documentation plan for the `lionfuncs` Python package, which provides a core set of reusable utilities for asynchronous operations, file system interactions, network calls, concurrency management, error handling, and general utilities.
+This document outlines the documentation plan for the `lionfuncs` Python
+package, which provides a core set of reusable utilities for asynchronous
+operations, file system interactions, network calls, concurrency management,
+error handling, and general utilities.
 
-The documentation will be comprehensive, covering all public APIs, installation instructions, usage examples, and contribution guidelines. It will be structured to serve both end users of the package and developers who might contribute to it.
+The documentation will be comprehensive, covering all public APIs, installation
+instructions, usage examples, and contribution guidelines. It will be structured
+to serve both end users of the package and developers who might contribute to
+it.
 
 ## 2. Documentation Structure
 
@@ -73,7 +79,8 @@ Each module's documentation will include:
 #### 3.2.1 lionfuncs.utils (utils.md)
 
 - `is_coro_func`: Function to check if a callable is a coroutine function
-- `force_async`: Function to wrap a synchronous function to be called asynchronously
+- `force_async`: Function to wrap a synchronous function to be called
+  asynchronously
 - `get_env_bool`: Function to get a boolean environment variable
 - `get_env_dict`: Function to get a dictionary environment variable
 - `to_list`: Function to convert input to a list with optional transformations
@@ -105,7 +112,8 @@ Each module's documentation will include:
 - `WorkQueue`: High-level wrapper around BoundedQueue
 - `QueueStatus`: Enum for queue states
 - `QueueConfig`: Configuration for work queues
-- Concurrency primitives: `Lock`, `Semaphore`, `CapacityLimiter`, `Event`, `Condition`
+- Concurrency primitives: `Lock`, `Semaphore`, `CapacityLimiter`, `Event`,
+  `Condition`
 
 #### 3.2.5 lionfuncs.async_utils (async_utils.md)
 
@@ -113,9 +121,11 @@ Each module's documentation will include:
 - `bcall`: Function to asynchronously call a function in batches
 - `@max_concurrent`: Decorator to limit the concurrency of an async function
 - `@throttle`: Decorator to throttle function execution
-- `parallel_map`: Function to apply an async function to each item in a list in parallel
+- `parallel_map`: Function to apply an async function to each item in a list in
+  parallel
 - `CancelScope`: Wrapper around anyio.CancelScope for structured cancellation
-- `TaskGroup`: Wrapper around anyio.create_task_group for managing groups of tasks
+- `TaskGroup`: Wrapper around anyio.create_task_group for managing groups of
+  tasks
 
 #### 3.2.6 lionfuncs.network (network/index.md, client.md, resilience.md, adapters.md, primitives.md)
 
@@ -130,7 +140,8 @@ Each module's documentation will include:
 - `EndpointConfig`: Configuration for an API endpoint
 - `Endpoint`: Class for defining and calling specific API endpoints
 - `HeaderFactory`: Utility for creating auth/content headers
-- Rate limiting classes: `TokenBucketRateLimiter`, `EndpointRateLimiter`, `AdaptiveRateLimiter`
+- Rate limiting classes: `TokenBucketRateLimiter`, `EndpointRateLimiter`,
+  `AdaptiveRateLimiter`
 
 ### 3.3 Usage Guides
 
@@ -198,7 +209,8 @@ Each module's documentation will include:
 
 ## 7. Notes
 
-- The documentation will be written in Markdown format for easy viewing on GitHub and potential conversion to other formats.
+- The documentation will be written in Markdown format for easy viewing on
+  GitHub and potential conversion to other formats.
 - Code examples will be included for all public APIs to demonstrate usage.
 - The documentation will be organized to be easily navigable and searchable.
 - The documentation will be written with both end users and developers in mind.

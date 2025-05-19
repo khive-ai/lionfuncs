@@ -4,7 +4,11 @@ title: "lionfuncs.async_utils"
 
 # lionfuncs.async_utils
 
-The `async_utils` module provides asynchronous utilities for parallel processing, concurrency control, and structured concurrency. It includes functions for processing lists and batches asynchronously, decorators for controlling concurrency and throttling, and wrappers around `anyio` primitives for structured concurrency.
+The `async_utils` module provides asynchronous utilities for parallel
+processing, concurrency control, and structured concurrency. It includes
+functions for processing lists and batches asynchronously, decorators for
+controlling concurrency and throttling, and wrappers around `anyio` primitives
+for structured concurrency.
 
 ## Functions
 
@@ -35,34 +39,52 @@ async def alcall(
 ) -> list[Any]
 ```
 
-Asynchronously call a function for each item in a list with comprehensive options for retries, concurrency, throttling, etc.
+Asynchronously call a function for each item in a list with comprehensive
+options for retries, concurrency, throttling, etc.
 
-This function is useful for parallel processing of lists, with fine-grained control over concurrency, retries, and result formatting.
+This function is useful for parallel processing of lists, with fine-grained
+control over concurrency, retries, and result formatting.
 
 #### Parameters
 
 - **input_** (`list[Any]`): The list of items to process.
 - **func** (`Callable[..., T]`): The function to call for each item.
-- **sanitize_input** (`bool`, optional): Whether to sanitize the input list (flatten, clean). Defaults to `False`.
-- **unique_input** (`bool`, optional): Whether to remove duplicates from the input list. Defaults to `False`.
-- **num_retries** (`int`, optional): Number of retries for each call. Defaults to `0`.
-- **initial_delay** (`float`, optional): Initial delay before processing in seconds. Defaults to `0.0`.
-- **retry_delay** (`float`, optional): Delay between retries in seconds. Defaults to `0.0`.
-- **backoff_factor** (`float`, optional): Factor to increase delay with each retry. Defaults to `1.0`.
-- **retry_default** (`Any`, optional): Default value to return if all retries fail. Defaults to `UNDEFINED`.
-- **retry_timeout** (`Optional[float]`, optional): Timeout for each call in seconds. Defaults to `None`.
-- **retry_timing** (`bool`, optional): Whether to include timing information in the results. Defaults to `False`.
-- **max_concurrent** (`Optional[int]`, optional): Maximum number of concurrent calls. Defaults to `None`.
-- **throttle_period** (`Optional[float]`, optional): Minimum time between calls in seconds. Defaults to `None`.
-- **flatten** (`bool`, optional): Whether to flatten the output list. Defaults to `False`.
-- **dropna** (`bool`, optional): Whether to drop None values from the output. Defaults to `False`.
-- **unique_output** (`bool`, optional): Whether to remove duplicates from the output. Defaults to `False`.
-- **flatten_tuple_set** (`bool`, optional): Whether to flatten tuples and sets in the output. Defaults to `False`.
+- **sanitize_input** (`bool`, optional): Whether to sanitize the input list
+  (flatten, clean). Defaults to `False`.
+- **unique_input** (`bool`, optional): Whether to remove duplicates from the
+  input list. Defaults to `False`.
+- **num_retries** (`int`, optional): Number of retries for each call. Defaults
+  to `0`.
+- **initial_delay** (`float`, optional): Initial delay before processing in
+  seconds. Defaults to `0.0`.
+- **retry_delay** (`float`, optional): Delay between retries in seconds.
+  Defaults to `0.0`.
+- **backoff_factor** (`float`, optional): Factor to increase delay with each
+  retry. Defaults to `1.0`.
+- **retry_default** (`Any`, optional): Default value to return if all retries
+  fail. Defaults to `UNDEFINED`.
+- **retry_timeout** (`Optional[float]`, optional): Timeout for each call in
+  seconds. Defaults to `None`.
+- **retry_timing** (`bool`, optional): Whether to include timing information in
+  the results. Defaults to `False`.
+- **max_concurrent** (`Optional[int]`, optional): Maximum number of concurrent
+  calls. Defaults to `None`.
+- **throttle_period** (`Optional[float]`, optional): Minimum time between calls
+  in seconds. Defaults to `None`.
+- **flatten** (`bool`, optional): Whether to flatten the output list. Defaults
+  to `False`.
+- **dropna** (`bool`, optional): Whether to drop None values from the output.
+  Defaults to `False`.
+- **unique_output** (`bool`, optional): Whether to remove duplicates from the
+  output. Defaults to `False`.
+- **flatten_tuple_set** (`bool`, optional): Whether to flatten tuples and sets
+  in the output. Defaults to `False`.
 - **\*\*kwargs** (`Any`): Additional keyword arguments to pass to the function.
 
 #### Returns
 
-- `list[Any]`: The results of calling the function on each item. If `retry_timing` is `True`, each result is a tuple of `(result, duration)`.
+- `list[Any]`: The results of calling the function on each item. If
+  `retry_timing` is `True`, each result is a tuple of `(result, duration)`.
 
 #### Example
 
@@ -76,26 +98,26 @@ async def process_item(item):
 
 async def main():
     items = [1, 2, 3, 4, 5]
-    
+
     # Basic usage
     results = await alcall(items, process_item)
     print(f"Basic results: {results}")  # [2, 4, 6, 8, 10]
-    
+
     # With concurrency limit
     results = await alcall(items, process_item, max_concurrent=2)
     print(f"Limited concurrency results: {results}")  # [2, 4, 6, 8, 10]
-    
+
     # With retries and timing
     results = await alcall(
-        items, 
-        process_item, 
-        num_retries=3, 
-        retry_delay=0.1, 
+        items,
+        process_item,
+        num_retries=3,
+        retry_delay=0.1,
         backoff_factor=2.0,
         retry_timing=True
     )
     print(f"Results with timing: {results}")  # [(2, 0.1), (4, 0.1), ...]
-    
+
     # With throttling
     results = await alcall(items, process_item, throttle_period=0.2)
     print(f"Throttled results: {results}")  # [2, 4, 6, 8, 10]
@@ -133,33 +155,50 @@ async def bcall(
 
 Asynchronously call a function in batches.
 
-This function is useful for processing large lists in smaller batches, with the same fine-grained control as `alcall`.
+This function is useful for processing large lists in smaller batches, with the
+same fine-grained control as `alcall`.
 
 #### Parameters
 
 - **input_** (`Any`): The input to process (will be converted to a list).
 - **func** (`Callable[..., T]`): The function to call for each item.
 - **batch_size** (`int`): The size of each batch.
-- **sanitize_input** (`bool`, optional): Whether to sanitize the input list (flatten, clean). Defaults to `False`.
-- **unique_input** (`bool`, optional): Whether to remove duplicates from the input list. Defaults to `False`.
-- **num_retries** (`int`, optional): Number of retries for each call. Defaults to `0`.
-- **initial_delay** (`float`, optional): Initial delay before processing in seconds. Defaults to `0.0`.
-- **retry_delay** (`float`, optional): Delay between retries in seconds. Defaults to `0.0`.
-- **backoff_factor** (`float`, optional): Factor to increase delay with each retry. Defaults to `1.0`.
-- **retry_default** (`Any`, optional): Default value to return if all retries fail. Defaults to `UNDEFINED`.
-- **retry_timeout** (`Optional[float]`, optional): Timeout for each call in seconds. Defaults to `None`.
-- **retry_timing** (`bool`, optional): Whether to include timing information in the results. Defaults to `False`.
-- **max_concurrent** (`Optional[int]`, optional): Maximum number of concurrent calls within each batch. Defaults to `None`.
-- **throttle_period** (`Optional[float]`, optional): Minimum time between calls in seconds. Defaults to `None`.
-- **flatten** (`bool`, optional): Whether to flatten the output list. Defaults to `False`.
-- **dropna** (`bool`, optional): Whether to drop None values from the output. Defaults to `False`.
-- **unique_output** (`bool`, optional): Whether to remove duplicates from the output. Defaults to `False`.
-- **flatten_tuple_set** (`bool`, optional): Whether to flatten tuples and sets in the output. Defaults to `False`.
+- **sanitize_input** (`bool`, optional): Whether to sanitize the input list
+  (flatten, clean). Defaults to `False`.
+- **unique_input** (`bool`, optional): Whether to remove duplicates from the
+  input list. Defaults to `False`.
+- **num_retries** (`int`, optional): Number of retries for each call. Defaults
+  to `0`.
+- **initial_delay** (`float`, optional): Initial delay before processing in
+  seconds. Defaults to `0.0`.
+- **retry_delay** (`float`, optional): Delay between retries in seconds.
+  Defaults to `0.0`.
+- **backoff_factor** (`float`, optional): Factor to increase delay with each
+  retry. Defaults to `1.0`.
+- **retry_default** (`Any`, optional): Default value to return if all retries
+  fail. Defaults to `UNDEFINED`.
+- **retry_timeout** (`Optional[float]`, optional): Timeout for each call in
+  seconds. Defaults to `None`.
+- **retry_timing** (`bool`, optional): Whether to include timing information in
+  the results. Defaults to `False`.
+- **max_concurrent** (`Optional[int]`, optional): Maximum number of concurrent
+  calls within each batch. Defaults to `None`.
+- **throttle_period** (`Optional[float]`, optional): Minimum time between calls
+  in seconds. Defaults to `None`.
+- **flatten** (`bool`, optional): Whether to flatten the output list. Defaults
+  to `False`.
+- **dropna** (`bool`, optional): Whether to drop None values from the output.
+  Defaults to `False`.
+- **unique_output** (`bool`, optional): Whether to remove duplicates from the
+  output. Defaults to `False`.
+- **flatten_tuple_set** (`bool`, optional): Whether to flatten tuples and sets
+  in the output. Defaults to `False`.
 - **\*\*kwargs** (`Any`): Additional keyword arguments to pass to the function.
 
 #### Returns
 
-- `AsyncGenerator[list[Any], None]`: An async generator that yields the results of each batch.
+- `AsyncGenerator[list[Any], None]`: An async generator that yields the results
+  of each batch.
 
 #### Example
 
@@ -173,21 +212,21 @@ async def process_item(item):
 
 async def main():
     items = list(range(20))
-    
+
     # Process in batches of 5
     async for batch_results in bcall(items, process_item, batch_size=5):
         print(f"Batch results: {batch_results}")
-    
+
     # Process in batches with concurrency limit
     batch_results_all = []
     async for batch_results in bcall(
-        items, 
-        process_item, 
+        items,
+        process_item,
         batch_size=5,
         max_concurrent=2
     ):
         batch_results_all.append(batch_results)
-    
+
     print(f"All batch results: {batch_results_all}")
 
 asyncio.run(main())
@@ -203,15 +242,19 @@ async def parallel_map(
 ) -> list[R]
 ```
 
-Apply an async function to each item in a list in parallel, with limited concurrency.
+Apply an async function to each item in a list in parallel, with limited
+concurrency.
 
-This function is a simpler alternative to `alcall` when you only need basic parallel processing with concurrency control.
+This function is a simpler alternative to `alcall` when you only need basic
+parallel processing with concurrency control.
 
 #### Parameters
 
-- **func** (`Callable[[T], CAwaitable[R]]`): The asynchronous function to apply to each item.
+- **func** (`Callable[[T], CAwaitable[R]]`): The asynchronous function to apply
+  to each item.
 - **items** (`list[T]`): The list of items to process.
-- **max_concurrency** (`int`, optional): The maximum number of concurrent executions. Defaults to `10`.
+- **max_concurrency** (`int`, optional): The maximum number of concurrent
+  executions. Defaults to `10`.
 
 #### Returns
 
@@ -233,7 +276,7 @@ async def process_item(item):
 
 async def main():
     items = [1, 2, 3, 4, 5]
-    
+
     # Process items in parallel with max concurrency of 3
     results = await parallel_map(process_item, items, max_concurrency=3)
     print(f"Results: {results}")  # [2, 4, 6, 8, 10]
@@ -251,7 +294,8 @@ def max_concurrent(
 ) -> Callable[[Callable[..., CAwaitable[Any]]], Callable[..., CAwaitable[Any]]]
 ```
 
-Decorator to limit the concurrency of async function execution using a semaphore.
+Decorator to limit the concurrency of async function execution using a
+semaphore.
 
 If the function is synchronous, it will be wrapped to run in a thread pool.
 
@@ -261,7 +305,8 @@ If the function is synchronous, it will be wrapped to run in a thread pool.
 
 #### Returns
 
-- `Callable[[Callable[..., CAwaitable[Any]]], Callable[..., CAwaitable[Any]]]`: A decorator that limits concurrency.
+- `Callable[[Callable[..., CAwaitable[Any]]], Callable[..., CAwaitable[Any]]]`:
+  A decorator that limits concurrency.
 
 #### Raises
 
@@ -283,7 +328,7 @@ async def process_item(item):
 async def main():
     # Create tasks for 10 items
     tasks = [process_item(i) for i in range(10)]
-    
+
     # Run all tasks
     results = await asyncio.gather(*tasks)
     print(f"Results: {results}")
@@ -307,7 +352,8 @@ Works for both synchronous and asynchronous functions.
 
 #### Returns
 
-- `Callable[[Callable[..., Any]], Callable[..., Any]]`: A decorator that throttles function execution.
+- `Callable[[Callable[..., Any]], Callable[..., Any]]`: A decorator that
+  throttles function execution.
 
 #### Example
 
@@ -333,7 +379,7 @@ async def main():
     for _ in range(3):
         result = await async_function()
         print(f"Async result: {result}")
-    
+
     # Call sync function multiple times
     for _ in range(3):
         result = sync_function()
@@ -352,7 +398,8 @@ class Throttle
 
 Provides a throttling mechanism for function calls.
 
-Ensures that the decorated function can only be called once per specified period.
+Ensures that the decorated function can only be called once per specified
+period.
 
 #### Constructor
 
@@ -364,8 +411,10 @@ def __init__(self, period: float) -> None
 
 #### Methods
 
-- **\_\_call\_\_(func: Callable[..., T]) -> Callable[..., T]**: Decorate a synchronous function with the throttling mechanism.
-- **async call_async_throttled(func: Callable[..., CAwaitable[Any]], *args, **kwargs) -> Any**: Helper to call an async function with throttling.
+- **\_\_call\_\_(func: Callable[..., T]) -> Callable[..., T]**: Decorate a
+  synchronous function with the throttling mechanism.
+- **async call_async_throttled(func: Callable[..., CAwaitable[Any]], *args,
+  **kwargs) -> Any**: Helper to call an async function with throttling.
 
 ### ALCallParams
 
@@ -403,7 +452,8 @@ def __init__(
 
 #### Methods
 
-- **async \_\_call\_\_(input_: Any, func: Optional[Callable[..., Any]] = None, **additional_kwargs)**: Call `alcall` with the stored parameters.
+- **async \_\_call\_\_(input_: Any, func: Optional[Callable[..., Any]] = None,
+  **additional_kwargs)**: Call `alcall` with the stored parameters.
 
 #### Example
 
@@ -423,12 +473,12 @@ async def main():
         retry_delay=0.1,
         backoff_factor=2.0
     )
-    
+
     # Use it with different inputs and functions
     items1 = [1, 2, 3, 4, 5]
     results1 = await params(items1, process_item)
     print(f"Results 1: {results1}")
-    
+
     items2 = [10, 20, 30]
     results2 = await params(items2, process_item)
     print(f"Results 2: {results2}")
@@ -473,7 +523,8 @@ def __init__(
 
 #### Methods
 
-- **async \_\_call\_\_(input_: Any, func: Optional[Callable[..., Any]] = None, **additional_kwargs)**: Call `bcall` with the stored parameters.
+- **async \_\_call\_\_(input_: Any, func: Optional[Callable[..., Any]] = None,
+  **additional_kwargs)**: Call `bcall` with the stored parameters.
 
 #### Example
 
@@ -492,7 +543,7 @@ async def main():
         max_concurrent=3,
         num_retries=2
     )
-    
+
     # Use it with different inputs and functions
     items = list(range(20))
     async for batch_results in params(items, process_item):
@@ -509,7 +560,8 @@ asyncio.run(main())
 class CancelScope
 ```
 
-A context manager for controlling cancellation of tasks, wrapping anyio.CancelScope.
+A context manager for controlling cancellation of tasks, wrapping
+anyio.CancelScope.
 
 #### Constructor
 
@@ -517,8 +569,10 @@ A context manager for controlling cancellation of tasks, wrapping anyio.CancelSc
 def __init__(self, *, deadline: float = float("inf"), shield: bool = False)
 ```
 
-- **deadline** (`float`, optional): The deadline in seconds from the current time. Defaults to `float("inf")`.
-- **shield** (`bool`, optional): Whether to shield the scope from external cancellation. Defaults to `False`.
+- **deadline** (`float`, optional): The deadline in seconds from the current
+  time. Defaults to `float("inf")`.
+- **shield** (`bool`, optional): Whether to shield the scope from external
+  cancellation. Defaults to `False`.
 
 #### Methods
 
@@ -532,7 +586,8 @@ def __init__(self, *, deadline: float = float("inf"), shield: bool = False)
 
 #### Context Manager
 
-`CancelScope` implements the async context manager protocol, allowing it to be used with `async with`:
+`CancelScope` implements the async context manager protocol, allowing it to be
+used with `async with`:
 
 ```python
 async with CancelScope(deadline=5.0) as scope:
@@ -563,7 +618,7 @@ async def main():
             await long_running_task()
     except asyncio.CancelledError:
         print("Caught deadline cancellation")
-    
+
     # With manual cancellation
     async with CancelScope() as scope:
         task = asyncio.create_task(long_running_task())
@@ -587,11 +642,13 @@ A group of tasks that are treated as a unit, wrapping anyio.abc.TaskGroup.
 
 #### Methods
 
-- **start_soon(func: Callable[..., CAwaitable[Any]], *args: Any, name: Any = None) -> None**: Start a task in the group.
+- *_start_soon(func: Callable[..., CAwaitable[Any]], _args: Any, name: Any =
+  None) -> None__: Start a task in the group.
 
 #### Context Manager
 
-`TaskGroup` implements the async context manager protocol, allowing it to be used with `async with`:
+`TaskGroup` implements the async context manager protocol, allowing it to be
+used with `async with`:
 
 ```python
 async with TaskGroup() as tg:
@@ -618,7 +675,8 @@ async def main():
         tg.start_soon(task, "A", 1.0)
         tg.start_soon(task, "B", 0.5)
         tg.start_soon(task, "C", 2.0)
-        
+
         # All tasks will be awaited when exiting the context
 
 asyncio.run(main())
+```

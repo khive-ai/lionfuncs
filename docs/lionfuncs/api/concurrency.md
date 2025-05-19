@@ -4,7 +4,9 @@ title: "lionfuncs.concurrency"
 
 # lionfuncs.concurrency
 
-The `concurrency` module provides concurrency primitives and utilities for asynchronous programming, including bounded queues and wrappers around `anyio` primitives.
+The `concurrency` module provides concurrency primitives and utilities for
+asynchronous programming, including bounded queues and wrappers around `anyio`
+primitives.
 
 ## Classes
 
@@ -44,8 +46,10 @@ Configuration options for work queues.
 #### Attributes
 
 - **queue_capacity** (`int`): Maximum queue size. Default: `100`.
-- **capacity_refresh_time** (`float`): Time in seconds between capacity refreshes. Default: `1.0`.
-- **concurrency_limit** (`int | None`): Maximum number of concurrent workers. Default: `None`.
+- **capacity_refresh_time** (`float`): Time in seconds between capacity
+  refreshes. Default: `1.0`.
+- **concurrency_limit** (`int | None`): Maximum number of concurrent workers.
+  Default: `None`.
 
 #### Validation
 
@@ -75,7 +79,8 @@ class BoundedQueue(Generic[T])
 
 Bounded async queue with backpressure support.
 
-This implementation wraps `asyncio.Queue` with additional functionality for worker management, backpressure, and lifecycle control.
+This implementation wraps `asyncio.Queue` with additional functionality for
+worker management, backpressure, and lifecycle control.
 
 #### Constructor
 
@@ -89,13 +94,15 @@ def __init__(
 ```
 
 - **maxsize** (`int`): Maximum queue size (must be > 0). Default: `100`.
-- **timeout** (`float`): Timeout for queue operations in seconds. Default: `0.1`.
+- **timeout** (`float`): Timeout for queue operations in seconds. Default:
+  `0.1`.
 - **logger** (`logging.Logger | None`): Optional logger. Default: `None`.
 
 #### Properties
 
 - **status** (`QueueStatus`): Get the current queue status.
-- **metrics** (`dict[str, int]`): Get queue metrics (enqueued, processed, errors, backpressure_events).
+- **metrics** (`dict[str, int]`): Get queue metrics (enqueued, processed,
+  errors, backpressure_events).
 - **size** (`int`): Get the current queue size.
 - **is_full** (`bool`): Check if the queue is full.
 - **is_empty** (`bool`): Check if the queue is empty.
@@ -112,8 +119,10 @@ async def put(self, item: T, timeout: float | None = None) -> bool
 Add an item to the queue with backpressure.
 
 - **item** (`T`): The item to enqueue.
-- **timeout** (`float | None`): Operation timeout (overrides default). Default: `None`.
-- **Returns** (`bool`): True if the item was enqueued, False if backpressure was applied.
+- **timeout** (`float | None`): Operation timeout (overrides default). Default:
+  `None`.
+- **Returns** (`bool`): True if the item was enqueued, False if backpressure was
+  applied.
 - **Raises** (`QueueStateError`): If the queue is not in PROCESSING state.
 
 ##### get
@@ -159,7 +168,8 @@ async def stop(self, timeout: float | None = None) -> None
 
 Stop the queue and all worker tasks.
 
-- **timeout** (`float | None`): Maximum time to wait for pending tasks. Default: `None`.
+- **timeout** (`float | None`): Maximum time to wait for pending tasks. Default:
+  `None`.
 
 ##### start_workers
 
@@ -174,14 +184,17 @@ async def start_workers(
 
 Start worker tasks to process queue items.
 
-- **worker_func** (`Callable[[T], Awaitable[Any]]`): Async function that processes each queue item.
+- **worker_func** (`Callable[[T], Awaitable[Any]]`): Async function that
+  processes each queue item.
 - **num_workers** (`int`): Number of worker tasks to start.
-- **error_handler** (`Callable[[Exception, T], Awaitable[None]] | None`): Optional async function to handle worker errors. Default: `None`.
+- **error_handler** (`Callable[[Exception, T], Awaitable[None]] | None`):
+  Optional async function to handle worker errors. Default: `None`.
 - **Raises** (`ValueError`): If num_workers is less than 1.
 
 #### Context Manager
 
-`BoundedQueue` implements the async context manager protocol (`__aenter__` and `__aexit__`), allowing it to be used with `async with`:
+`BoundedQueue` implements the async context manager protocol (`__aenter__` and
+`__aexit__`), allowing it to be used with `async with`:
 
 ```python
 async with BoundedQueue(maxsize=10) as queue:
@@ -208,28 +221,28 @@ async def handle_error(error, item):
 async def main():
     # Create a bounded queue
     queue = BoundedQueue(maxsize=5)
-    
+
     # Start the queue
     await queue.start()
-    
+
     # Start workers
     await queue.start_workers(
         worker_func=process_item,
         num_workers=3,
         error_handler=handle_error
     )
-    
+
     # Add items to the queue
     for i in range(10):
         success = await queue.put(i)
         print(f"Item {i} enqueued: {success}")
-    
+
     # Wait for all items to be processed
     await queue.join()
-    
+
     # Get metrics
     print(f"Queue metrics: {queue.metrics}")
-    
+
     # Stop the queue
     await queue.stop()
 
@@ -257,8 +270,10 @@ def __init__(
 ```
 
 - **maxsize** (`int`): Maximum queue size. Default: `100`.
-- **timeout** (`float`): Timeout for queue operations in seconds. Default: `0.1`.
-- **concurrency_limit** (`int | None`): Maximum number of concurrent workers. Default: `None`.
+- **timeout** (`float`): Timeout for queue operations in seconds. Default:
+  `0.1`.
+- **concurrency_limit** (`int | None`): Maximum number of concurrent workers.
+  Default: `None`.
 - **logger** (`logging.Logger | None`): Optional logger. Default: `None`.
 
 #### Properties
@@ -286,7 +301,8 @@ async def stop(self, timeout: float | None = None) -> None
 
 Stop the queue and all worker tasks.
 
-- **timeout** (`float | None`): Maximum time to wait for pending tasks. Default: `None`.
+- **timeout** (`float | None`): Maximum time to wait for pending tasks. Default:
+  `None`.
 
 ##### put
 
@@ -297,7 +313,8 @@ async def put(self, item: T) -> bool
 Add an item to the queue.
 
 - **item** (`T`): The item to enqueue.
-- **Returns** (`bool`): True if the item was enqueued, False if backpressure was applied.
+- **Returns** (`bool`): True if the item was enqueued, False if backpressure was
+  applied.
 
 ##### process
 
@@ -312,9 +329,12 @@ async def process(
 
 Start worker tasks to process queue items.
 
-- **worker_func** (`Callable[[T], Awaitable[Any]]`): Async function that processes each queue item.
-- **num_workers** (`int | None`): Number of worker tasks to start. If None, uses concurrency_limit or 1. Default: `None`.
-- **error_handler** (`Callable[[Exception, T], Awaitable[None]] | None`): Optional async function to handle worker errors. Default: `None`.
+- **worker_func** (`Callable[[T], Awaitable[Any]]`): Async function that
+  processes each queue item.
+- **num_workers** (`int | None`): Number of worker tasks to start. If None, uses
+  concurrency_limit or 1. Default: `None`.
+- **error_handler** (`Callable[[Exception, T], Awaitable[None]] | None`):
+  Optional async function to handle worker errors. Default: `None`.
 
 ##### join
 
@@ -339,13 +359,17 @@ async def batch_process(
 Process a batch of items through the queue.
 
 - **items** (`list[T]`): The items to process.
-- **worker_func** (`Callable[[T], Awaitable[Any]]`): Async function that processes each queue item.
-- **num_workers** (`int | None`): Number of worker tasks to start. If None, uses concurrency_limit or 1. Default: `None`.
-- **error_handler** (`Callable[[Exception, T], Awaitable[None]] | None`): Optional async function to handle worker errors. Default: `None`.
+- **worker_func** (`Callable[[T], Awaitable[Any]]`): Async function that
+  processes each queue item.
+- **num_workers** (`int | None`): Number of worker tasks to start. If None, uses
+  concurrency_limit or 1. Default: `None`.
+- **error_handler** (`Callable[[Exception, T], Awaitable[None]] | None`):
+  Optional async function to handle worker errors. Default: `None`.
 
 #### Context Manager
 
-`WorkQueue` implements the async context manager protocol (`__aenter__` and `__aexit__`), allowing it to be used with `async with`:
+`WorkQueue` implements the async context manager protocol (`__aenter__` and
+`__aexit__`), allowing it to be used with `async with`:
 
 ```python
 async with WorkQueue(maxsize=10, concurrency_limit=5) as queue:
@@ -372,14 +396,14 @@ async def handle_error(error, item):
 async def main():
     # Create a work queue
     queue = WorkQueue(maxsize=5, concurrency_limit=3)
-    
+
     # Process a batch of items
     await queue.batch_process(
         items=list(range(10)),
         worker_func=process_item,
         error_handler=handle_error
     )
-    
+
     # Get metrics
     print(f"Queue metrics: {queue.metrics}")
 
@@ -388,7 +412,8 @@ asyncio.run(main())
 
 ## Concurrency Primitives
 
-The following classes are wrappers around `anyio` primitives, providing a consistent interface for concurrency primitives across different async backends.
+The following classes are wrappers around `anyio` primitives, providing a
+consistent interface for concurrency primitives across different async backends.
 
 ### Lock
 
@@ -396,7 +421,9 @@ The following classes are wrappers around `anyio` primitives, providing a consis
 class Lock
 ```
 
-A mutex lock for controlling access to a shared resource. This lock is reentrant, meaning the same task can acquire it multiple times without deadlocking. Wraps `anyio.Lock`.
+A mutex lock for controlling access to a shared resource. This lock is
+reentrant, meaning the same task can acquire it multiple times without
+deadlocking. Wraps `anyio.Lock`.
 
 #### Methods
 
@@ -405,7 +432,8 @@ A mutex lock for controlling access to a shared resource. This lock is reentrant
 
 #### Context Manager
 
-`Lock` implements the async context manager protocol, allowing it to be used with `async with`:
+`Lock` implements the async context manager protocol, allowing it to be used
+with `async with`:
 
 ```python
 lock = Lock()
@@ -420,7 +448,8 @@ async with lock:
 class Semaphore
 ```
 
-A semaphore for limiting concurrent access to a resource. Wraps `anyio.Semaphore`.
+A semaphore for limiting concurrent access to a resource. Wraps
+`anyio.Semaphore`.
 
 #### Constructor
 
@@ -438,7 +467,8 @@ def __init__(self, initial_value: int)
 
 #### Context Manager
 
-`Semaphore` implements the async context manager protocol, allowing it to be used with `async with`:
+`Semaphore` implements the async context manager protocol, allowing it to be
+used with `async with`:
 
 ```python
 semaphore = Semaphore(5)
@@ -453,7 +483,8 @@ async with semaphore:
 class CapacityLimiter
 ```
 
-A context manager for limiting the number of concurrent operations. Wraps `anyio.CapacityLimiter`.
+A context manager for limiting the number of concurrent operations. Wraps
+`anyio.CapacityLimiter`.
 
 #### Constructor
 
@@ -477,7 +508,8 @@ def __init__(self, total_tokens: float)
 
 #### Context Manager
 
-`CapacityLimiter` implements the async context manager protocol, allowing it to be used with `async with`:
+`CapacityLimiter` implements the async context manager protocol, allowing it to
+be used with `async with`:
 
 ```python
 limiter = CapacityLimiter(10)
@@ -513,18 +545,18 @@ async def waiter(event, name):
 
 async def main():
     event = Event()
-    
+
     # Start waiters
     asyncio.create_task(waiter(event, "Waiter 1"))
     asyncio.create_task(waiter(event, "Waiter 2"))
-    
+
     # Wait a bit
     await asyncio.sleep(1)
-    
+
     # Set the event
     print("Setting event")
     event.set()
-    
+
     # Wait for tasks to complete
     await asyncio.sleep(0.1)
 
@@ -545,7 +577,8 @@ A condition variable for task synchronization. Wraps `anyio.Condition`.
 def __init__(self, lock: Optional[Lock] = None)
 ```
 
-- **lock** (`Optional[Lock]`): The lock to use. If None, a new Lock is created. Default: `None`.
+- **lock** (`Optional[Lock]`): The lock to use. If None, a new Lock is created.
+  Default: `None`.
 
 #### Methods
 
@@ -555,7 +588,8 @@ def __init__(self, lock: Optional[Lock] = None)
 
 #### Context Manager
 
-`Condition` implements the async context manager protocol, allowing it to be used with `async with`:
+`Condition` implements the async context manager protocol, allowing it to be
+used with `async with`:
 
 ```python
 condition = Condition()
@@ -588,13 +622,13 @@ async def consumer(condition, queue, name):
 async def main():
     condition = Condition()
     queue = []
-    
+
     # Start consumer
     consumer_task = asyncio.create_task(consumer(condition, queue, "Consumer"))
-    
+
     # Run producer
     await producer(condition, queue)
-    
+
     # Cancel consumer
     consumer_task.cancel()
     try:
@@ -603,3 +637,4 @@ async def main():
         pass
 
 asyncio.run(main())
+```

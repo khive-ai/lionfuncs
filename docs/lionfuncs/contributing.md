@@ -4,7 +4,9 @@ title: "Contributing to lionfuncs"
 
 # Contributing to lionfuncs
 
-Thank you for your interest in contributing to `lionfuncs`! This guide will help you get started with the development environment, coding standards, and the pull request process.
+Thank you for your interest in contributing to `lionfuncs`! This guide will help
+you get started with the development environment, coding standards, and the pull
+request process.
 
 ## Setting Up the Development Environment
 
@@ -49,8 +51,10 @@ uv pip install -e ".[dev,test,media]"
 
 - `main` branch is the stable branch
 - Create feature branches from `main` for new features or bug fixes
-- Use the naming convention `feature/<issue-number>-<brief-description>` for feature branches
-- Use the naming convention `fix/<issue-number>-<brief-description>` for bug fix branches
+- Use the naming convention `feature/<issue-number>-<brief-description>` for
+  feature branches
+- Use the naming convention `fix/<issue-number>-<brief-description>` for bug fix
+  branches
 
 Example:
 
@@ -86,14 +90,17 @@ uv run pre-commit run --all-files
 ```
 
 The pre-commit hooks include:
+
 - `black` for code formatting
 - `ruff` for linting
 - `mypy` for type checking
 
 ## Pull Request Process
 
-1. **Create an Issue**: Before starting work, create an issue describing the feature or bug fix.
-2. **Create a Branch**: Create a branch from `main` with the naming convention described above.
+1. **Create an Issue**: Before starting work, create an issue describing the
+   feature or bug fix.
+2. **Create a Branch**: Create a branch from `main` with the naming convention
+   described above.
 3. **Make Changes**: Make your changes, following the coding standards.
 4. **Write Tests**: Add tests for your changes.
 5. **Run Tests**: Make sure all tests pass.
@@ -104,7 +111,8 @@ The pre-commit hooks include:
 
 ### Commit Message Format
 
-We follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
+We follow the [Conventional Commits](https://www.conventionalcommits.org/)
+format:
 
 ```
 <type>(<scope>): <subject>
@@ -115,6 +123,7 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) forma
 ```
 
 Types:
+
 - `feat`: A new feature
 - `fix`: A bug fix
 - `docs`: Documentation changes
@@ -140,7 +149,8 @@ Closes #42
 
 ### Python Style Guide
 
-We follow the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guide with some modifications:
+We follow the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guide
+with some modifications:
 
 - Line length: 88 characters (enforced by `black`)
 - Use double quotes for strings
@@ -149,19 +159,21 @@ We follow the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guide wit
 
 ### Docstring Format
 
-We use the [Google style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings) for docstrings:
+We use the
+[Google style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
+for docstrings:
 
 ```python
 def function_with_types_in_docstring(param1: int, param2: str) -> bool:
     """Example function with types documented in the docstring.
-    
+
     Args:
         param1: The first parameter.
         param2: The second parameter.
-    
+
     Returns:
         True if successful, False otherwise.
-    
+
     Raises:
         ValueError: If param1 is negative.
     """
@@ -191,6 +203,7 @@ def process_items(items: List[Dict[str, Any]]) -> Optional[str]:
 ### Imports
 
 Organize imports in the following order:
+
 1. Standard library imports
 2. Related third-party imports
 3. Local application/library specific imports
@@ -216,20 +229,26 @@ from lionfuncs.utils import is_coro_func
 
 When adding new features, follow these guidelines:
 
-1. **Backward Compatibility**: Ensure that new features don't break existing functionality.
-2. **Documentation**: Add documentation for new features, including docstrings and examples.
+1. **Backward Compatibility**: Ensure that new features don't break existing
+   functionality.
+2. **Documentation**: Add documentation for new features, including docstrings
+   and examples.
 3. **Tests**: Add tests for new features, aiming for high test coverage.
 4. **Type Hints**: Add type hints for all new functions and classes.
-5. **Error Handling**: Use appropriate error handling and raise specific exceptions.
+5. **Error Handling**: Use appropriate error handling and raise specific
+   exceptions.
 
 ## Adding New Dependencies
 
 When adding new dependencies:
 
-1. **Minimize Dependencies**: Only add dependencies that are absolutely necessary.
+1. **Minimize Dependencies**: Only add dependencies that are absolutely
+   necessary.
 2. **Optional Dependencies**: Use extras for optional dependencies.
-3. **Update pyproject.toml**: Add the dependency to the appropriate section in `pyproject.toml`.
-4. **Update Documentation**: Update the documentation to mention the new dependency.
+3. **Update pyproject.toml**: Add the dependency to the appropriate section in
+   `pyproject.toml`.
+4. **Update Documentation**: Update the documentation to mention the new
+   dependency.
 
 ## Testing
 
@@ -252,7 +271,8 @@ We aim for high test coverage and use the following testing tools:
 - Use fixtures for setup and teardown
 - Use parametrized tests for testing multiple inputs
 - Mock external dependencies
-- Aim for high test coverage, but focus on testing behavior, not implementation details
+- Aim for high test coverage, but focus on testing behavior, not implementation
+  details
 
 ## Documentation
 
@@ -266,14 +286,19 @@ When adding new features, update the documentation accordingly.
 
 ## License
 
-By contributing to `lionfuncs`, you agree that your contributions will be licensed under the project's [Apache License 2.0](https://github.com/khive-ai/lionfuncs/blob/main/LICENSE).
+By contributing to `lionfuncs`, you agree that your contributions will be
+licensed under the project's
+[Apache License 2.0](https://github.com/khive-ai/lionfuncs/blob/main/LICENSE).
 
 ## Code of Conduct
 
-Please follow our [Code of Conduct](https://github.com/khive-ai/lionfuncs/blob/main/CODE_OF_CONDUCT.md) in all your interactions with the project.
+Please follow our
+[Code of Conduct](https://github.com/khive-ai/lionfuncs/blob/main/CODE_OF_CONDUCT.md)
+in all your interactions with the project.
 
 ## Questions?
 
-If you have any questions, feel free to open an issue or reach out to the maintainers.
+If you have any questions, feel free to open an issue or reach out to the
+maintainers.
 
 Thank you for contributing to `lionfuncs`!
