@@ -6,6 +6,14 @@ readme          = "README.md"
 requires-python = ">=3.10"
 authors         = [{ name = "HaiyangLi", email = "quantocean.li@gmail.com" }]
 dependencies = [
+    "anyio>=4.0",
+    "httpx>=0.27",
+    "aiofiles>=23.0.0",
+]
+
+[project.optional-dependencies]
+media = [
+    "pdf2image>=1.17",
 ]
 
 [dependency-groups]
