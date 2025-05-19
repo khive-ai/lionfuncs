@@ -6,8 +6,8 @@ import anyio
 import pytest
 from pydantic_core import PydanticUndefined
 
-from lionfuncs.async_utils import UNDEFINED
 from lionfuncs.async_utils import (
+    UNDEFINED,
     ALCallParams,
     BCallParams,
     CallParams,

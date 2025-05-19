@@ -5,17 +5,15 @@ from unittest.mock import MagicMock
 import anyio  # <-- Add import
 import pytest
 
-from lionfuncs.concurrency import Event
-from lionfuncs.concurrency import (
-    Lock
-)
-from lionfuncs.concurrency import Semaphore  # Import Semaphore
 from lionfuncs.concurrency import (
     BoundedQueue,
     CapacityLimiter,
     Condition,
+    Event,
+    Lock,
     QueueConfig,
     QueueStatus,
+    Semaphore,
     WorkQueue,
 )
 from lionfuncs.errors import QueueStateError
