@@ -116,7 +116,15 @@ class LionConcurrencyError(LionError):
 class QueueStateError(LionConcurrencyError):
     """Raised for invalid operations on a queue given its current state."""
 
-    pass
+    def __init__(self, message: str, *, current_state: str | None = None):
+        super().__init__(message)
+        self.current_state = current_state
+
+    def __str__(self) -> str:
+        base_str = super().__str__()
+        if self.current_state is not None:
+            return f"{base_str} (Current State: {self.current_state})"
+        return base_str
 
 
 class LionSDKError(LionError):

@@ -187,7 +187,8 @@ def test_get_env_dict_json_decode_error_uses_default():
     """Tests that get_env_dict returns default on JSONDecodeError."""
     var_name = "TEST_DICT_VAR_ERROR"
     default_dict = {"error_default": True}
-    with mock.patch.dict(os.environ, {var_name: "not_json"}), mock.patch(
-        "json.loads", side_effect=json.JSONDecodeError("err", "doc", 0)
+    with (
+        mock.patch.dict(os.environ, {var_name: "not_json"}),
+        mock.patch("json.loads", side_effect=json.JSONDecodeError("err", "doc", 0)),
     ):
         assert utils.get_env_dict(var_name, default_dict) == default_dict
