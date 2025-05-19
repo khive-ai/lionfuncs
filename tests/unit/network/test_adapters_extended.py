@@ -21,27 +21,9 @@ class TestOpenAIAdapter:
         with pytest.raises(RuntimeError, match="Client is closed"):
             await adapter._get_client()
 
-    @pytest.mark.asyncio
-    async def test_openai_adapter_client_closed(self):
-        """Test _get_client when client is closed."""
-        adapter = OpenAIAdapter(api_key="test_api_key")
-        adapter._closed = True
-
-        with pytest.raises(RuntimeError, match="Client is closed"):
-            await adapter._get_client()
-
 
 class TestAnthropicAdapter:
     """Additional tests for the AnthropicAdapter class."""
-
-    @pytest.mark.asyncio
-    async def test_anthropic_adapter_client_closed(self):
-        """Test _get_client when client is closed."""
-        adapter = AnthropicAdapter(api_key="test_api_key")
-        adapter._closed = True
-
-        with pytest.raises(RuntimeError, match="Client is closed"):
-            await adapter._get_client()
 
     @pytest.mark.asyncio
     async def test_anthropic_adapter_client_closed(self):
