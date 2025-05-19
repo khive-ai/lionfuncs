@@ -5,29 +5,32 @@ This module provides utilities for making HTTP requests, handling resilience pat
 and adapting to different SDK interfaces.
 """
 
-from .adapters import AbstractSDKAdapter, OpenAIAdapter, AnthropicAdapter, create_sdk_adapter
+from .adapters import (
+    AbstractSDKAdapter,
+    AnthropicAdapter,
+    OpenAIAdapter,
+    create_sdk_adapter,
+)
 from .client import AsyncAPIClient
 from .primitives import (
-    EndpointConfig,
+    AdaptiveRateLimiter,
     Endpoint,
+    EndpointConfig,
+    EndpointRateLimiter,
     HeaderFactory,
     TokenBucketRateLimiter,
-    EndpointRateLimiter,
-    AdaptiveRateLimiter,
     match_endpoint,
 )
-from .resilience import circuit_breaker, with_retry, CircuitBreaker, RetryConfig
+from .resilience import CircuitBreaker, RetryConfig, circuit_breaker, with_retry
 
 __all__ = [
     # Client
     "AsyncAPIClient",
-    
     # Resilience
     "circuit_breaker",
     "with_retry",
     "CircuitBreaker",
     "RetryConfig",
-    
     # Primitives
     "EndpointConfig",
     "Endpoint",
@@ -36,7 +39,6 @@ __all__ = [
     "EndpointRateLimiter",
     "AdaptiveRateLimiter",
     "match_endpoint",
-    
     # Adapters
     "AbstractSDKAdapter",
     "OpenAIAdapter",

@@ -2,14 +2,15 @@
 Unit tests for the network adapters module.
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from lionfuncs.errors import LionSDKError
 from lionfuncs.network.adapters import (
+    AnthropicAdapter,
     BaseSDKAdapter,
     OpenAIAdapter,
-    AnthropicAdapter,
     create_sdk_adapter,
 )
 
@@ -19,19 +20,19 @@ class TestBaseSDKAdapter:
 
     class MockSDKAdapter(BaseSDKAdapter):
         """Mock implementation of BaseSDKAdapter for testing."""
-        
+
         async def _get_client(self):
             if self._closed:
                 raise RuntimeError("Client is closed")
-            
+
             if self._client is None:
                 self._client = MagicMock()
                 self._client.aclose = AsyncMock()  # Use AsyncMock for async methods
-            
+
             return self._client
-        
+
         async def call(self, method_name, **kwargs):
-            client = await self._get_client()
+            _ = await self._get_client()
             return f"Called {method_name} with {kwargs}"
 
     @pytest.mark.asyncio
@@ -42,7 +43,7 @@ class TestBaseSDKAdapter:
             option1="value1",
             option2="value2",
         )
-        
+
         assert adapter.api_key == "test_api_key"
         assert adapter.client_kwargs == {"option1": "value1", "option2": "value2"}
         assert adapter._client is None
@@ -54,7 +55,7 @@ class TestBaseSDKAdapter:
         async with self.MockSDKAdapter(api_key="test_api_key") as adapter:
             assert adapter._client is not None
             assert adapter._closed is False
-        
+
         assert adapter._closed is True
         assert adapter._client is None
 
@@ -63,12 +64,12 @@ class TestBaseSDKAdapter:
         """Test close method."""
         adapter = self.MockSDKAdapter(api_key="test_api_key")
         await adapter._get_client()  # Initialize client
-        
+
         await adapter.close()
-        
+
         assert adapter._closed is True
         assert adapter._client is None
-        
+
         # Second call should do nothing
         await adapter.close()
         assert adapter._closed is True
@@ -85,11 +86,15 @@ class TestOpenAIAdapter:
             # Also patch the ImportError check
             with patch("lionfuncs.network.adapters.ImportError", MagicMock()):
                 adapter = OpenAIAdapter(api_key="test_api_key", organization="test_org")
-                
+
                 # Patch the import inside the method
-                with patch.object(adapter, "_get_client", AsyncMock(return_value=mock_openai.return_value)):
+                with patch.object(
+                    adapter,
+                    "_get_client",
+                    AsyncMock(return_value=mock_openai.return_value),
+                ):
                     client = await adapter._get_client()
-                    
+
                     assert client == mock_openai.return_value
 
     @pytest.mark.asyncio
@@ -100,11 +105,11 @@ class TestOpenAIAdapter:
         chat_mock = MagicMock()
         completions_mock = MagicMock()
         create_mock = AsyncMock(return_value="test_response")
-        
+
         chat_mock.completions = completions_mock
         completions_mock.create = create_mock
         mock_client.chat = chat_mock
-        
+
         # Create the adapter and patch _get_client
         adapter = OpenAIAdapter(api_key="test_api_key")
         with patch.object(adapter, "_get_client", AsyncMock(return_value=mock_client)):
@@ -114,7 +119,7 @@ class TestOpenAIAdapter:
                 model="gpt-4",
                 messages=[{"role": "user", "content": "Hello"}],
             )
-            
+
             assert result == "test_response"
             create_mock.assert_called_once_with(
                 model="gpt-4",
@@ -129,11 +134,11 @@ class TestOpenAIAdapter:
         chat_mock = MagicMock()
         completions_mock = MagicMock()
         create_mock = AsyncMock(side_effect=Exception("API error"))
-        
+
         chat_mock.completions = completions_mock
         completions_mock.create = create_mock
         mock_client.chat = chat_mock
-        
+
         # Create the adapter and patch _get_client
         adapter = OpenAIAdapter(api_key="test_api_key")
         with patch.object(adapter, "_get_client", AsyncMock(return_value=mock_client)):
@@ -143,7 +148,7 @@ class TestOpenAIAdapter:
                     model="gpt-4",
                     messages=[{"role": "user", "content": "Hello"}],
                 )
-            
+
             assert "OpenAI SDK call failed: API error" in str(excinfo.value)
 
 
@@ -158,11 +163,15 @@ class TestAnthropicAdapter:
             # Also patch the ImportError check
             with patch("lionfuncs.network.adapters.ImportError", MagicMock()):
                 adapter = AnthropicAdapter(api_key="test_api_key", option1="value1")
-                
+
                 # Patch the import inside the method
-                with patch.object(adapter, "_get_client", AsyncMock(return_value=mock_anthropic.return_value)):
+                with patch.object(
+                    adapter,
+                    "_get_client",
+                    AsyncMock(return_value=mock_anthropic.return_value),
+                ):
                     client = await adapter._get_client()
-                    
+
                     assert client == mock_anthropic.return_value
 
     @pytest.mark.asyncio
@@ -172,15 +181,17 @@ class TestAnthropicAdapter:
         mock_client = MagicMock()
         messages_mock = MagicMock()
         create_mock = MagicMock(return_value="test_response")
-        
+
         messages_mock.create = create_mock
         mock_client.messages = messages_mock
-        
+
         # Create the adapter and patch _get_client
         adapter = AnthropicAdapter(api_key="test_api_key")
         with patch.object(adapter, "_get_client", AsyncMock(return_value=mock_client)):
             # Mock asyncio.to_thread and asyncio.iscoroutinefunction
-            with patch("asyncio.to_thread", AsyncMock(return_value="test_response")) as mock_to_thread:
+            with patch(
+                "asyncio.to_thread", AsyncMock(return_value="test_response")
+            ) as mock_to_thread:
                 with patch("asyncio.iscoroutinefunction", return_value=False):
                     # Call a nested method
                     result = await adapter.call(
@@ -188,7 +199,7 @@ class TestAnthropicAdapter:
                         model="claude-3-opus-20240229",
                         messages=[{"role": "user", "content": "Hello"}],
                     )
-                    
+
                     assert result == "test_response"
                     mock_to_thread.assert_called_once_with(
                         create_mock,
@@ -203,10 +214,10 @@ class TestAnthropicAdapter:
         mock_client = MagicMock()
         messages_mock = MagicMock()
         create_mock = AsyncMock(return_value="test_response")
-        
+
         messages_mock.create = create_mock
         mock_client.messages = messages_mock
-        
+
         # Create the adapter and patch _get_client
         adapter = AnthropicAdapter(api_key="test_api_key")
         with patch.object(adapter, "_get_client", AsyncMock(return_value=mock_client)):
@@ -218,7 +229,7 @@ class TestAnthropicAdapter:
                     model="claude-3-opus-20240229",
                     messages=[{"role": "user", "content": "Hello"}],
                 )
-                
+
                 assert result == "test_response"
                 create_mock.assert_called_once_with(
                     model="claude-3-opus-20240229",
@@ -232,15 +243,17 @@ class TestAnthropicAdapter:
         mock_client = MagicMock()
         messages_mock = MagicMock()
         create_mock = MagicMock(side_effect=Exception("API error"))
-        
+
         messages_mock.create = create_mock
         mock_client.messages = messages_mock
-        
+
         # Create the adapter and patch _get_client
         adapter = AnthropicAdapter(api_key="test_api_key")
         with patch.object(adapter, "_get_client", AsyncMock(return_value=mock_client)):
             # Mock asyncio.to_thread and asyncio.iscoroutinefunction
-            with patch("asyncio.to_thread", AsyncMock(side_effect=Exception("API error"))):
+            with patch(
+                "asyncio.to_thread", AsyncMock(side_effect=Exception("API error"))
+            ):
                 with patch("asyncio.iscoroutinefunction", return_value=False):
                     with pytest.raises(LionSDKError) as excinfo:
                         await adapter.call(
@@ -248,45 +261,47 @@ class TestAnthropicAdapter:
                             model="claude-3-opus-20240229",
                             messages=[{"role": "user", "content": "Hello"}],
                         )
-                    
+
                     assert "Anthropic SDK call failed: API error" in str(excinfo.value)
 
 
 def test_create_sdk_adapter():
     """Test create_sdk_adapter function."""
     with patch("lionfuncs.network.adapters.OpenAIAdapter") as mock_openai_adapter:
-        with patch("lionfuncs.network.adapters.AnthropicAdapter") as mock_anthropic_adapter:
+        with patch(
+            "lionfuncs.network.adapters.AnthropicAdapter"
+        ) as mock_anthropic_adapter:
             # Test OpenAI adapter
             adapter = create_sdk_adapter(
                 provider="openai",
                 api_key="test_api_key",
                 organization="test_org",
             )
-            
+
             assert adapter == mock_openai_adapter.return_value
             mock_openai_adapter.assert_called_once_with(
                 api_key="test_api_key",
                 organization="test_org",
             )
-            
+
             # Test Anthropic adapter
             adapter = create_sdk_adapter(
                 provider="anthropic",
                 api_key="test_api_key",
                 option1="value1",
             )
-            
+
             assert adapter == mock_anthropic_adapter.return_value
             mock_anthropic_adapter.assert_called_once_with(
                 api_key="test_api_key",
                 option1="value1",
             )
-            
+
             # Test unsupported provider
             with pytest.raises(ValueError) as excinfo:
                 create_sdk_adapter(
                     provider="unsupported",
                     api_key="test_api_key",
                 )
-            
+
             assert "Unsupported provider: unsupported" in str(excinfo.value)

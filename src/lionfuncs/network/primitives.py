@@ -7,7 +7,7 @@ header factories, and rate limiting.
 
 import logging
 import time
-from typing import Any, Callable, Dict, List, Literal, Optional, TypeVar, Union
+from typing import Any, Callable, Literal, Optional, TypeVar, Union
 
 from pydantic import BaseModel, Field
 
@@ -26,7 +26,7 @@ class HeaderFactory:
     @staticmethod
     def get_content_type_header(
         content_type: str = "application/json",
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """
         Get content type header.
 
@@ -39,7 +39,7 @@ class HeaderFactory:
         return {"Content-Type": content_type}
 
     @staticmethod
-    def get_bearer_auth_header(api_key: str) -> Dict[str, str]:
+    def get_bearer_auth_header(api_key: str) -> dict[str, str]:
         """
         Get Bearer authentication header.
 
@@ -52,7 +52,7 @@ class HeaderFactory:
         return {"Authorization": f"Bearer {api_key}"}
 
     @staticmethod
-    def get_x_api_key_header(api_key: str) -> Dict[str, str]:
+    def get_x_api_key_header(api_key: str) -> dict[str, str]:
         """
         Get X-API-Key header.
 
@@ -69,8 +69,8 @@ class HeaderFactory:
         auth_type: AUTH_TYPES,
         content_type: str = "application/json",
         api_key: Optional[str] = None,
-        default_headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, str]:
+        default_headers: Optional[dict[str, str]] = None,
+    ) -> dict[str, str]:
         """
         Get headers for API requests.
 
@@ -110,17 +110,17 @@ class EndpointConfig(BaseModel):
     transport_type: Literal["http", "sdk"] = "http"
     base_url: Optional[str] = None
     endpoint: str
-    endpoint_params: Optional[List[str]] = None
+    endpoint_params: Optional[list[str]] = None
     method: str = "POST"
-    params: Dict[str, str] = Field(default_factory=dict)
+    params: dict[str, str] = Field(default_factory=dict)
     content_type: str = "application/json"
     auth_type: AUTH_TYPES = "bearer"
-    default_headers: Dict[str, str] = Field(default_factory=dict)
+    default_headers: dict[str, str] = Field(default_factory=dict)
     api_key: Optional[str] = None
     timeout: int = 300
     max_retries: int = 3
-    kwargs: Dict[str, Any] = Field(default_factory=dict)
-    client_kwargs: Dict[str, Any] = Field(default_factory=dict)
+    kwargs: dict[str, Any] = Field(default_factory=dict)
+    client_kwargs: dict[str, Any] = Field(default_factory=dict)
 
     @property
     def full_url(self) -> str:
@@ -159,7 +159,7 @@ class Endpoint:
 
     def __init__(
         self,
-        config: Union[Dict[str, Any], EndpointConfig],
+        config: Union[dict[str, Any], EndpointConfig],
         **kwargs,
     ):
         """
@@ -184,10 +184,10 @@ class Endpoint:
 
     def create_payload(
         self,
-        request: Union[Dict[str, Any], BaseModel],
-        extra_headers: Optional[Dict[str, str]] = None,
+        request: Union[dict[str, Any], BaseModel],
+        extra_headers: Optional[dict[str, str]] = None,
         **kwargs,
-    ) -> tuple[Dict[str, Any], Dict[str, str]]:
+    ) -> tuple[dict[str, Any], dict[str, str]]:
         """
         Create payload and headers for a request.
 
@@ -343,9 +343,7 @@ class TokenBucketRateLimiter:
 
             return wait_time
 
-    async def execute(
-        self, func: Callable[..., Any], *args: Any, **kwargs: Any
-    ) -> Any:
+    async def execute(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """
         Execute a coroutine with rate limiting.
 
@@ -368,6 +366,7 @@ class TokenBucketRateLimiter:
         if wait_time > 0:
             logger.debug(f"Rate limited: waiting {wait_time:.2f}s before execution")
             import asyncio
+
             await asyncio.sleep(wait_time)
 
         logger.debug(f"Executing rate-limited function: {func.__name__}")
@@ -392,7 +391,7 @@ class EndpointRateLimiter:
         """
         self.default_rate = default_rate
         self.default_period = default_period
-        self.limiters: Dict[str, TokenBucketRateLimiter] = {}
+        self.limiters: dict[str, TokenBucketRateLimiter] = {}
         self._lock = Lock()  # Using our own Lock implementation
 
         logger.debug(
@@ -468,7 +467,12 @@ class EndpointRateLimiter:
             original_tokens = limiter.tokens
 
             # If not resetting tokens and rate will be reduced, reduce tokens proportionally
-            if not reset_tokens and rate is not None and rate < limiter.rate and original_tokens > 0:
+            if (
+                not reset_tokens
+                and rate is not None
+                and rate < limiter.rate
+                and original_tokens > 0
+            ):
                 # Reduce tokens proportionally to the rate reduction
                 reduction_factor = rate / limiter.rate
                 limiter.tokens = min(
@@ -547,7 +551,7 @@ class AdaptiveRateLimiter(TokenBucketRateLimiter):
             f"safety_factor={safety_factor}"
         )
 
-    def update_from_headers(self, headers: Dict[str, str]) -> None:
+    def update_from_headers(self, headers: dict[str, str]) -> None:
         """
         Update rate limits based on API response headers.
 
@@ -640,7 +644,7 @@ class AdaptiveRateLimiter(TokenBucketRateLimiter):
             # Update the rate
             old_rate = self.rate
             self.rate = final_rate
-            
+
             # If the rate was reduced, reduce tokens proportionally
             if final_rate < old_rate and self.tokens > 0:
                 reduction_factor = final_rate / old_rate

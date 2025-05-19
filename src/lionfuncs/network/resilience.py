@@ -12,7 +12,7 @@ import random
 import time
 from collections.abc import Awaitable, Callable
 from enum import Enum
-from typing import Any, Dict, Optional, Set, TypeVar
+from typing import Any, Optional, TypeVar
 
 from lionfuncs.errors import CircuitBreakerOpenError
 
@@ -60,7 +60,7 @@ class CircuitBreaker:
         failure_threshold: int = 5,
         recovery_time: float = 30.0,
         half_open_max_calls: int = 1,
-        excluded_exceptions: Optional[Set[type[Exception]]] = None,
+        excluded_exceptions: Optional[set[type[Exception]]] = None,
         name: str = "default",
     ):
         """
@@ -100,7 +100,7 @@ class CircuitBreaker:
         )
 
     @property
-    def metrics(self) -> Dict[str, Any]:
+    def metrics(self) -> dict[str, Any]:
         """Get circuit breaker metrics."""
         return self._metrics.copy()
 
@@ -283,7 +283,7 @@ class RetryConfig:
         self.retry_exceptions = retry_exceptions
         self.exclude_exceptions = exclude_exceptions
 
-    def as_kwargs(self) -> Dict[str, Any]:
+    def as_kwargs(self) -> dict[str, Any]:
         """
         Convert configuration to keyword arguments for retry_with_backoff.
 
@@ -380,7 +380,7 @@ def circuit_breaker(
     failure_threshold: int = 5,
     recovery_time: float = 30.0,
     half_open_max_calls: int = 1,
-    excluded_exceptions: Optional[Set[type[Exception]]] = None,
+    excluded_exceptions: Optional[set[type[Exception]]] = None,
     name: Optional[str] = None,
 ) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """

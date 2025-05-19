@@ -8,7 +8,7 @@ HTTP client for API interactions with proper resource management.
 import asyncio
 import contextlib
 import logging
-from typing import Any, Dict, Optional, TypeVar
+from typing import Any, Optional, TypeVar
 
 import httpx
 
@@ -46,7 +46,7 @@ class AsyncAPIClient:
         self,
         base_url: str,
         timeout: float = 10.0,
-        headers: Optional[Dict[str, str]] = None,
+        headers: Optional[dict[str, str]] = None,
         auth: Optional[httpx.Auth] = None,
         client: Optional[httpx.AsyncClient] = None,
         circuit_breaker: Optional[CircuitBreaker] = None,
@@ -167,6 +167,7 @@ class AsyncAPIClient:
             ServerError: If a server error occurs.
             APIClientError: For other API client errors.
         """
+
         # Define the actual request function
         async def _make_request():
             client = await self._get_client()
@@ -276,7 +277,7 @@ class AsyncAPIClient:
         # If no resilience patterns are configured, call the request function directly
         return await _make_request()
 
-    async def call(self, request: Dict[str, Any], **kwargs) -> Any:
+    async def call(self, request: dict[str, Any], **kwargs) -> Any:
         """
         Make a call to the API using the ResourceClient protocol.
 
@@ -298,7 +299,7 @@ class AsyncAPIClient:
 
         # Merge any remaining request parameters with kwargs
         merged_kwargs = {**request, **kwargs}
-        
+
         if params is not None:
             merged_kwargs["params"] = params
         if json_data is not None:
