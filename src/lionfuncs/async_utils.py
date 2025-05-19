@@ -18,16 +18,13 @@ import anyio
 from pydantic import BaseModel, Field
 from pydantic_core import PydanticUndefined
 
-# LionError and LionConcurrencyError might be needed for more advanced features later
-# from lionfuncs.errors import LionError, LionConcurrencyError
-# Concurrency primitives might be used by decorators or advanced functions
 from lionfuncs.concurrency import CapacityLimiter, Semaphore
 from lionfuncs.utils import force_async, is_coro_func, to_list
 
 T = TypeVar("T")
 R = TypeVar("R")
 
-UNDEFINED = PydanticUndefined  # Define UNDEFINED
+UNDEFINED = PydanticUndefined
 
 __all__ = [
     "Throttle",
@@ -37,12 +34,11 @@ __all__ = [
     "bcall",
     "ALCallParams",
     "BCallParams",
-    "CallParams",  # Added CallParams
-    "UNDEFINED",  # Added UNDEFINED
+    "CallParams",
+    "UNDEFINED",
     "CancelScope",
     "TaskGroup",
-    "parallel_map",  # Added parallel_map
-    # To be added:
+    "parallel_map",
 ]
 
 
@@ -56,7 +52,7 @@ class Throttle:
         self.period = period
         self.last_called_sync: float = 0.0
         self.last_called_async: float = 0.0
-        self._async_lock = asyncio.Lock()  # For async throttling coordination
+        self._async_lock = asyncio.Lock()
 
     def __call__(
         self, func: Callable[..., T]
@@ -80,10 +76,8 @@ class Throttle:
         """Helper to call an async function with throttling."""
         async with self._async_lock:
             try:
-                # Use anyio's clock for consistency if an event loop is running
                 current_time = anyio.current_time()
             except RuntimeError:  # pragma: no cover
-                # Fallback if no anyio event loop (e.g. called from sync context without anyio.run)
                 current_time = std_time.time()
 
             elapsed = current_time - self.last_called_async
@@ -138,18 +132,16 @@ def max_concurrent(
     if limit < 1:
         raise ValueError("Concurrency limit must be at least 1")
 
-    # Use lionfuncs.concurrency.Semaphore which wraps anyio.Semaphore
     semaphore = Semaphore(limit)
 
     def decorator(func: Callable[..., Any]) -> Callable[..., CAwaitable[Any]]:
         processed_func = func
         if not is_coro_func(processed_func):
-            # force_async from lionfuncs.utils should handle running sync func in thread
             processed_func = force_async(processed_func)
 
         @functools.wraps(processed_func)
         async def wrapper(*args, **kwargs) -> Any:
-            async with semaphore:  # Use the Semaphore as an async context manager
+            async with semaphore:
                 return await processed_func(*args, **kwargs)
 
         return wrapper
@@ -167,14 +159,12 @@ class CallParams(BaseModel):
 
 
 class ALCallParams(CallParams):
-    func: Optional[Callable[..., Any]] = (
-        None  # Make func optional as it can be passed to __call__
-    )
+    func: Optional[Callable[..., Any]] = None
     sanitize_input: bool = False
     unique_input: bool = False
     num_retries: int = 0
-    initial_delay: float = 0.0  # Corrected from int to float
-    retry_delay: float = 0.0  # Corrected from int to float
+    initial_delay: float = 0.0
+    retry_delay: float = 0.0
     backoff_factor: float = 1.0
     retry_default: Any = Field(default_factory=lambda: UNDEFINED)
     retry_timeout: Optional[float] = None
@@ -234,7 +224,7 @@ async def alcall(
     initial_delay: float = 0.0,
     retry_delay: float = 0.0,
     backoff_factor: float = 1.0,
-    retry_default: Any = UNDEFINED,  # This will now use the global UNDEFINED
+    retry_default: Any = UNDEFINED,
     retry_timeout: Optional[float] = None,
     retry_timing: bool = False,
     max_concurrent: Optional[int] = None,
@@ -244,9 +234,7 @@ async def alcall(
     unique_output: bool = False,
     flatten_tuple_set: bool = False,
     **kwargs: Any,
-) -> list[
-    Any
-]:  # Return type changed to List[Any] to accommodate retry_default and timing tuple
+) -> list[Any]:
     if not callable(func):  # pragma: no cover
         try:
             func_list = list(func)  # type: ignore
@@ -262,7 +250,7 @@ async def alcall(
     if sanitize_input:
         processed_input_ = to_list(
             input_,
-            flatten=True,  # alcall's sanitize implies deep flatten and clean
+            flatten=True,
             dropna=True,
             unique=unique_input,
             flatten_tuple_set=flatten_tuple_set,
@@ -280,10 +268,9 @@ async def alcall(
         else:
             processed_input_ = input_
 
-    if initial_delay > 0:  # Allow zero initial_delay
+    if initial_delay > 0:
         await anyio.sleep(initial_delay)
 
-    # Use lionfuncs.concurrency.Semaphore
     semaphore: Optional[Semaphore] = (
         Semaphore(max_concurrent) if max_concurrent and max_concurrent > 0 else None
     )
@@ -293,29 +280,25 @@ async def alcall(
             if retry_timeout is not None:
                 with anyio.move_on_after(retry_timeout):
                     return await func(item_internal, **kwargs)
-                # If timeout occurs, anyio raises TimeoutError (or specific backend error)
-                # This will be caught by the broader Exception in execute_task
                 raise asyncio.TimeoutError(
                     f"Call to {func.__name__} timed out after {retry_timeout}s"
-                )  # Should be caught
+                )
             else:
                 return await func(item_internal, **kwargs)
         else:
-            # Run synchronous function in a thread
             if retry_timeout is not None:
                 with anyio.move_on_after(retry_timeout):
                     return await anyio.to_thread.run_sync(func, item_internal, **kwargs)  # type: ignore
                 raise asyncio.TimeoutError(
                     f"Call to {func.__name__} timed out after {retry_timeout}s"
-                )  # Should be caught
+                )
             else:
                 return await anyio.to_thread.run_sync(func, item_internal, **kwargs)  # type: ignore
 
-    async def execute_task(i: Any, index: int) -> Any:  # Return type Any for tuple
-        # Use anyio's clock
+    async def execute_task(i: Any, index: int) -> Any:
         start_time = anyio.current_time()
         attempts = 0
-        current_delay_val = retry_delay  # Renamed to avoid conflict
+        current_delay_val = retry_delay
         while True:
             try:
                 result = await call_func_internal(i)
@@ -329,20 +312,18 @@ async def alcall(
             except Exception:  # Catch broad exceptions for retry logic
                 attempts += 1
                 if attempts <= num_retries:
-                    if current_delay_val > 0:  # Allow zero retry_delay
+                    if current_delay_val > 0:
                         await anyio.sleep(current_delay_val)
                         current_delay_val *= backoff_factor
                 else:
-                    if (
-                        retry_default is not UNDEFINED
-                    ):  # This will now use the global UNDEFINED
+                    if retry_default is not UNDEFINED:
                         if retry_timing:
                             end_time = anyio.current_time()
                             duration = end_time - start_time
                             return index, retry_default, duration
                         else:
                             return index, retry_default
-                    raise  # Re-raise the last exception if all retries fail and no default
+                    raise
 
     async def task_wrapper(item_wrapper: Any, idx_wrapper: int) -> Any:
         task_result: Any
@@ -358,41 +339,21 @@ async def alcall(
 
     tasks = [task_wrapper(item, idx) for idx, item in enumerate(processed_input_)]
 
-    # Using anyio.TaskGroup for structured concurrency
-    # completed_results: List[Any] = [None] * len(tasks) # Pre-allocate for sorting
-    # async with anyio.create_task_group() as tg:
-    #     for i, task_coro in enumerate(tasks):
-    #         # Need a way to store result with original index if using TaskGroup like this
-    #         # Or, gather results and sort, which is simpler.
-    #         # tg.start_soon(async def() completed_results[i] = await task_coro)
-    # For simplicity and to match original structure of sorting after gather:
-
-    # return_exceptions=False means exceptions will propagate from asyncio.gather
-    # This is generally good, as the retry logic in execute_task should handle retriable errors.
-    # If an error escapes execute_task (e.g. after all retries), gather will raise it.
     try:
         completed_results_with_indices = await asyncio.gather(*tasks)
     except Exception as e:  # pragma: no cover
-        # This block would catch non-retriable errors that escape execute_task
-        # or errors from asyncio.gather itself.
-        # Depending on desired behavior, could re-raise or handle.
-        # For now, let it propagate as per original implicit behavior.
         raise e
 
-    completed_results_with_indices.sort(key=lambda x: x[0])  # Sort by original index
+    completed_results_with_indices.sort(key=lambda x: x[0])
 
     final_results: list[Any]
     if retry_timing:
-        # item is (original_index, result_value, duration)
         final_results = [
             (r_val[1], r_val[2])
             for r_val in completed_results_with_indices
-            if not (
-                dropna and (r_val[1] is None or r_val[1] is UNDEFINED)
-            )  # This will now use the global UNDEFINED
+            if not (dropna and (r_val[1] is None or r_val[1] is UNDEFINED))
         ]
     else:
-        # item is (original_index, result_value)
         output_list = [r_val[1] for r_val in completed_results_with_indices]
         final_results = to_list(
             output_list,
@@ -405,10 +366,10 @@ async def alcall(
 
 
 class BCallParams(CallParams):
-    func: Optional[Callable[..., Any]] = None  # Make func optional
+    func: Optional[Callable[..., Any]] = None
     batch_size: int
     sanitize_input: bool = False
-    unique_input: bool = False  # Applies to alcall's sanitize_input for each batch
+    unique_input: bool = False
     num_retries: int = 0
     initial_delay: float = 0.0
     retry_delay: float = 0.0
@@ -416,12 +377,12 @@ class BCallParams(CallParams):
     retry_default: Any = Field(default_factory=lambda: UNDEFINED)
     retry_timeout: Optional[float] = None
     retry_timing: bool = False
-    max_concurrent: Optional[int] = None  # Applies to alcall for each batch
-    throttle_period: Optional[float] = None  # Applies to alcall for each batch
-    flatten: bool = False  # Applies to alcall's output for each batch
-    dropna: bool = False  # Applies to alcall's output for each batch
-    unique_output: bool = False  # Applies to alcall's output for each batch
-    flatten_tuple_set: bool = False  # Applies to alcall's output for each batch
+    max_concurrent: Optional[int] = None
+    throttle_period: Optional[float] = None
+    flatten: bool = False
+    dropna: bool = False
+    unique_output: bool = False
+    flatten_tuple_set: bool = False
 
     async def __call__(
         self,
@@ -436,8 +397,6 @@ class BCallParams(CallParams):
 
         merged_kwargs = {**self.kwargs, **additional_kwargs}
 
-        # bcall itself is an async generator
-        # The __call__ should return this generator
         return bcall(
             input_,
             func or self.func,  # type: ignore
@@ -474,7 +433,7 @@ async def bcall(
     initial_delay: float = 0.0,
     retry_delay: float = 0.0,
     backoff_factor: float = 1.0,
-    retry_default: Any = UNDEFINED,  # This will now use the global UNDEFINED
+    retry_default: Any = UNDEFINED,
     retry_timeout: Optional[float] = None,
     retry_timing: bool = False,
     max_concurrent: Optional[int] = None,
@@ -484,13 +443,8 @@ async def bcall(
     unique_output: bool = False,
     flatten_tuple_set: bool = False,
     **kwargs: Any,
-) -> AsyncGenerator[list[Any], None]:  # Return type matches alcall's output list
-    # Input to bcall should be pre-processed if needed before batching
-    # The original `dev/concurrency.py` bcall used to_list(input_, flatten=True, dropna=True)
-    # This implies the main input_ to bcall is fully flattened and cleaned first.
-    processed_bcall_input = to_list(
-        input_, flatten=True, dropna=True, unique=False
-    )  # unique applies per batch if sanitize_input is true for alcall
+) -> AsyncGenerator[list[Any], None]:
+    processed_bcall_input = to_list(input_, flatten=True, dropna=True, unique=False)
 
     if batch_size <= 0:
         raise ValueError("batch_size must be positive.")  # pragma: no cover
@@ -500,8 +454,8 @@ async def bcall(
         yield await alcall(
             batch,
             func,
-            sanitize_input=sanitize_input,  # Passed to alcall for per-batch sanitization
-            unique_input=unique_input,  # Passed to alcall for per-batch uniqueness
+            sanitize_input=sanitize_input,
+            unique_input=unique_input,
             num_retries=num_retries,
             initial_delay=initial_delay,
             retry_delay=retry_delay,
@@ -511,10 +465,10 @@ async def bcall(
             retry_timing=retry_timing,
             max_concurrent=max_concurrent,
             throttle_period=throttle_period,
-            flatten=flatten,  # Controls flattening of alcall's *output* for this batch
-            dropna=dropna,  # Controls dropna of alcall's *output* for this batch
-            unique_output=unique_output,  # Controls unique on alcall's *output* for this batch
-            flatten_tuple_set=flatten_tuple_set,  # Passed to alcall for its to_list calls
+            flatten=flatten,
+            dropna=dropna,
+            unique_output=unique_output,
+            flatten_tuple_set=flatten_tuple_set,
             **kwargs,
         )
 
@@ -528,46 +482,36 @@ class CancelScope:
         self._deadline = deadline
         self._shield = shield
         self._internal_anyio_scope_instance: Optional[anyio.CancelScope] = None
-        self._cancel_called_before_enter: bool = (
-            False  # To mimic anyio behavior if cancel() is called early
-        )
+        self._cancel_called_before_enter: bool = False
 
     def cancel(self) -> None:
         if self._internal_anyio_scope_instance:
             self._internal_anyio_scope_instance.cancel()
         else:
-            # If the scope hasn't been entered, mark that cancel was called.
-            # anyio.CancelScope itself doesn't error if cancel() is called before __aenter__,
-            # it just means the scope will be immediately cancelled upon entry.
             self._cancel_called_before_enter = True
 
     async def __aenter__(self) -> "CancelScope":
         self._internal_anyio_scope_instance = anyio.CancelScope(
             deadline=self._deadline, shield=self._shield
         )
-        # If cancel was called before entering, apply it now.
         if self._cancel_called_before_enter:
             self._internal_anyio_scope_instance.cancel()
 
-        # Now, correctly enter the internal anyio.CancelScope
-        # The `async with` statement on *our* CancelScope handles its own __aenter__/__aexit__.
-        # We are managing the *internal* scope here.
         await self._internal_anyio_scope_instance.__aenter__()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> Optional[bool]:
         if self._internal_anyio_scope_instance:
-            # Exit the internal anyio.CancelScope
             return await self._internal_anyio_scope_instance.__aexit__(
                 exc_type, exc_val, exc_tb
             )
-        return False  # Should not happen if used correctly
+        return False
 
     @property
     def cancelled_caught(self) -> bool:  # pragma: no cover
         if self._internal_anyio_scope_instance:
             return self._internal_anyio_scope_instance.cancelled_caught
-        return False  # Or perhaps True if _cancel_called_before_enter and it was a timeout? anyio is subtle.
+        return False
 
     @property
     def deadline(self) -> float:  # pragma: no cover
@@ -604,25 +548,14 @@ class TaskGroup:
 
     def start_soon(
         self, func: Callable[..., CAwaitable[Any]], *args: Any, name: Any = None
-    ) -> None:  # Changed to sync
+    ) -> None:
         if self._anyio_task_group is None:  # pragma: no cover
             raise RuntimeError(
                 "Task group is not active. Use 'async with TaskGroup():'"
             )
-        self._anyio_task_group.start_soon(
-            func, *args, name=name
-        )  # anyio's start_soon is sync
-
-    # anyio's TaskGroup.start method is for tasks that signal readiness.
-    # Not directly wrapping it unless a clear use case emerges for it in lionfuncs.
-    # async def start(self, func: Callable[..., CAwaitable[R]], *args: Any, name: Any = None) -> R:
-    #     if self._anyio_task_group is None: # pragma: no cover
-    #         raise RuntimeError("Task group is not active. Use 'async with TaskGroup():'")
-    #     return await self._anyio_task_group.start(func, *args, name=name) # type: ignore
+        self._anyio_task_group.start_soon(func, *args, name=name)
 
     async def __aenter__(self) -> "TaskGroup":
-        # import anyio # Already imported
-        # anyio.create_task_group() returns an anyio.abc.TaskGroup
         self._anyio_task_group = anyio.create_task_group()
         await self._anyio_task_group.__aenter__()
         return self
@@ -634,7 +567,7 @@ class TaskGroup:
 
 
 async def parallel_map(
-    func: Callable[[T], CAwaitable[R]],  # Use CAwaitable for Async TypedDict
+    func: Callable[[T], CAwaitable[R]],
     items: list[T],
     max_concurrency: int = 10,
 ) -> list[R]:
@@ -657,7 +590,7 @@ async def parallel_map(
 
     limiter = CapacityLimiter(max_concurrency)
     results: list[Optional[R]] = [None] * len(items)
-    exceptions: list[Optional[Exception]] = [None] * len(items)  # To store exceptions
+    exceptions: list[Optional[Exception]] = [None] * len(items)
 
     async def _worker(index: int, item: T) -> None:
         async with limiter:
@@ -666,11 +599,10 @@ async def parallel_map(
             except Exception as exc:  # pylint: disable=broad-except
                 exceptions[index] = exc
 
-    async with TaskGroup() as tg:  # Using the TaskGroup wrapper
+    async with TaskGroup() as tg:
         for i, item_val in enumerate(items):
-            tg.start_soon(_worker, i, item_val)  # Use start_soon from TaskGroup wrapper
+            tg.start_soon(_worker, i, item_val)
 
-    # After task group exits, check for exceptions
     first_exception = None
     for exc in exceptions:
         if exc is not None:
@@ -680,6 +612,4 @@ async def parallel_map(
     if first_exception:
         raise first_exception
 
-    # All results should be populated if no exception was raised and propagated
-    # Cast is safe here if no exception was raised.
     return cast(list[R], results)

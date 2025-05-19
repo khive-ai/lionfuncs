@@ -2,18 +2,27 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A Python utility library for robust asynchronous programming, file system operations, and network interactions.
+A Python utility library for robust asynchronous programming, file system
+operations, and network interactions.
 
 ## Overview
 
-`lionfuncs` provides a core set of reusable utilities designed to simplify common programming tasks with a focus on reliability and performance. It offers a comprehensive suite of tools for asynchronous operations, file system interactions, network calls, concurrency management, error handling, and general utilities.
+`lionfuncs` provides a core set of reusable utilities designed to simplify
+common programming tasks with a focus on reliability and performance. It offers
+a comprehensive suite of tools for asynchronous operations, file system
+interactions, network calls, concurrency management, error handling, and general
+utilities.
 
 ## Key Features
 
-- **Async Utilities**: Powerful tools like `alcall` and `bcall` for concurrent execution with fine-grained control
-- **Concurrency Management**: Primitives such as `BoundedQueue` and `WorkQueue` for managing concurrent workloads
-- **File System Operations**: Utilities for reading, writing, and processing files with both sync and async APIs
-- **Network Client**: Resilient HTTP client with built-in circuit breaker, retry, and rate limiting capabilities
+- **Async Utilities**: Powerful tools like `alcall` and `bcall` for concurrent
+  execution with fine-grained control
+- **Concurrency Management**: Primitives such as `BoundedQueue` and `WorkQueue`
+  for managing concurrent workloads
+- **File System Operations**: Utilities for reading, writing, and processing
+  files with both sync and async APIs
+- **Network Client**: Resilient HTTP client with built-in circuit breaker,
+  retry, and rate limiting capabilities
 - **Error Handling**: Standardized error types and handling mechanisms
 - **Media Processing**: Optional utilities for working with images and PDFs
 
@@ -27,7 +36,8 @@ pip install lionfuncs
 
 ### Installation with Media Utilities
 
-To use the media utilities (e.g., `pdf_to_images`), install with the `media` extra:
+To use the media utilities (e.g., `pdf_to_images`), install with the `media`
+extra:
 
 ```bash
 pip install lionfuncs[media]
@@ -95,7 +105,8 @@ asyncio.run(main())
 
 ## Documentation
 
-For comprehensive documentation, including detailed API references and usage guides, visit:
+For comprehensive documentation, including detailed API references and usage
+guides, visit:
 
 - [API Reference](docs/lionfuncs/api/index.md)
 - [Usage Guides](docs/lionfuncs/guides)
@@ -106,8 +117,11 @@ For comprehensive documentation, including detailed API references and usage gui
 
 ## Contributing
 
-We welcome contributions to `lionfuncs`! Please see our [Contribution Guidelines](docs/lionfuncs/contributing.md) for details on how to get started, coding standards, and the pull request process.
+We welcome contributions to `lionfuncs`! Please see our
+[Contribution Guidelines](docs/lionfuncs/contributing.md) for details on how to
+get started, coding standards, and the pull request process.
 
 ## License
 
-`lionfuncs` is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+`lionfuncs` is licensed under the MIT License. See the [LICENSE](LICENSE) file
+for details.
