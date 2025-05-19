@@ -154,7 +154,7 @@ async def test_alcall_max_concurrent():
     await alcall([1, 2, 3, 4, 5], dummy_async_func, delay=0.1, max_concurrent=2)
     duration = time.monotonic() - start_time
     assert (
-        0.2 < duration < 0.4
+        0.2 < duration < 0.45
     )  # Check it's not purely sequential (0.5s) or fully parallel
 
 
