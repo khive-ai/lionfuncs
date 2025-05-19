@@ -32,7 +32,7 @@ class TestBaseSDKAdapter:
             return self._client
 
         async def call(self, method_name, **kwargs):
-            _ = await self._get_client()
+            await self._get_client()
             return f"Called {method_name} with {kwargs}"
 
     @pytest.mark.asyncio
