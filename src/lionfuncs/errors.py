@@ -20,22 +20,32 @@ __all__ = [
 
 class LionError(Exception):
     """Base exception for all lionfuncs errors."""
+
     pass
 
 
 class LionFileError(LionError):
     """For file system operation errors."""
+
     pass
 
 
 class LionNetworkError(LionError):
     """For network operation errors (e.g., connection issues, non-HTTP errors)."""
+
     pass
 
 
 class APIClientError(LionNetworkError):
     """Base for HTTP client errors from AsyncAPIClient."""
-    def __init__(self, message: str, *, status_code: int | None = None, response_content: str | bytes | None = None):
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: int | None = None,
+        response_content: str | bytes | None = None,
+    ):
         super().__init__(message)
         self.status_code = status_code
         self.response_content = response_content
@@ -46,45 +56,66 @@ class APIClientError(LionNetworkError):
             return f"{base_str} (Status Code: {self.status_code})"
         return base_str
 
+
 class APIConnectionError(APIClientError):
     """Raised when the client cannot connect to the server."""
+
     pass
+
 
 class APITimeoutError(APIClientError):
     """Raised when a request times out."""
+
     pass
+
 
 class RateLimitError(APIClientError):
     """Raised for 429 status codes, indicating rate limiting."""
-    def __init__(self, message: str = "Rate limit exceeded", *, retry_after: int | None = None, **kwargs):
+
+    def __init__(
+        self,
+        message: str = "Rate limit exceeded",
+        *,
+        retry_after: int | None = None,
+        **kwargs,
+    ):
         super().__init__(message, **kwargs)
         self.retry_after = retry_after
 
+
 class AuthenticationError(APIClientError):
     """Raised for 401/403 status codes, indicating authentication/authorization issues."""
+
     pass
+
 
 class ResourceNotFoundError(APIClientError):
     """Raised for 404 status codes."""
+
     pass
+
 
 class ServerError(APIClientError):
     """Raised for 5xx status codes."""
+
     pass
 
 
 class CircuitBreakerOpenError(LionNetworkError):
     """Raised when an operation is blocked by an open circuit breaker."""
+
     pass
 
 
 class LionConcurrencyError(LionError):
     """For concurrency primitive errors."""
+
     pass
 
 
 class QueueStateError(LionConcurrencyError):
     """Raised for invalid operations on a queue given its current state."""
+
     pass
 
 
@@ -94,6 +125,7 @@ class LionSDKError(LionError):
     Specific SDK errors should inherit from this.
     e.g., OpenAISDKError(LionSDKError)
     """
+
     def __init__(self, message: str, *, original_exception: Exception | None = None):
         super().__init__(message)
         self.original_exception = original_exception

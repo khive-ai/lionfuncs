@@ -1,29 +1,26 @@
-import asyncio
-import functools
-import inspect
-import json
-import os
+import logging
 import math
+import os
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, TypeVar, cast, List, Literal, Union
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import logging
-import aiofiles # Added for async file operations
+from typing import Any, Callable, Literal, TypeVar, Union
 
-from ..errors import LionFileError # Relative import from parent package
+import aiofiles  # Added for async file operations
+
+from ..errors import LionFileError  # Relative import from parent package
 
 R = TypeVar("R")
 
 __all__ = [
     "chunk_content",
-    "read_file", # Will become async
-    "save_to_file", # Will become async
+    "read_file",  # Will become async
+    "save_to_file",  # Will become async
     "list_files",
-    "concat_files", # Will become async
+    "concat_files",  # Will become async
     "dir_to_files",
 ]
+
 
 # --- Internal helper _create_path (remains synchronous) ---
 def _create_path(
@@ -54,7 +51,7 @@ def _create_path(
         ext_part = f".{extension.lstrip('.')}"
     elif not ext_part and extension is None:
         ext_part = ""
-    
+
     name = name_part
     if timestamp:
         ts_str = datetime.now().strftime(timestamp_format or "%Y%m%d%H%M%S")
@@ -66,23 +63,29 @@ def _create_path(
     try:
         full_path.parent.mkdir(parents=True, exist_ok=dir_exist_ok)
     except OSError as e:
-        raise LionFileError(f"Failed to create directory {full_path.parent}: {e}") from e
+        raise LionFileError(
+            f"Failed to create directory {full_path.parent}: {e}"
+        ) from e
     if full_path.exists() and not file_exist_ok:
         raise LionFileError(
             f"File {full_path} already exists and file_exist_ok is False."
         )
     return full_path
 
+
 # --- chunk_content and its helpers (remains synchronous) ---
 # n_chunks-based implementation
 def _chunk_by_chars_internal(
     text: str, chunk_size: int, slice_overlap: int, threshold: int
 ) -> list[str]:
-    if not text: return []
-    if chunk_size <= 0: return [text]
+    if not text:
+        return []
+    if chunk_size <= 0:
+        return [text]
 
     text_len = len(text)
-    if text_len == 0: return []
+    if text_len == 0:
+        return []
     n_chunks = math.ceil(text_len / chunk_size) if chunk_size > 0 else 1
 
     if n_chunks <= 1:
@@ -94,38 +97,38 @@ def _chunk_by_chars_internal(
         # First part, potentially extended by slice_overlap
         chunk1_end = min(chunk_size + slice_overlap, text_len)
         chunks.append(text[0:chunk1_end])
-        
+
         # Nominal start of second part is chunk_size.
         # If remaining (text_len - chunk_size) > threshold, create second chunk.
         if (text_len - chunk_size) > threshold:
             # Second part starts considering slice_overlap from the nominal boundary
             start_idx_part2 = max(0, chunk_size - slice_overlap)
             chunks.append(text[start_idx_part2:])
-        else: # Merge: the first chunk becomes the whole text
+        else:  # Merge: the first chunk becomes the whole text
             chunks = [text]
         return chunks
-    
+
     # n_chunks > 2 (i.e., _chunk_multiple_parts logic)
     # First chunk
-    chunks.append(text[0:min(chunk_size + slice_overlap, text_len)])
+    chunks.append(text[0 : min(chunk_size + slice_overlap, text_len)])
 
     # Middle chunks
     for i in range(1, n_chunks - 1):
         nominal_start_current_chunk = i * chunk_size
         start_idx = max(0, nominal_start_current_chunk - slice_overlap)
-        
+
         nominal_end_current_chunk = (i + 1) * chunk_size
         end_idx = min(text_len, nominal_end_current_chunk + slice_overlap)
         chunks.append(text[start_idx:end_idx])
-        
+
     # Last chunk
     nominal_start_of_last_block = (n_chunks - 1) * chunk_size
-    
-    if (text_len - nominal_start_of_last_block) >= threshold: # Changed > to >=
+
+    if (text_len - nominal_start_of_last_block) >= threshold:  # Changed > to >=
         actual_start_of_last_slice = max(0, nominal_start_of_last_block - slice_overlap)
         chunks.append(text[actual_start_of_last_slice:])
-    else: # Merge if (text_len - nominal_start_of_last_block) < threshold
-        if chunks: # Merge with the penultimate chunk
+    else:  # Merge if (text_len - nominal_start_of_last_block) < threshold
+        if chunks:  # Merge with the penultimate chunk
             # Append the non-overlapping part of the "too small" chunk.
             # Content to append starts after the penultimate chunk's nominal end + slice_overlap
             # This is equivalent to: (n_chunks - 1) * chunk_size + slice_overlap
@@ -136,8 +139,10 @@ def _chunk_by_chars_internal(
                 # A simpler, more robust merge for n_chunks > 2: make the penultimate chunk extend to the end.
                 # Start of penultimate chunk (which is chunks[-1]):
                 # It was the (n-2)th nominal chunk.
-                idx_start_of_penultimate = max(0, (n_chunks - 2) * chunk_size - slice_overlap)
-                chunks[-1] = text[idx_start_of_penultimate : text_len]
+                idx_start_of_penultimate = max(
+                    0, (n_chunks - 2) * chunk_size - slice_overlap
+                )
+                chunks[-1] = text[idx_start_of_penultimate:text_len]
             # If start_append_content_idx >= text_len, chunks[-1] already covers everything or up to the point.
             # This can happen if slice_overlap is large. The current construction of chunks[-1] should be fine.
             # The key is that if we merge, the total number of chunks reduces by 1.
@@ -151,27 +156,33 @@ def _chunk_by_chars_internal(
             # No, this is too complex. The original append was:
             # chunks[-1] += text[chunk_size * (n_chunks - 1) + slice_overlap_from_original_code :]
             # which is text[nominal_start_of_last_block + slice_overlap :]
-            
+
             # Corrected merge for n_chunks > 2:
             # The penultimate chunk is `chunks[-1]`. It was formed from `i = n_chunks - 2`.
             # Its nominal start was `(n_chunks - 2) * chunk_size`.
             # Its actual start was `max(0, (n_chunks - 2) * chunk_size - slice_overlap)`.
             # It should now extend to `text_len`.
-            start_of_penultimate_slice = max(0, (n_chunks - 2) * chunk_size - slice_overlap)
-            chunks[-1] = text[start_of_penultimate_slice : text_len]
+            start_of_penultimate_slice = max(
+                0, (n_chunks - 2) * chunk_size - slice_overlap
+            )
+            chunks[-1] = text[start_of_penultimate_slice:text_len]
 
     return chunks
+
 
 def _chunk_by_tokens_internal(
     tokens: list[str], chunk_size: int, slice_overlap: int, threshold: int
 ) -> list[list[str]]:
-    if not tokens: return []
-    if chunk_size <= 0: return [tokens]
+    if not tokens:
+        return []
+    if chunk_size <= 0:
+        return [tokens]
 
     num_tokens = len(tokens)
-    if num_tokens == 0: return []
+    if num_tokens == 0:
+        return []
     n_chunks = math.ceil(num_tokens / chunk_size) if chunk_size > 0 else 1
-    
+
     if n_chunks <= 1:
         return [tokens]
 
@@ -179,7 +190,7 @@ def _chunk_by_tokens_internal(
     if n_chunks == 2:
         chunk1_end = min(chunk_size + slice_overlap, num_tokens)
         chunks.append(tokens[0:chunk1_end])
-        if (num_tokens - chunk_size) >= threshold: # Changed > to >=
+        if (num_tokens - chunk_size) >= threshold:  # Changed > to >=
             start_idx_part2 = max(0, chunk_size - slice_overlap)
             chunks.append(tokens[start_idx_part2:])
         else:
@@ -187,25 +198,32 @@ def _chunk_by_tokens_internal(
         return chunks
 
     # n_chunks > 2
-    chunks.append(tokens[0:min(chunk_size + slice_overlap, num_tokens)]) # First chunk
+    chunks.append(
+        tokens[0 : min(chunk_size + slice_overlap, num_tokens)]
+    )  # First chunk
 
-    for i in range(1, n_chunks - 1): # Middle chunks
+    for i in range(1, n_chunks - 1):  # Middle chunks
         nominal_start = i * chunk_size
         start_idx = max(0, nominal_start - slice_overlap)
         nominal_end = (i + 1) * chunk_size
         end_idx = min(num_tokens, nominal_end + slice_overlap)
         chunks.append(tokens[start_idx:end_idx])
-        
+
     nominal_start_of_last_block = (n_chunks - 1) * chunk_size
-    if (num_tokens - nominal_start_of_last_block) >= threshold: # Changed > to >=. Last chunk is large enough or exactly threshold
+    if (
+        num_tokens - nominal_start_of_last_block
+    ) >= threshold:  # Changed > to >=. Last chunk is large enough or exactly threshold
         actual_start_of_last_slice = max(0, nominal_start_of_last_block - slice_overlap)
         chunks.append(tokens[actual_start_of_last_slice:])
-    else: # Merge last part with penultimate chunk
-        if chunks: # Should be true if n_chunks > 2
-            start_of_penultimate_slice = max(0, (n_chunks - 2) * chunk_size - slice_overlap)
-            chunks[-1] = tokens[start_of_penultimate_slice : num_tokens]
-            
+    else:  # Merge last part with penultimate chunk
+        if chunks:  # Should be true if n_chunks > 2
+            start_of_penultimate_slice = max(
+                0, (n_chunks - 2) * chunk_size - slice_overlap
+            )
+            chunks[-1] = tokens[start_of_penultimate_slice:num_tokens]
+
     return chunks
+
 
 def chunk_content(
     content: str,
@@ -219,28 +237,42 @@ def chunk_content(
     if not isinstance(content, str):
         raise LionFileError("Content must be a string.")
     if not 0 <= overlap_ratio < 1:
-        raise LionFileError("Overlap ratio must be between 0.0 and <1.0") # Corrected message
-    
+        raise LionFileError(
+            "Overlap ratio must be between 0.0 and <1.0"
+        )  # Corrected message
+
     # slice_overlap is the one-sided overlap, as used in original dev/file.py's helpers
     slice_overlap = int(chunk_size * overlap_ratio / 2) if chunk_size > 0 else 0
-        
-    processed_chunks_list: List[str]
+
+    processed_chunks_list: list[str]
     if chunk_by == "tokens":
         tokens = tokenizer(content, **kwargs)
-        raw_token_chunks = _chunk_by_tokens_internal(tokens, chunk_size, slice_overlap, threshold)
-        processed_chunks_list = [" ".join(token_list) for token_list in raw_token_chunks]
+        raw_token_chunks = _chunk_by_tokens_internal(
+            tokens, chunk_size, slice_overlap, threshold
+        )
+        processed_chunks_list = [
+            " ".join(token_list) for token_list in raw_token_chunks
+        ]
     elif chunk_by == "chars":
-        processed_chunks_list = _chunk_by_chars_internal(content, chunk_size, slice_overlap, threshold)
+        processed_chunks_list = _chunk_by_chars_internal(
+            content, chunk_size, slice_overlap, threshold
+        )
     else:
-        raise LionFileError(f"Invalid chunk_by value: {chunk_by}. Must be 'chars' or 'tokens'.")
+        raise LionFileError(
+            f"Invalid chunk_by value: {chunk_by}. Must be 'chars' or 'tokens'."
+        )
     output_chunks = []
     for i, chunk_text in enumerate(processed_chunks_list):
-        output_chunks.append({
-            "chunk_content": chunk_text, "chunk_id": i + 1,
-            "total_chunks": len(processed_chunks_list),
-            "chunk_size_chars": len(chunk_text),
-        })
+        output_chunks.append(
+            {
+                "chunk_content": chunk_text,
+                "chunk_id": i + 1,
+                "total_chunks": len(processed_chunks_list),
+                "chunk_size_chars": len(chunk_text),
+            }
+        )
     return output_chunks
+
 
 # --- Async file operations ---
 async def read_file(path: Union[str, Path]) -> str:
@@ -257,6 +289,7 @@ async def read_file(path: Union[str, Path]) -> str:
     except Exception as e:
         raise LionFileError(f"Error reading file {path}: {e}") from e
 
+
 async def save_to_file(
     text: str,
     directory: Union[str, Path],
@@ -268,11 +301,13 @@ async def save_to_file(
     Asynchronously save text to a file.
     """
     try:
-        file_path = _create_path( # _create_path is sync, handles path logic and dir creation
-            directory=Path(directory),
-            filename=filename,
-            file_exist_ok=file_exist_ok,
-            dir_exist_ok=True
+        file_path = (
+            _create_path(  # _create_path is sync, handles path logic and dir creation
+                directory=Path(directory),
+                filename=filename,
+                file_exist_ok=file_exist_ok,
+                dir_exist_ok=True,
+            )
         )
         async with aiofiles.open(file_path, mode="w", encoding="utf-8") as f:
             await f.write(text)
@@ -281,17 +316,22 @@ async def save_to_file(
         return file_path
     except LionFileError:
         raise
-    except OSError as e: # Catch OS errors from aiofiles.open or write
-        raise LionFileError(f"Failed to save file {filename} in {directory}: {e}") from e
+    except OSError as e:  # Catch OS errors from aiofiles.open or write
+        raise LionFileError(
+            f"Failed to save file {filename} in {directory}: {e}"
+        ) from e
     except Exception as e:
-        raise LionFileError(f"An unexpected error occurred while saving file: {e}") from e
+        raise LionFileError(
+            f"An unexpected error occurred while saving file: {e}"
+        ) from e
+
 
 # --- Synchronous file operations (list_files, dir_to_files) ---
 def list_files(
     dir_path: Union[str, Path],
     extension: str | None = None,
     recursive: bool = False,
-) -> List[Path]:
+) -> list[Path]:
     directory = Path(dir_path)
     if not directory.is_dir():
         raise LionFileError(f"Path is not a directory: {dir_path}")
@@ -304,17 +344,18 @@ def list_files(
         paths = [p for p in directory.glob(glob_pattern) if p.is_file()]
     return paths
 
+
 def dir_to_files(
     directory: Union[str, Path],
-    file_types: List[str] | None = None,
+    file_types: list[str] | None = None,
     ignore_errors: bool = False,
     verbose: bool = False,
     recursive: bool = True,
-) -> List[Path]:
+) -> list[Path]:
     directory_path = Path(directory)
     if not directory_path.is_dir():
         raise LionFileError(f"The provided path is not a valid directory: {directory}")
-    found_files: List[Path] = []
+    found_files: list[Path] = []
     items_to_scan = [directory_path]
     while items_to_scan:
         current_path = items_to_scan.pop(0)
@@ -330,22 +371,25 @@ def dir_to_files(
                         found_files.append(entry)
         except PermissionError as e:
             if ignore_errors:
-                if verbose: logging.warning(f"Permission error scanning {current_path}: {e}")
+                if verbose:
+                    logging.warning(f"Permission error scanning {current_path}: {e}")
             else:
                 raise LionFileError(f"Permission error scanning {current_path}") from e
         except OSError as e:
             if ignore_errors:
-                if verbose: logging.warning(f"OS error scanning {current_path}: {e}")
+                if verbose:
+                    logging.warning(f"OS error scanning {current_path}: {e}")
             else:
                 raise LionFileError(f"OS error scanning {current_path}") from e
     if verbose:
         logging.info(f"Found {len(found_files)} files in {directory}")
     return sorted(list(set(found_files)))
 
+
 # --- Async concat_files ---
 async def concat_files(
-    data_paths: Union[str, Path, List[Union[str, Path]]],
-    file_types: List[str],
+    data_paths: Union[str, Path, list[Union[str, Path]]],
+    file_types: list[str],
     output_dir: Union[str, Path, None] = None,
     output_filename: str | None = None,
     file_exist_ok: bool = True,
@@ -358,14 +402,18 @@ async def concat_files(
     else:
         paths_to_scan = [Path(p) for p in data_paths]
 
-    all_texts: List[str] = []
-    processed_file_paths: List[Path] = []
+    all_texts: list[str] = []
+    processed_file_paths: list[Path] = []
 
-    for path_item in paths_to_scan: # Path scanning can remain sync
+    for path_item in paths_to_scan:  # Path scanning can remain sync
         if path_item.is_dir():
             # dir_to_files is sync
             files_in_dir = dir_to_files(
-                path_item, file_types=file_types, recursive=recursive, verbose=False, ignore_errors=True
+                path_item,
+                file_types=file_types,
+                recursive=recursive,
+                verbose=False,
+                ignore_errors=True,
             )
             processed_file_paths.extend(files_in_dir)
         elif path_item.is_file():
@@ -373,15 +421,17 @@ async def concat_files(
                 if path_item.suffix.lower() in [ft.lower() for ft in file_types]:
                     processed_file_paths.append(path_item)
             else:
-                 processed_file_paths.append(path_item)
+                processed_file_paths.append(path_item)
         elif verbose:
-            logging.warning(f"Path {path_item} is not a valid file or directory, skipping.")
-    
+            logging.warning(
+                f"Path {path_item} is not a valid file or directory, skipping."
+            )
+
     unique_sorted_fps = sorted(list(set(processed_file_paths)))
 
     for fp in unique_sorted_fps:
         try:
-            text = await read_file(fp) # Use async read_file
+            text = await read_file(fp)  # Use async read_file
             if len(text) >= content_threshold:
                 header = f"\n--- START OF FILE: {fp.resolve()} ---\n"
                 footer = f"\n--- END OF FILE: {fp.resolve()} ---\n"
@@ -394,7 +444,7 @@ async def concat_files(
 
     if output_dir and output_filename:
         try:
-            await save_to_file( # Use async save_to_file
+            await save_to_file(  # Use async save_to_file
                 concatenated_text,
                 directory=output_dir,
                 filename=output_filename,
@@ -406,6 +456,8 @@ async def concat_files(
                 logging.error(f"Failed to save concatenated output: {e}")
     elif output_dir and not output_filename:
         if verbose:
-            logging.warning("output_dir provided for concat_files, but no output_filename. Output not saved.")
-            
+            logging.warning(
+                "output_dir provided for concat_files, but no output_filename. Output not saved."
+            )
+
     return concatenated_text

@@ -3,7 +3,8 @@ import functools
 import inspect
 import json
 import os
-from typing import Any, Callable, Coroutine, Dict, TypeVar, cast
+from collections.abc import Coroutine
+from typing import Any, Callable, TypeVar, cast
 
 R = TypeVar("R")
 
@@ -13,6 +14,7 @@ __all__ = [
     "get_env_bool",
     "get_env_dict",
 ]
+
 
 def is_coro_func(func: Callable[..., Any]) -> bool:
     """
@@ -30,10 +32,12 @@ def is_coro_func(func: Callable[..., Any]) -> bool:
         func = func.func
     return inspect.iscoroutinefunction(func) or inspect.isasyncgenfunction(func)
 
+
 async def _run_sync_in_executor(func: Callable[..., R], *args: Any, **kwargs: Any) -> R:
     """Helper to run a sync function in the default executor."""
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, functools.partial(func, *args, **kwargs))
+
 
 def force_async(func: Callable[..., R]) -> Callable[..., Coroutine[Any, Any, R]]:
     """
@@ -54,6 +58,7 @@ def force_async(func: Callable[..., R]) -> Callable[..., Coroutine[Any, Any, R]]
         return await _run_sync_in_executor(func, *args, **kwargs)
 
     return wrapper
+
 
 def get_env_bool(var_name: str, default: bool = False) -> bool:
     """
@@ -78,7 +83,10 @@ def get_env_bool(var_name: str, default: bool = False) -> bool:
         return False
     return default
 
-def get_env_dict(var_name: str, default: Dict[Any, Any] | None = None) -> Dict[Any, Any] | None:
+
+def get_env_dict(
+    var_name: str, default: dict[Any, Any] | None = None
+) -> dict[Any, Any] | None:
     """
     Gets a dictionary environment variable (expected to be a JSON string).
 
@@ -94,6 +102,6 @@ def get_env_dict(var_name: str, default: Dict[Any, Any] | None = None) -> Dict[A
         return default
 
     try:
-        return cast(Dict[Any, Any], json.loads(value_str))
+        return cast(dict[Any, Any], json.loads(value_str))
     except json.JSONDecodeError:
         return default
