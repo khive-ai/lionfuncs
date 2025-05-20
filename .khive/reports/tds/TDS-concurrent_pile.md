@@ -113,7 +113,7 @@ graph TD
     UserCode -->|calls methods| ConcurrentPile
     ConcurrentPile -->|uses for locking| AsyncLock["_async_lock (lionfuncs.concurrency.Lock)"]
     ConcurrentPile -->|manages| InternalState["_elements (Dict), _order (List)"]
-    
+
     subgraph ConcurrentPile Class
         direction LR
         PublicAPI["Async Methods (aadd, aget, etc.)"]
@@ -186,7 +186,7 @@ sequenceDiagram
     Client->>+ConcurrentPile: enters `async with pile:` block (__aenter__)
     ConcurrentPile->>+AsyncLock: acquire() [Outer lock]
     AsyncLock-->>-ConcurrentPile: Lock Acquired
-    
+
     Client->>+ConcurrentPile: pile.aadd("id1", item1)
     Note over ConcurrentPile: Method internally re-acquires reentrant lock
     ConcurrentPile->>+AsyncLock: acquire() [Reentrant]
@@ -234,7 +234,7 @@ class ConcurrentPile(BaseModel, Generic[E]):
 
     class Config:
         arbitrary_types_allowed = True
-        
+
     def __init__(self, elements: Optional[Iterable[Tuple[str, E]]] = None, **data: Any) -> None:
         """
         Initializes the ConcurrentPile.
@@ -292,7 +292,7 @@ class ConcurrentPile(BaseModel, Generic[E]):
                 self._order.remove(item_id)
                 return item
             return None
-            
+
     async def apop(self, index: int = -1) -> E:
         """
         Purpose: Asynchronously removes and returns an item at the given index (default last).
@@ -301,11 +301,11 @@ class ConcurrentPile(BaseModel, Generic[E]):
         async with self._async_lock:
             if not self._order:
                 raise IndexError("Pop from an empty pile.")
-            
+
             actual_index = index
             if index < 0:
                 actual_index = len(self._order) + index
-            
+
             if not (0 <= actual_index < len(self._order)):
                 raise IndexError("Pop index out of range.")
 
@@ -365,7 +365,7 @@ class ConcurrentPile(BaseModel, Generic[E]):
         # This can be implemented by calling aitems and yielding only values
         async for _, value in self.aitems():
             yield value
-            
+
     async def akeys(self) -> AsyncIterator[str]:
         """
         Purpose: Provides an asynchronous iterator over item IDs in order.
@@ -373,7 +373,7 @@ class ConcurrentPile(BaseModel, Generic[E]):
         """
         async with self._async_lock:
             current_order_snapshot = list(self._order)
-        
+
         for item_id in current_order_snapshot:
             yield item_id
             await asyncio.sleep(0)
@@ -568,12 +568,14 @@ Requires Python 3.8+ (or as per `lionfuncs`) and dependencies (Pydantic,
 ## 11. Open Questions
 
 - Should there be a maximum size limit for the pile, and how should it be
-  handled (e.g., raise error, block, drop oldest)? (Out of scope for v0.1.0)
+  handled (e.g., raise error, block, drop oldest)? (Out of scope for v0.1.0, but
+  see Appendix C for ideas using `lionfuncs.Event/Condition`)
 - Is there a need for more sophisticated item-level type validation beyond
   relying on the generic type `E`? (Out of scope for v0.1.0)
 - Are specific "bulk" operations (e.g., `aadd_many`, `aremove_many`) that
   operate under a single lock acquisition needed for performance in certain use
-  cases? (Users can achieve this with `async with pile:`)
+  cases? (Users can achieve this with `async with pile:`, but dedicated methods
+  could be added. See Appendix C for `parallel_map` ideas).
 
 ## 12. Appendices
 
@@ -596,3 +598,158 @@ Requires Python 3.8+ (or as per `lionfuncs`) and dependencies (Pydantic,
 - Python `asyncio` documentation on locks and context managers.
 - `anyio` library documentation (as `lionfuncs.concurrency.Lock` is likely an
   `anyio` wrapper).
+- Perplexity search `(pplx:978242b1-deb1-4abf-8bc3-ab26863cf3d3)` on single
+  reentrant lock performance.
+
+## Appendix C: Advanced Features & Deeper `lionfuncs` Integration
+
+This appendix explores how additional primitives from the `lionfuncs` library
+could be leveraged to enhance `ConcurrentPile` with more advanced features or
+simplify the implementation of complex behaviors. While the v0.1.0 design
+focuses on core concurrent collection capabilities using
+`lionfuncs.concurrency.Lock`, the broader `lionfuncs` toolkit offers more.
+
+### C.1 Processing Collection Contents Concurrently (`lionfuncs.async_utils`)
+
+For scenarios where operations need to be performed on multiple (or all) items
+within the `ConcurrentPile` concurrently:
+
+- **`parallel_map(func, items, max_concurrency)`:**
+  - **Potential Use Case:** Implement a method like
+    `async def async_map_items(self, async_transform_func: Callable[[E], Any], max_concurrency: int = 10) -> List[Any]:`.
+  - **Implementation Sketch:**
+    ```python
+    # Inside ConcurrentPile
+    # from lionfuncs.async_utils import parallel_map # Actual import
+    # async def async_map_items(self, async_transform_func, max_concurrency=10):
+    #     items_snapshot = []
+    #     async for item_value in self.avalues(): # uses snapshotting
+    #         items_snapshot.append(item_value)
+    #
+    #     if not items_snapshot:
+    #         return []
+    #
+    #     return await parallel_map(async_transform_func, items_snapshot, max_concurrency)
+    ```
+  - **Benefit:** `parallel_map` from
+    [`src/lionfuncs/async_utils.py`](src/lionfuncs/async_utils.py:569) handles
+    the complexities of task grouping, execution, and result aggregation, making
+    the `ConcurrentPile` method much simpler to write.
+
+- **`alcall(input_list, func, ...)` /
+  `bcall(input_list, func, batch_size, ...)`:**
+  - **Potential Use Case:** If `ConcurrentPile` items need to be processed by an
+    external service (via an API call represented by `func`) with built-in
+    retries, delays, batching, and error handling.
+  - **Implementation Sketch:** A method like
+    `async def async_process_with_retries(self, item_ids: List[str], processing_func: Callable, retry_params: dict = None, batch_size: Optional[int] = None)`
+    could retrieve the specified items and then use `alcall` or `bcall` (from
+    [`src/lionfuncs/async_utils.py`](src/lionfuncs/async_utils.py)) to manage
+    their processing.
+  - **Benefit:** These functions from
+    [`src/lionfuncs/async_utils.py`](src/lionfuncs/async_utils.py) encapsulate
+    sophisticated retry logic, concurrency management, and batching,
+    significantly reducing the custom code needed within `ConcurrentPile` for
+    such resilient operations.
+
+### C.2 Controlling Method Execution Behavior (`lionfuncs.async_utils` decorators)
+
+These decorators can be applied to specific `ConcurrentPile` methods:
+
+- **`@throttle(period)`:**
+  - **Potential Use Case:** If `ConcurrentPile` had a method that, for example,
+    triggered a costly re-indexing or summary generation of its contents,
+    `@throttle` (from
+    [`src/lionfuncs/async_utils.py`](src/lionfuncs/async_utils.py:95)) could
+    prevent it from being called too frequently.
+  - **Benefit:** Simple, declarative rate limiting for specific operations.
+
+- **`@max_concurrent(limit)`:**
+  - **Potential Use Case:** While write operations are serialized by the main
+    `_async_lock`, if there's a particularly resource-intensive read operation
+    (e.g., one that deeply inspects or transforms items from a snapshot),
+    `@max_concurrent` (from
+    [`src/lionfuncs/async_utils.py`](src/lionfuncs/async_utils.py:122)) could
+    limit how many such operations run in parallel, even if they don't block
+    each other via the main lock.
+  - **Benefit:** Fine-grained concurrency control for specific methods to
+    prevent resource starvation.
+
+### C.3 Advanced Synchronization & Flow Control (`lionfuncs.concurrency`)
+
+- **`Semaphore(value)`:**
+  - **Potential Use Case:** Limit the number of concurrent active iterators.
+    While iterators operate on snapshots, creating many snapshots simultaneously
+    for very large piles could have memory implications. A `Semaphore` (from
+    [`src/lionfuncs/concurrency.py`](src/lionfuncs/concurrency.py:31)) could be
+    acquired in `__aiter__` and released when the iterator is exhausted or
+    closed.
+  - **Benefit:** Control over concurrent resource usage related to specific pile
+    operations (like iteration).
+
+- **`Event()`:**
+  - **Potential Use Case 1 (Max Size Limit):**
+    - `ConcurrentPile` could have a `max_size` attribute and an internal
+      `_space_available_event: lionfuncs.concurrency.Event`.
+    - `aadd`: If `len(self._order) >= self.max_size`, it would
+      `await self._space_available_event.wait()`, then clear the event.
+    - `aremove`/`apop`: Would call `self._space_available_event.set()` if space
+      becomes available.
+  - **Potential Use Case 2 ("Wait for Item"):**
+    - Implement
+      `async def await_item_presence(self, item_id: str, timeout: Optional[float] = None) -> bool:`.
+    - This method could use a dictionary of `lionfuncs.concurrency.Event`
+      objects, one per awaited `item_id`. When `aadd` adds an item, it checks
+      this dictionary and sets the corresponding event.
+  - **Benefit:** `Event` (from
+    [`src/lionfuncs/concurrency.py`](src/lionfuncs/concurrency.py:32)) provides
+    a clean way to signal conditions and manage task waiting/resumption for
+    features like bounded collections or item-presence notifications.
+
+- **`Condition()`:**
+  - **Potential Use Case:** Similar to `Event` for max size, but `Condition`
+    (from [`src/lionfuncs/concurrency.py`](src/lionfuncs/concurrency.py:34)) is
+    often preferred when the condition to wait for is more complex than a simple
+    flag, or when multiple waiters need to be notified. It integrates directly
+    with a lock (which could be `_async_lock`).
+  - Example: Wait until `len(self._order) < self.max_size` or
+    `len(self._order) == 0`.
+    ```python
+    # Inside ConcurrentPile, assuming self._condition uses self._async_lock
+    # from lionfuncs.concurrency import Condition # Actual import
+    # # In __init__ or as a Field:
+    # # self._condition = Condition(self._async_lock._lock) # Assuming _async_lock is LionLock wrapping anyio.Lock
+    #
+    # async def aadd_with_max_size_condition(self, item_id, item):
+    #     async with self._condition: # Acquires the associated lock
+    #         while len(self._order) >= self.max_size: # self.max_size needs to be defined
+    #             await self._condition.wait()
+    #         # ... add item ...
+    #         # self._condition.notify() # Notify one waiter if they wait for "not_empty"
+    #
+    # async def aremove_with_max_size_condition(self, item_id):
+    #     async with self._condition:
+    #         # ... remove item ...
+    #         if len(self._order) < self.max_size: # self.max_size needs to be defined
+    #             self._condition.notify_all() # Notify all waiters that space is available
+    ```
+  - **Benefit:** More expressive for complex state-based synchronization,
+    tightly coupled with the collection's main lock.
+
+### C.4 Utility Functions (`lionfuncs.utils`)
+
+- **[`to_list()`](src/lionfuncs/utils.py:130):** As mentioned in the main TDS,
+  useful for normalizing inputs to methods that might accept single items or
+  iterables of items (e.g., a hypothetical `aadd_many`).
+- **[`to_dict()`](src/lionfuncs/utils.py:284):** Used for basic serialization,
+  as noted.
+- **[`force_async()`](src/lionfuncs/utils.py:62) /
+  [`is_coro_func()`](src/lionfuncs/utils.py:39):** If `ConcurrentPile` methods
+  were to accept user-provided callback functions (e.g., for transforming items
+  during an operation), these utilities would help in handling both sync and
+  async callbacks gracefully.
+
+By thoughtfully integrating these additional `lionfuncs` primitives,
+`ConcurrentPile` could evolve into a very powerful and versatile component, with
+much of the underlying concurrency and operational complexity handled robustly
+by the `lionfuncs` library.
