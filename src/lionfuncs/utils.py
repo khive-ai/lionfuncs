@@ -32,6 +32,7 @@ __all__ = [
     "get_env_bool",
     "get_env_dict",
     "to_list",
+    "to_dict",
 ]
 
 
@@ -278,3 +279,99 @@ def to_list(
         return out
 
     return processed
+
+
+def to_dict(
+    obj: Any,
+    *,
+    fields: list[str] | None = None,
+    exclude: list[str] | None = None,
+    by_alias: bool = False,
+    exclude_none: bool = False,
+    exclude_unset: bool = False,
+    exclude_defaults: bool = False,
+) -> dict | list | Any:
+    """Convert various object types to a dictionary representation.
+
+    Handles Pydantic models, dataclasses, dictionaries, lists, and other objects.
+    For Pydantic models, uses model_dump() with appropriate options.
+    For other types, attempts to convert to a dictionary-like structure.
+
+    Args:
+        obj: The object to convert to a dictionary
+        fields: Optional list of field names to include (for Pydantic models)
+        exclude: Optional list of field names to exclude (for Pydantic models)
+        by_alias: Whether to use field aliases (for Pydantic models)
+        exclude_none: Whether to exclude None values (for Pydantic models)
+        exclude_unset: Whether to exclude unset fields (for Pydantic models)
+        exclude_defaults: Whether to exclude fields with default values (for Pydantic models)
+
+    Returns:
+        A dictionary representation of the object, or the original object if it
+        cannot be converted to a dictionary
+
+    Raises:
+        TypeError: If the object cannot be converted to a dictionary
+    """
+    # Handle Pydantic models
+    if isinstance(obj, BaseModel):
+        dump_kwargs = {
+            "by_alias": by_alias,
+            "exclude_none": exclude_none,
+            "exclude_unset": exclude_unset,
+            "exclude_defaults": exclude_defaults,
+        }
+
+        # Handle include/exclude fields
+        if fields is not None:
+            dump_kwargs["include"] = {f: True for f in fields}
+        if exclude is not None:
+            dump_kwargs["exclude"] = {f: True for f in exclude}
+
+        return obj.model_dump(**dump_kwargs)
+
+    # Handle dataclasses
+    if hasattr(obj, "__dataclass_fields__"):
+        from dataclasses import asdict
+
+        base_dict = asdict(obj)
+        # Apply recursive conversion with relevant options
+        return {
+            k: to_dict(v, by_alias=by_alias, exclude_none=exclude_none)
+            for k, v in base_dict.items()
+        }
+
+    # Handle dictionaries
+    if isinstance(obj, dict):
+        return {
+            k: to_dict(v, by_alias=by_alias, exclude_none=exclude_none)
+            for k, v in obj.items()
+        }
+
+    # Handle lists, tuples, sets
+    if isinstance(obj, (list, tuple, set)):
+        return type(obj)(
+            to_dict(item, by_alias=by_alias, exclude_none=exclude_none) for item in obj
+        )
+
+    # Handle general objects with __dict__
+    if hasattr(obj, "__dict__"):
+        return {
+            k: to_dict(v, by_alias=by_alias, exclude_none=exclude_none)
+            for k, v in vars(obj).items()
+        }
+
+    # Handle primitive types
+    if isinstance(obj, (str, int, float, bool)) or obj is None:
+        return obj
+
+    # Try to check if JSON serializable
+    try:
+        json.dumps(obj)
+        return obj
+    except TypeError:
+        # If not directly serializable, raise TypeError
+        raise TypeError(
+            f"Object of type {type(obj)} is not automatically convertible to "
+            "dict/JSON serializable structure."
+        )

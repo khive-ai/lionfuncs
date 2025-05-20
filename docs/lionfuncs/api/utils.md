@@ -247,6 +247,88 @@ d = {"a": 1, "b": 2, "c": 3}
 print(to_list(d, use_values=True))  # [1, 2, 3]
 ```
 
+### to_dict
+
+```python
+def to_dict(
+    obj: Any,
+    *,
+    fields: list[str] | None = None,
+    exclude: list[str] | None = None,
+    by_alias: bool = False,
+    exclude_none: bool = False,
+    exclude_unset: bool = False,
+    exclude_defaults: bool = False,
+) -> dict | list | Any
+```
+
+Convert various object types to a dictionary representation.
+
+Handles Pydantic models, dataclasses, dictionaries, lists, and other objects. For Pydantic models, uses model_dump() with appropriate options. For other types, attempts to convert to a dictionary-like structure.
+
+#### Parameters
+
+- **obj** (`Any`): The object to convert to a dictionary
+- **fields** (`list[str] | None`, optional): Optional list of field names to include (for Pydantic models). Defaults to `None`.
+- **exclude** (`list[str] | None`, optional): Optional list of field names to exclude (for Pydantic models). Defaults to `None`.
+- **by_alias** (`bool`, optional): Whether to use field aliases (for Pydantic models). Defaults to `False`.
+- **exclude_none** (`bool`, optional): Whether to exclude None values (for Pydantic models). Defaults to `False`.
+- **exclude_unset** (`bool`, optional): Whether to exclude unset fields (for Pydantic models). Defaults to `False`.
+- **exclude_defaults** (`bool`, optional): Whether to exclude fields with default values (for Pydantic models). Defaults to `False`.
+
+#### Returns
+
+- `dict | list | Any`: A dictionary representation of the object, or the original object if it cannot be converted to a dictionary
+
+#### Raises
+
+- `TypeError`: If the object cannot be converted to a dictionary
+
+#### Example
+
+```python
+from lionfuncs.utils import to_dict
+from pydantic import BaseModel
+from dataclasses import dataclass
+
+# Pydantic model example
+class User(BaseModel):
+    name: str
+    age: int
+    email: str | None = None
+
+user = User(name="John", age=30, email="john@example.com")
+user_dict = to_dict(user)
+print(user_dict)  # {'name': 'John', 'age': 30, 'email': 'john@example.com'}
+
+# With exclude_none option
+user.email = None
+user_dict = to_dict(user, exclude_none=True)
+print(user_dict)  # {'name': 'John', 'age': 30}
+
+# With fields option
+user_dict = to_dict(user, fields=["name"])
+print(user_dict)  # {'name': 'John'}
+
+# Dataclass example
+@dataclass
+class Product:
+    name: str
+    price: float
+    
+product = Product(name="Widget", price=19.99)
+product_dict = to_dict(product)
+print(product_dict)  # {'name': 'Widget', 'price': 19.99}
+
+# Nested structures
+nested = {
+    "user": user,
+    "products": [product, Product(name="Gadget", price=29.99)]
+}
+nested_dict = to_dict(nested)
+print(nested_dict)  # Converts the entire structure recursively
+```
+
 ## Internal Functions
 
 The following functions are used internally by the module and are not part of
