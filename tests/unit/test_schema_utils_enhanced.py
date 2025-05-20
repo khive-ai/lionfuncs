@@ -138,6 +138,7 @@ class TestSchemaUtilsEnhanced:
         assert schema["properties"]["age"]["type"] == "integer"
         # Pydantic v2 schema format is different, check for anyOf instead of type for Optional fields
         assert "anyOf" in schema["properties"]["email"]
+
         assert any(
             item.get("type") == "string"
             for item in schema["properties"]["email"]["anyOf"]
@@ -188,6 +189,7 @@ class TestSchemaUtilsEnhanced:
                 AuthError: If user_id is invalid or lacks permissions
             """
             return {}
+
 
         schema = function_to_openai_schema(complex_function)
 

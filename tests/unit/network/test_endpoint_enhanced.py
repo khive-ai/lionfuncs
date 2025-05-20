@@ -160,7 +160,6 @@ class TestEndpointEnhanced:
         """Test async context manager when an exception occurs."""
         # This test is tricky because the context manager's __aexit__ is called during exception handling
         # Let's use a different approach to test this behavior
-
         # Create a custom Endpoint class that we can track
         class TestEndpoint(Endpoint):
             def __init__(self, config):
@@ -175,7 +174,6 @@ class TestEndpointEnhanced:
         mock_client = MagicMock()
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock()
-
         with patch(
             "lionfuncs.network.endpoint.AsyncAPIClient", return_value=mock_client
         ):
@@ -191,6 +189,5 @@ class TestEndpointEnhanced:
                     raise ValueError("Test exception")
             except ValueError:
                 pass  # Expected exception
-
             # Verify close was called
             assert endpoint.close_called

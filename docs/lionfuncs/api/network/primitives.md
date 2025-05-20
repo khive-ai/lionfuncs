@@ -705,3 +705,87 @@ The `AdaptiveRateLimiter` supports common rate limit header patterns:
 - ratelimit-limit, ratelimit-remaining, ratelimit-reset (lowercase variants)
 - X-RL-Limit, X-RL-Remaining, X-RL-Reset (shorthand variants)
 - Retry-After (simpler format used by some APIs)
+
+### HttpTransportConfig
+
+```python
+class HttpTransportConfig(BaseModel)
+```
+
+Configuration for HTTP transport in ServiceEndpointConfig.
+
+#### Attributes
+
+- **method** (`str`): Default HTTP method if not overridden at call time. Default: `"POST"`.
+
+### SdkTransportConfig
+
+```python
+class SdkTransportConfig(BaseModel)
+```
+
+Configuration for SDK transport in ServiceEndpointConfig.
+
+#### Attributes
+
+- **sdk_provider_name** (`str`): The name of the SDK provider (e.g., "openai", "anthropic").
+- **default_sdk_method_name** (`Optional[str]`): Default SDK method to call if not specified in invoke(). Default: `None`.
+
+### ServiceEndpointConfig
+
+```python
+class ServiceEndpointConfig(BaseModel)
+```
+
+Comprehensive configuration for API endpoints. This model provides a complete configuration for the Endpoint class, supporting both HTTP and SDK transport types.
+
+#### Attributes
+
+- **name** (`str`): User-defined name for this endpoint configuration (e.g., 'openai_chat_completions_gpt4').
+- **transport_type** (`Literal["http", "sdk"]`): Specifies if direct HTTP or an SDK adapter is used.
+- **api_key** (`Optional[str]`): API key. Can be set via env var or direct value. Default: `None`.
+- **base_url** (`Optional[str]`): Base URL for HTTP calls or if required by an SDK. Default: `None`.
+- **timeout** (`float`): Default request timeout in seconds. Default: `60.0`.
+- **default_headers** (`dict[str, str]`): Default headers for HTTP requests. Default: `{}`.
+- **client_constructor_kwargs** (`dict[str, Any]`): Keyword arguments passed directly to the constructor of AsyncAPIClient or the specific SDK client. Default: `{}`.
+- **http_config** (`Optional[HttpTransportConfig]`): Configuration specific to HTTP transport. Default: `None`.
+- **sdk_config** (`Optional[SdkTransportConfig]`): Configuration specific to SDK transport. Default: `None`.
+- **default_request_kwargs** (`dict[str, Any]`): Default keyword arguments to be included in every request made through this endpoint. Default: `{}`.
+
+#### Validation
+
+The model performs validation after initialization to ensure:
+
+1. For HTTP transport, http_config is provided (or a default is created) and base_url is required.
+2. For SDK transport, sdk_config is required.
+
+#### Example
+
+```python
+from lionfuncs.network.primitives import ServiceEndpointConfig, HttpTransportConfig, SdkTransportConfig
+
+# HTTP transport configuration
+http_config = ServiceEndpointConfig(
+    name="openai_chat",
+    transport_type="http",
+    base_url="https://api.openai.com/v1",
+    api_key="your-api-key",
+    timeout=30.0,
+    default_headers={"User-Agent": "lionfuncs/0.1.0"},
+    http_config=HttpTransportConfig(method="POST"),
+    default_request_kwargs={"model": "gpt-4"}
+)
+
+# SDK transport configuration
+sdk_config = ServiceEndpointConfig(
+    name="openai_sdk",
+    transport_type="sdk",
+    api_key="your-api-key",
+    sdk_config=SdkTransportConfig(
+        sdk_provider_name="openai",
+        default_sdk_method_name="chat.completions.create"
+    ),
+    client_constructor_kwargs={"organization": "your-org-id"},
+    default_request_kwargs={"model": "gpt-4"}
+)
+```

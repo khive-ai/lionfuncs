@@ -82,6 +82,7 @@ class TestNetworkIntegration:
                 # Verify the result
                 assert event.status == RequestStatus.COMPLETED
                 assert event.response_status_code == 200
+
                 # The response body is now directly stored in response_body
                 assert event.response_body == {"result": "success"}
 
@@ -159,6 +160,7 @@ class TestNetworkIntegration:
                 # Verify the result
                 assert event.status == RequestStatus.COMPLETED
                 assert event.response_status_code == 200
+
                 # The response body is now directly stored in response_body
                 assert event.response_body == {"result": "success"}
 

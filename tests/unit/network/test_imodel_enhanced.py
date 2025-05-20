@@ -76,6 +76,7 @@ class TestIModelEnhanced:
     async def test_invoke_http_with_pydantic_model(
         self, mock_executor, mock_http_endpoint
     ):
+
         """Test invoke method with a Pydantic model as request_payload."""
         mock_endpoint, mock_client = mock_http_endpoint
         model = iModel(endpoint=mock_endpoint, executor=mock_executor)

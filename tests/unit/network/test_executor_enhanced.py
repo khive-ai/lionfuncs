@@ -106,7 +106,6 @@ class TestExecutorEnhanced:
         executor.api_tokens_rate_limiter.acquire = AsyncMock(
             return_value=1.5
         )  # 1.5 second wait
-
         # Mock asyncio.sleep
         with patch("asyncio.sleep", new=AsyncMock()) as mock_sleep:
             # Call the _worker method
@@ -240,7 +239,6 @@ class TestExecutorEnhanced:
             event = await executor.submit_task(
                 api_call_coroutine=api_call_coroutine,
             )
-
             # Verify that a NetworkRequestEvent was returned
             assert isinstance(event, NetworkRequestEvent)
             assert event.endpoint_url is None
