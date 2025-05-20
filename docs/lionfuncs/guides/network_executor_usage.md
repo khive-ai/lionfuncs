@@ -15,7 +15,9 @@ calls with proper rate limiting, concurrency control, and request tracking:
 - **Executor**: Manages a queue of API call tasks, enforces concurrency and rate
   limits.
 - **NetworkRequestEvent**: Tracks the lifecycle of API requests.
-- **iModel**: Client for interacting with API models using the Executor.
+- **Endpoint**: Manages the creation, configuration, and lifecycle of API clients.
+- **ServiceEndpointConfig**: Provides comprehensive configuration for API endpoints.
+- **iModel**: Client for interacting with API models using the Endpoint and Executor.
 
 These components work together to provide a robust solution for making API calls
 to model endpoints, with features like:
@@ -120,15 +122,16 @@ async def main():
 asyncio.run(main())
 ```
 
-## Using iModel for Model API Calls
+## Using Endpoint, ServiceEndpointConfig, and iModel
 
-The iModel class provides a higher-level interface for interacting with model
-APIs:
+The new architecture uses Endpoint and ServiceEndpointConfig to provide a more flexible and powerful way to interact with APIs:
 
 ```python
+import asyncio
 from lionfuncs.network.executor import Executor
 from lionfuncs.network.imodel import iModel
-from lionfuncs.network.primitives import EndpointConfig
+from lionfuncs.network.endpoint import Endpoint
+from lionfuncs.network.primitives import ServiceEndpointConfig, HttpTransportConfig, SdkTransportConfig
 from lionfuncs.network.events import RequestStatus
 
 async def main():
@@ -139,25 +142,33 @@ async def main():
         api_tokens_rate=10000.0,
         api_tokens_period=60.0
     ) as executor:
-        # Create an endpoint configuration
-        config = EndpointConfig(
+        # Create a service endpoint configuration for HTTP transport
+        http_config = ServiceEndpointConfig(
+            name="openai_completions",
+            transport_type="http",
             base_url="https://api.openai.com/v1",
-            endpoint="completions",
             api_key="your-api-key",
-            model_name="gpt-3.5-turbo-instruct",
-            method="POST",
-            default_headers={"Content-Type": "application/json"},
-            kwargs={"model": "gpt-3.5-turbo-instruct"}
+            timeout=30.0,
+            default_headers={"User-Agent": "lionfuncs/0.1.0"},
+            http_config=HttpTransportConfig(method="POST"),
+            default_request_kwargs={"model": "gpt-3.5-turbo-instruct"}
         )
 
+        # Create an endpoint
+        endpoint = Endpoint(http_config)
+
         # Create an iModel instance
-        async with iModel(executor, config) as model:
-            # Make a completion request
-            event = await model.acompletion(
-                prompt="Write a short poem about programming",
-                max_tokens=150,
-                temperature=0.7,
-                num_tokens_to_consume=200  # Estimate of token usage
+        async with iModel(endpoint, executor) as model:
+            # Make a completion request using the generic invoke method
+            event = await model.invoke(
+                request_payload={
+                    "prompt": "Write a short poem about programming",
+                    "max_tokens": 150,
+                    "temperature": 0.7
+                },
+                http_path="completions",
+                num_api_tokens_needed=200,  # Estimate of token usage
+                metadata={"request_type": "completion"}
             )
 
             # Wait for completion
@@ -174,22 +185,56 @@ async def main():
 asyncio.run(main())
 ```
 
-You can also use a dictionary for configuration:
+### Using SDK Transport
+
+You can also use SDK transport to interact with APIs through their official SDKs:
 
 ```python
-config = {
-    "base_url": "https://api.openai.com/v1",
-    "endpoint": "completions",
-    "api_key": "your-api-key",
-    "model_name": "gpt-3.5-turbo-instruct",
-    "method": "POST",
-    "default_headers": {"Content-Type": "application/json"},
-    "kwargs": {"model": "gpt-3.5-turbo-instruct"}
-}
+# Create a service endpoint configuration for SDK transport
+sdk_config = ServiceEndpointConfig(
+    name="openai_sdk",
+    transport_type="sdk",
+    api_key="your-api-key",
+    sdk_config=SdkTransportConfig(
+        sdk_provider_name="openai",
+        default_sdk_method_name="chat.completions.create"
+    ),
+    client_constructor_kwargs={"organization": "your-org-id"},
+    default_request_kwargs={"model": "gpt-4"}
+)
 
-async with iModel(executor, config) as model:
-    # Use model...
-    pass
+# Create an endpoint
+endpoint = Endpoint(sdk_config)
+
+# Create an iModel instance
+async with iModel(endpoint, executor) as model:
+    # Make a chat completion request using the SDK
+    event = await model.invoke(
+        request_payload={
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Write a short poem about programming"}
+            ]
+        },
+        # sdk_method_name is optional if default_sdk_method_name is set in the config
+        num_api_tokens_needed=200  # Estimate of token usage
+    )
+    
+    # Process the result...
+```
+
+### Using the Legacy acompletion Method
+
+For backward compatibility, you can still use the acompletion method:
+
+```python
+# Using the acompletion method (which now uses invoke internally)
+event = await model.acompletion(
+    prompt="Write a short poem about programming",
+    max_tokens=150,
+    temperature=0.7,
+    num_tokens_to_consume=200  # Estimate of token usage
+)
 ```
 
 ## Advanced Usage
@@ -387,60 +432,57 @@ asyncio.run(main())
 ```
 
 ### Resource Cleanup
+### Resource Cleanup
 
-Always ensure proper cleanup of resources:
-
-```python
-async def main():
-    # Create the executor
-    executor = Executor(concurrency_limit=5)
-
-    try:
-        # Start the executor
-        await executor.start()
-
-        # Create the iModel
-        model = iModel(executor, config)
-
-        try:
-            # Use the model
-            event = await model.acompletion("Hello, world!")
-            # Process the event...
-        finally:
-            # Close the model's session
-            await model.close_session()
-    finally:
-        # Stop the executor
-        await executor.stop(graceful=True)
-
-asyncio.run(main())
-```
-
-Or more simply using context managers:
+Always ensure proper cleanup of resources using context managers:
 
 ```python
 async def main():
     async with Executor(concurrency_limit=5) as executor:
-        async with iModel(executor, config) as model:
+        # Create an endpoint
+        endpoint = Endpoint(config)
+        
+        # Use the endpoint with iModel in a context manager
+        async with iModel(endpoint, executor) as model:
             # Use the model
-            event = await model.acompletion("Hello, world!")
+            event = await model.invoke(request_payload={"prompt": "Hello, world!"})
             # Process the event...
+        
+        # The endpoint is still open here, so close it if needed
+        await endpoint.close()
 
 asyncio.run(main())
 ```
 
+Or you can use the Endpoint as a context manager too:
+
+```python
+async def main():
+    async with Executor(concurrency_limit=5) as executor:
+        async with Endpoint(config) as endpoint:
+            async with iModel(endpoint, executor) as model:
+                # Use the model
+                event = await model.invoke(request_payload={"prompt": "Hello, world!"})
+                # Process the event...
+
+asyncio.run(main())
+```
 ## Conclusion
 
-The Network Executor and iModel components provide a robust solution for making
+The Network Executor, Endpoint, and iModel components provide a robust solution for making
 rate-limited API calls to model endpoints. By using these components, you can:
 
 - Enforce concurrency and rate limits
 - Track the lifecycle of API requests
 - Handle errors gracefully
 - Efficiently manage resources
+- Use both direct HTTP calls and SDK adapters with a unified interface
+- Configure endpoints with comprehensive options
 
 For more detailed information, refer to the API documentation:
 
 - [Executor](../api/network/executor.md)
+- [Endpoint](../api/network/endpoint.md)
+- [ServiceEndpointConfig](../api/network/primitives.md#serviceendpointconfig)
 - [NetworkRequestEvent](../api/network/events.md)
 - [iModel](../api/network/imodel.md)
