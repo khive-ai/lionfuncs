@@ -19,10 +19,11 @@ __all__ = [
     "list_files",
     "concat_files",
     "dir_to_files",
+    "create_path",
 ]
 
 
-def _create_path(
+def create_path(
     directory: Path | str,
     filename: str,
     extension: str | None = None,
@@ -310,16 +311,26 @@ async def save_to_file(
     filename: str,
     file_exist_ok: bool = False,
     verbose: bool = False,
+    extension: str | None = None,
+    timestamp: bool = False,
+    time_prefix: bool = False,
+    timestamp_format: str | None = None,
+    random_hash_digits: int = 0,
 ) -> Path:
     """
     Asynchronously save text to a file.
     """
     try:
-        file_path = _create_path(
+        file_path = create_path(
             directory=Path(directory),
             filename=filename,
             file_exist_ok=file_exist_ok,
             dir_exist_ok=True,
+            extension=extension,
+            timestamp=timestamp,
+            time_prefix=time_prefix,
+            timestamp_format=timestamp_format,
+            random_hash_digits=random_hash_digits,
         )
         async with aiofiles.open(file_path, mode="w", encoding="utf-8") as f:
             await f.write(text)
