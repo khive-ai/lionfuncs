@@ -82,10 +82,8 @@ class TestNetworkIntegration:
                 # Verify the result
                 assert event.status == RequestStatus.COMPLETED
                 assert event.response_status_code == 200
-                # The response body format might have changed in the new implementation
-                assert event.response_body[2] == {
-                    "result": "success"
-                }  # (status_code, headers, body)
+                # The response body is now directly stored in response_body
+                assert event.response_body == {"result": "success"}
 
                 # Verify that AsyncAPIClient.request was called with the correct parameters
                 mock_client.request.assert_called_once()
@@ -161,10 +159,8 @@ class TestNetworkIntegration:
                 # Verify the result
                 assert event.status == RequestStatus.COMPLETED
                 assert event.response_status_code == 200
-                # The response body format might have changed in the new implementation
-                assert event.response_body[2] == {
-                    "result": "success"
-                }  # (status_code, headers, body)
+                # The response body is now directly stored in response_body
+                assert event.response_body == {"result": "success"}
 
                 # Verify that SDKAdapter.call was called with the correct parameters
                 mock_adapter.call.assert_called_once()

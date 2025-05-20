@@ -125,15 +125,23 @@ class Executor:
 
                 event.update_status(RequestStatus.CALLING)
 
-                # New expectation: api_coro() returns the body on success, or raises an exception.
-                # The (status_code, headers, body) tuple is no longer returned by api_coro.
-                response_body = await api_coro()
+                # api_coro() can return either just the body or a tuple of (status_code, headers, body)
+                response = await api_coro()
 
-                # If successful, set a generic success status. Detailed status is in response_body or error.
+                # Check if response is a tuple with at least 3 elements
+                if isinstance(response, tuple) and len(response) >= 3:
+                    status_code, headers, body = response
+                else:
+                    # If not a tuple, assume it's just the body with default status and headers
+                    status_code = 200
+                    headers = {"Content-Type": "application/json"}
+                    body = response
+
+                # Set the result with the extracted or default values
                 event.set_result(
-                    status_code=200,  # Generic success
-                    headers={},  # Headers might not be uniformly available; can be added to metadata if needed
-                    body=response_body,
+                    status_code=status_code,
+                    headers=headers,
+                    body=body,
                 )
                 # Status is set to COMPLETED by set_result
         except Exception as e:

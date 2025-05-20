@@ -81,21 +81,22 @@ class TestOpenAIAdapter:
     @pytest.mark.asyncio
     async def test_openai_adapter_get_client(self):
         """Test _get_client method."""
-        # Patch the openai module import inside the _get_client method
-        with patch("openai.AsyncOpenAI") as mock_openai:
-            # Also patch the ImportError check
-            with patch("lionfuncs.network.adapters.ImportError", MagicMock()):
-                adapter = OpenAIAdapter(api_key="test_api_key", organization="test_org")
+        # Create a mock for the openai module
+        mock_openai_module = MagicMock()
+        mock_openai_module.AsyncOpenAI = MagicMock()
 
-                # Patch the import inside the method
-                with patch.object(
-                    adapter,
-                    "_get_client",
-                    AsyncMock(return_value=mock_openai.return_value),
-                ):
-                    client = await adapter._get_client()
+        # Patch the import statement to return our mock module
+        with patch.dict("sys.modules", {"openai": mock_openai_module}):
+            adapter = OpenAIAdapter(api_key="test_api_key", organization="test_org")
 
-                    assert client == mock_openai.return_value
+            # Now we can call _get_client directly
+            client = await adapter._get_client()
+
+            # Verify the client was created correctly
+            assert client is not None
+            mock_openai_module.AsyncOpenAI.assert_called_once_with(
+                api_key="test_api_key", organization="test_org"
+            )
 
     @pytest.mark.asyncio
     async def test_openai_adapter_call(self):
@@ -158,21 +159,22 @@ class TestAnthropicAdapter:
     @pytest.mark.asyncio
     async def test_anthropic_adapter_get_client(self):
         """Test _get_client method."""
-        # Patch the anthropic module import inside the _get_client method
-        with patch("anthropic.Anthropic") as mock_anthropic:
-            # Also patch the ImportError check
-            with patch("lionfuncs.network.adapters.ImportError", MagicMock()):
-                adapter = AnthropicAdapter(api_key="test_api_key", option1="value1")
+        # Create a mock for the anthropic module
+        mock_anthropic_module = MagicMock()
+        mock_anthropic_module.Anthropic = MagicMock()
 
-                # Patch the import inside the method
-                with patch.object(
-                    adapter,
-                    "_get_client",
-                    AsyncMock(return_value=mock_anthropic.return_value),
-                ):
-                    client = await adapter._get_client()
+        # Patch the import statement to return our mock module
+        with patch.dict("sys.modules", {"anthropic": mock_anthropic_module}):
+            adapter = AnthropicAdapter(api_key="test_api_key", option1="value1")
 
-                    assert client == mock_anthropic.return_value
+            # Now we can call _get_client directly
+            client = await adapter._get_client()
+
+            # Verify the client was created correctly
+            assert client is not None
+            mock_anthropic_module.Anthropic.assert_called_once_with(
+                api_key="test_api_key", option1="value1"
+            )
 
     @pytest.mark.asyncio
     async def test_anthropic_adapter_call_sync_method(self):

@@ -34,7 +34,10 @@ except ImportError:
     class PDFSyntaxError(Exception):
         pass
 
-    # convert_from_path will not be defined, so calls will fail if PDF2IMAGE_AVAILABLE is False
+    # Define a dummy convert_from_path function to avoid AttributeError in tests
+    def convert_from_path(*args, **kwargs):
+        raise ImportError("pdf2image is not installed")
+
 
 __all__ = [
     "read_image_to_base64",

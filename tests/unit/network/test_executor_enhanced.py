@@ -2,7 +2,6 @@
 Enhanced unit tests for the Executor class to increase coverage.
 """
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -56,7 +55,9 @@ class TestExecutorEnhanced:
 
         # Mock the requests rate limiter to return a wait time
         executor.requests_rate_limiter = MagicMock()
-        executor.requests_rate_limiter.acquire = AsyncMock(return_value=0.5)  # 0.5 second wait
+        executor.requests_rate_limiter.acquire = AsyncMock(
+            return_value=0.5
+        )  # 0.5 second wait
 
         # Mock asyncio.sleep
         with patch("asyncio.sleep", new=AsyncMock()) as mock_sleep:
@@ -102,7 +103,9 @@ class TestExecutorEnhanced:
 
         # Mock the API tokens rate limiter to return a wait time
         executor.api_tokens_rate_limiter = MagicMock()
-        executor.api_tokens_rate_limiter.acquire = AsyncMock(return_value=1.5)  # 1.5 second wait
+        executor.api_tokens_rate_limiter.acquire = AsyncMock(
+            return_value=1.5
+        )  # 1.5 second wait
 
         # Mock asyncio.sleep
         with patch("asyncio.sleep", new=AsyncMock()) as mock_sleep:
@@ -115,25 +118,27 @@ class TestExecutorEnhanced:
         # Verify that the event was updated correctly
         event.update_status.assert_any_call(RequestStatus.PROCESSING)
         event.update_status.assert_any_call(RequestStatus.CALLING)
-        event.add_log.assert_any_call("Waiting 1.50s for API token rate limit (100 tokens).")
+        event.add_log.assert_any_call(
+            "Waiting 1.50s for API token rate limit (100 tokens)."
+        )
 
     @pytest.mark.asyncio
     async def test_start_already_running(self, executor):
         """Test start method when executor is already running."""
         # Start the executor
         await executor.start()
-        
+
         # Mock the work_queue methods to verify they're not called again
         executor.work_queue.start = AsyncMock()
         executor.work_queue.process = AsyncMock()
-        
+
         # Call start again
         await executor.start()
-        
+
         # Verify that work_queue methods were not called
         executor.work_queue.start.assert_not_called()
         executor.work_queue.process.assert_not_called()
-        
+
         # Clean up
         await executor.stop()
 
@@ -142,13 +147,13 @@ class TestExecutorEnhanced:
         """Test stop method when executor is not running."""
         executor = Executor()
         # Executor is not started, so _is_running is False
-        
+
         # Mock the work_queue.stop method to verify it's not called
         executor.work_queue.stop = AsyncMock()
-        
+
         # Call stop
         await executor.stop()
-        
+
         # Verify that work_queue.stop was not called
         executor.work_queue.stop.assert_not_called()
 
@@ -157,23 +162,23 @@ class TestExecutorEnhanced:
         """Test stop method with graceful=True vs graceful=False."""
         # Start the executor
         await executor.start()
-        
+
         # Replace work_queue.stop with a mock to verify calls
         executor.work_queue.stop = AsyncMock()
-        
+
         # Call stop with graceful=True (default)
         await executor.stop(graceful=True)
-        
+
         # Verify that work_queue.stop was called with timeout=None
         executor.work_queue.stop.assert_called_once_with(timeout=None)
-        
+
         # Reset the mock and _is_running flag for the next test
         executor.work_queue.stop.reset_mock()
         executor._is_running = True
-        
+
         # Call stop with graceful=False
         await executor.stop(graceful=False)
-        
+
         # Verify that work_queue.stop was called with timeout=0.1
         executor.work_queue.stop.assert_called_once_with(timeout=0.1)
 
@@ -189,13 +194,13 @@ class TestExecutorEnhanced:
             api_tokens_period=60.0,
             api_tokens_bucket_capacity=7500.0,
         )
-        
+
         # Verify requests_rate_limiter initialization
         assert isinstance(executor.requests_rate_limiter, TokenBucketRateLimiter)
         assert executor.requests_rate_limiter.rate == 20.0
         assert executor.requests_rate_limiter.period == 2.0
         assert executor.requests_rate_limiter.max_tokens == 30.0
-        
+
         # Verify api_tokens_rate_limiter initialization
         assert isinstance(executor.api_tokens_rate_limiter, TokenBucketRateLimiter)
         assert executor.api_tokens_rate_limiter.rate == 5000.0
@@ -214,10 +219,10 @@ class TestExecutorEnhanced:
             api_tokens_period=30.0,
             api_tokens_bucket_capacity=None,  # Should default to api_tokens_rate
         )
-        
+
         # Verify requests_rate_limiter max_tokens defaults to rate
         assert executor.requests_rate_limiter.max_tokens == 15.0
-        
+
         # Verify api_tokens_rate_limiter max_tokens defaults to rate
         assert executor.api_tokens_rate_limiter.max_tokens == 2000.0
 
@@ -226,16 +231,16 @@ class TestExecutorEnhanced:
         """Test submit_task with minimal required parameters."""
         # Start the executor
         await executor.start()
-        
+
         try:
             # Create a mock API coroutine
             api_call_coroutine = AsyncMock(return_value={"result": "success"})
-            
+
             # Call submit_task with minimal parameters
             event = await executor.submit_task(
                 api_call_coroutine=api_call_coroutine,
             )
-            
+
             # Verify that a NetworkRequestEvent was returned
             assert isinstance(event, NetworkRequestEvent)
             assert event.endpoint_url is None

@@ -97,10 +97,15 @@ class TestEndpointEnhanced:
             transport_type="sdk",
             api_key="test_api_key",
             sdk_config=SdkTransportConfig(sdk_provider_name="openai"),
-            client_constructor_kwargs={"organization": "org-123", "base_url": "https://custom.openai.com"},
+            client_constructor_kwargs={
+                "organization": "org-123",
+                "base_url": "https://custom.openai.com",
+            },
         )
 
-        with patch("lionfuncs.network.endpoint.create_sdk_adapter") as mock_create_adapter:
+        with patch(
+            "lionfuncs.network.endpoint.create_sdk_adapter"
+        ) as mock_create_adapter:
             endpoint = Endpoint(custom_sdk_config)
             await endpoint._create_client()
 
@@ -155,26 +160,28 @@ class TestEndpointEnhanced:
         """Test async context manager when an exception occurs."""
         # This test is tricky because the context manager's __aexit__ is called during exception handling
         # Let's use a different approach to test this behavior
-        
+
         # Create a custom Endpoint class that we can track
         class TestEndpoint(Endpoint):
             def __init__(self, config):
                 super().__init__(config)
                 self.close_called = False
-                
+
             async def close(self):
                 self.close_called = True
                 await super().close()
-        
+
         # Create a client that will be used by the endpoint
         mock_client = MagicMock()
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock()
-        
-        with patch("lionfuncs.network.endpoint.AsyncAPIClient", return_value=mock_client):
+
+        with patch(
+            "lionfuncs.network.endpoint.AsyncAPIClient", return_value=mock_client
+        ):
             # Create our test endpoint
             endpoint = TestEndpoint(http_config)
-            
+
             # Use as async context manager with an exception
             try:
                 async with endpoint:
@@ -184,6 +191,6 @@ class TestEndpointEnhanced:
                     raise ValueError("Test exception")
             except ValueError:
                 pass  # Expected exception
-            
+
             # Verify close was called
             assert endpoint.close_called

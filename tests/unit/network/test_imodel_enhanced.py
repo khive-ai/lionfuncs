@@ -7,7 +7,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from pydantic import BaseModel
 
-from lionfuncs.errors import APIClientError, LionSDKError
 from lionfuncs.network.adapters import AbstractSDKAdapter
 from lionfuncs.network.client import AsyncAPIClient
 from lionfuncs.network.endpoint import Endpoint
@@ -74,7 +73,9 @@ class TestIModelEnhanced:
         return mock_endpoint, mock_adapter
 
     @pytest.mark.asyncio
-    async def test_invoke_http_with_pydantic_model(self, mock_executor, mock_http_endpoint):
+    async def test_invoke_http_with_pydantic_model(
+        self, mock_executor, mock_http_endpoint
+    ):
         """Test invoke method with a Pydantic model as request_payload."""
         mock_endpoint, mock_client = mock_http_endpoint
         model = iModel(endpoint=mock_endpoint, executor=mock_executor)
@@ -150,7 +151,7 @@ class TestIModelEnhanced:
         assert callable(call_args["api_call_coroutine"])
         assert call_args["endpoint_url"] == "https://api.example.com/v1/search"
         assert call_args["method"] == "GET"
-        
+
         # For GET requests, payload should be in params, not json
         api_coro = call_args["api_call_coroutine"]
         mock_client.request.reset_mock()
@@ -162,7 +163,9 @@ class TestIModelEnhanced:
         assert "json" not in client_call_args or client_call_args["json"] is None
 
     @pytest.mark.asyncio
-    async def test_invoke_http_with_default_request_kwargs(self, mock_executor, mock_http_endpoint):
+    async def test_invoke_http_with_default_request_kwargs(
+        self, mock_executor, mock_http_endpoint
+    ):
         """Test invoke method with default_request_kwargs from endpoint config."""
         mock_endpoint, mock_client = mock_http_endpoint
         model = iModel(endpoint=mock_endpoint, executor=mock_executor)
@@ -179,17 +182,19 @@ class TestIModelEnhanced:
         # Execute the api_call_coroutine to verify default_request_kwargs are used
         call_args = mock_executor.submit_task.call_args[1]
         api_call_coroutine = call_args["api_call_coroutine"]
-        
+
         mock_client.request.reset_mock()
         await api_call_coroutine()
-        
+
         # Verify that request was called with the default timeout from config
         mock_client.request.assert_called_once()
         client_call_args = mock_client.request.call_args[1]
         assert client_call_args["timeout"] == 30.0
 
     @pytest.mark.asyncio
-    async def test_invoke_sdk_with_non_dict_payload(self, mock_executor, mock_sdk_endpoint):
+    async def test_invoke_sdk_with_non_dict_payload(
+        self, mock_executor, mock_sdk_endpoint
+    ):
         """Test invoke method with SDK transport and non-dict payload."""
         mock_endpoint, mock_adapter = mock_sdk_endpoint
         model = iModel(endpoint=mock_endpoint, executor=mock_executor)
@@ -210,7 +215,10 @@ class TestIModelEnhanced:
 
         # Verify that a warning was logged
         mock_logger.warning.assert_called_once()
-        assert "Non-dict request_payload for SDK call" in mock_logger.warning.call_args[0][0]
+        assert (
+            "Non-dict request_payload for SDK call"
+            in mock_logger.warning.call_args[0][0]
+        )
 
         # Verify the result
         assert result == mock_event
@@ -239,30 +247,36 @@ class TestIModelEnhanced:
             )
 
     @pytest.mark.asyncio
-    async def test_invoke_http_client_without_request_method(self, mock_executor, mock_http_endpoint):
+    async def test_invoke_http_client_without_request_method(
+        self, mock_executor, mock_http_endpoint
+    ):
         """Test invoke method with HTTP client that doesn't have a request method."""
         mock_endpoint, mock_client = mock_http_endpoint
-        
+
         # Remove the request method from the client
         delattr(mock_client, "request")
-        
+
         model = iModel(endpoint=mock_endpoint, executor=mock_executor)
 
         # Call invoke should raise TypeError
-        with pytest.raises(TypeError, match="HTTP client does not have a 'request' method"):
+        with pytest.raises(
+            TypeError, match="HTTP client does not have a 'request' method"
+        ):
             await model.invoke(
                 request_payload={"prompt": "Hello"},
                 http_path="v1/completions",
             )
 
     @pytest.mark.asyncio
-    async def test_invoke_sdk_adapter_without_call_method(self, mock_executor, mock_sdk_endpoint):
+    async def test_invoke_sdk_adapter_without_call_method(
+        self, mock_executor, mock_sdk_endpoint
+    ):
         """Test invoke method with SDK adapter that doesn't have a call method."""
         mock_endpoint, mock_adapter = mock_sdk_endpoint
-        
+
         # Remove the call method from the adapter
         delattr(mock_adapter, "call")
-        
+
         model = iModel(endpoint=mock_endpoint, executor=mock_executor)
 
         # Call invoke should raise TypeError
@@ -308,7 +322,9 @@ class TestIModelEnhanced:
         assert call_args["metadata"]["model_name"] == "gpt-4"
 
     @pytest.mark.asyncio
-    async def test_invoke_with_unexpected_error(self, mock_executor, mock_http_endpoint):
+    async def test_invoke_with_unexpected_error(
+        self, mock_executor, mock_http_endpoint
+    ):
         """Test invoke method with an unexpected error."""
         mock_endpoint, mock_client = mock_http_endpoint
         model = iModel(endpoint=mock_endpoint, executor=mock_executor)
