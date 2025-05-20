@@ -121,6 +121,7 @@ class EndpointConfig(BaseModel):
     max_retries: int = 3
     kwargs: dict[str, Any] = Field(default_factory=dict)
     client_kwargs: dict[str, Any] = Field(default_factory=dict)
+    oai_compatible: bool = False
 
     @property
     def full_url(self) -> str:
