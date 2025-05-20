@@ -8,7 +8,7 @@ from lionfuncs.schema_utils import (
     _extract_docstring_parts,
     _get_type_name,
     function_to_openai_schema,
-    pydantic_model_to_schema,
+    pydantic_model_to_openai_schema,
 )
 
 
@@ -86,7 +86,9 @@ class TestSchemaUtils:
             age: int
             email: Optional[str] = None
 
-        schema = pydantic_model_to_schema(User)  # This would fail as it's private
+        schema = pydantic_model_to_openai_schema(
+            User
+        )  # This would fail as it's private
 
         assert schema["type"] == "object"
         assert "properties" in schema

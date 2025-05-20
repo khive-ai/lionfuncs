@@ -4,7 +4,8 @@ title: "lionfuncs.network.imodel"
 
 # lionfuncs.network.imodel
 
-The `imodel` module provides the iModel class, which uses the Executor for making rate-limited API calls to model endpoints.
+The `imodel` module provides the iModel class, which uses the Executor for
+making rate-limited API calls to model endpoints.
 
 ## Classes
 
@@ -14,32 +15,33 @@ The `imodel` module provides the iModel class, which uses the Executor for makin
 class iModel
 ```
 
-Client for interacting with API models using the Executor. The iModel class provides methods for making API calls to model endpoints, using the Executor for rate limiting and concurrency control.
+Client for interacting with API models using the Executor. The iModel class
+provides methods for making API calls to model endpoints, using the Executor for
+rate limiting and concurrency control.
 
 #### Constructor
-
 ```python
 def __init__(
     self,
+    endpoint: Endpoint,
     executor: Executor,
-    model_endpoint_config: Union[dict[str, Any], EndpointConfig],
 )
 ```
 
 Initialize the iModel.
 
 **Parameters:**
-- `executor`: An instance of Executor for making API calls.
-- `model_endpoint_config`: Configuration for the model endpoint, either as a dictionary or EndpointConfig.
 
-**Raises:**
-- `TypeError`: If model_endpoint_config is not a dict or EndpointConfig.
+- `endpoint`: A configured Endpoint instance providing access to the API client/adapter.
+- `executor`: An Executor instance for managing API call execution.
 
 **Example:**
+
 ```python
 from lionfuncs.network.executor import Executor
 from lionfuncs.network.imodel import iModel
-from lionfuncs.network.primitives import EndpointConfig
+from lionfuncs.network.endpoint import Endpoint
+from lionfuncs.network.primitives import ServiceEndpointConfig, HttpTransportConfig
 
 # Create an executor
 executor = Executor(
@@ -49,19 +51,81 @@ executor = Executor(
     api_tokens_period=60.0
 )
 
-# Create an endpoint config
-config = EndpointConfig(
-    endpoint="completions",
+# Create a service endpoint config
+config = ServiceEndpointConfig(
+    name="openai_chat",
+    transport_type="http",
     base_url="https://api.openai.com/v1",
     api_key="your-api-key",
-    model_name="gpt-3.5-turbo"
+    http_config=HttpTransportConfig(method="POST"),
+    default_request_kwargs={"model": "gpt-4"}
 )
 
+# Create an endpoint
+endpoint = Endpoint(config)
+
 # Create an iModel instance
-model = iModel(executor, config)
+model = iModel(endpoint, executor)
+```
 ```
 
 #### Methods
+
+##### invoke
+
+```python
+async def invoke(
+    self,
+    request_payload: Any,  # Can be a dict or Pydantic model
+    num_api_tokens_needed: int = 0,
+    http_path: Optional[str] = None,  # e.g., "v1/chat/completions"
+    http_method: Optional[str] = None,  # Overrides ServiceEndpointConfig.http_config.method
+    sdk_method_name: Optional[str] = None,  # e.g., "chat.completions.create"
+    **additional_request_params: Any,
+) -> NetworkRequestEvent
+```
+
+Makes a generic call to the configured API endpoint.
+
+**Parameters:**
+
+- `request_payload`: The primary payload for the request (dict or Pydantic model).
+- `num_api_tokens_needed`: Estimated API tokens this call will consume.
+- `http_path`: Specific path for HTTP requests (appended to Endpoint's base_url).
+- `http_method`: HTTP method (e.g., "GET", "POST"). Overrides Endpoint default.
+- `sdk_method_name`: Specific SDK method to call (e.g., "chat.completions.create").
+- `**additional_request_params`: Further keyword arguments for the API call, merged with/overriding Endpoint's defaults and payload. Can include 'metadata' for NetworkRequestEvent.
+
+**Returns:**
+
+- A NetworkRequestEvent tracking the request.
+
+**Example:**
+
+```python
+# For HTTP transport
+event = await model.invoke(
+    request_payload={"messages": [{"role": "user", "content": "Hello!"}]},
+    http_path="chat/completions",
+    http_method="POST",
+    num_api_tokens_needed=10,
+    metadata={"request_type": "chat"}
+)
+
+# For SDK transport
+event = await model.invoke(
+    request_payload={"messages": [{"role": "user", "content": "Hello!"}]},
+    sdk_method_name="chat.completions.create",
+    num_api_tokens_needed=10,
+    metadata={"request_type": "chat"}
+)
+
+# Wait for completion and check the result
+if event.status == RequestStatus.COMPLETED:
+    print(f"Response: {event.response_body}")
+else:
+    print(f"Error: {event.error_message}")
+```
 
 ##### acompletion
 
@@ -79,6 +143,7 @@ async def acompletion(
 Make an asynchronous completion request.
 
 **Parameters:**
+
 - `prompt`: The prompt to complete.
 - `max_tokens`: Maximum number of tokens to generate.
 - `temperature`: Sampling temperature.
@@ -86,12 +151,15 @@ Make an asynchronous completion request.
 - `**kwargs`: Additional parameters for the completion request.
 
 **Returns:**
+
 - A NetworkRequestEvent tracking the request.
 
 **Raises:**
+
 - `RuntimeError`: If the executor is not running.
 
 **Example:**
+
 ```python
 # Make a completion request
 event = await model.acompletion(
@@ -110,55 +178,58 @@ else:
 
 ##### close_session
 
-```python
-async def close_session() -> None
-```
-
-Close the HTTP session if it exists.
-
-**Example:**
-```python
-await model.close_session()
-```
+This method has been deprecated. Use the async context manager pattern instead.
 
 #### Context Manager
 
-The iModel class supports the async context manager protocol, which automatically creates an HTTP session when entering the context and closes it when exiting.
+The iModel class supports the async context manager protocol, which
+automatically initializes the Endpoint's client when entering the context and closes it
+when exiting.
 
 ```python
-async with iModel(executor, config) as model:
+async with iModel(endpoint, executor) as model:
     # Use model here
-    event = await model.acompletion("Hello, world!")
+    event = await model.invoke(request_payload={"prompt": "Hello, world!"})
 ```
 
 ## Internal Implementation
 
 Internally, the iModel class:
 
-1. Maintains an aiohttp.ClientSession for making HTTP requests.
-2. Uses the provided Executor to submit API call tasks.
-3. Constructs API requests based on the model_endpoint_config.
-4. Returns NetworkRequestEvent objects for tracking the status and results of API calls.
+1. Uses the provided Endpoint to get a configured client (AsyncAPIClient or SDKAdapter).
+2. Prepares request parameters based on input and Endpoint configuration.
+3. Constructs the actual API call coroutine using the client.
+4. Submits the call coroutine to the Executor via executor.submit_task().
+5. Returns the NetworkRequestEvent from the Executor, allowing the caller to track the request.
 
 ## Configuration
 
-The model_endpoint_config can include the following keys:
+The iModel is configured through the Endpoint's ServiceEndpointConfig, which can be configured for either HTTP or SDK transport:
 
-- `base_url`: Base URL for the API (e.g., "https://api.openai.com/v1").
-- `endpoint`: Endpoint path (e.g., "completions").
-- `api_key`: API key for authentication.
-- `method`: HTTP method (defaults to "POST").
-- `model_name`: Name of the model to use.
-- `default_headers`: Additional headers to include in requests.
-- `kwargs`: Additional parameters to include in all requests.
-- `timeout`: Request timeout in seconds (defaults to 300).
+### HTTP Transport Configuration
 
+- `transport_type`: Set to "http"
+- `base_url`: Base URL for the API (e.g., "https://api.openai.com/v1")
+- `http_config`: Configuration for HTTP transport (method, etc.)
+- `default_headers`: Headers to include in all requests
+- `default_request_kwargs`: Default parameters for all requests
+
+### SDK Transport Configuration
+
+- `transport_type`: Set to "sdk"
+- `sdk_config`: Configuration for SDK transport (provider name, default method)
+- `client_constructor_kwargs`: Parameters for SDK client initialization
+- `default_request_kwargs`: Default parameters for all SDK method calls
+
+## Usage Example
 ## Usage Example
 
 ```python
 import asyncio
 from lionfuncs.network.executor import Executor
 from lionfuncs.network.imodel import iModel
+from lionfuncs.network.endpoint import Endpoint
+from lionfuncs.network.primitives import ServiceEndpointConfig, HttpTransportConfig
 from lionfuncs.network.events import RequestStatus
 
 async def main():
@@ -170,44 +241,49 @@ async def main():
         api_tokens_rate=10000.0,
         api_tokens_period=60.0
     ) as executor:
+        # Create a service endpoint config for OpenAI
+        config = ServiceEndpointConfig(
+            name="openai_completions",
+            transport_type="http",
+            base_url="https://api.openai.com/v1",
+            api_key="your-api-key",
+            http_config=HttpTransportConfig(method="POST"),
+            default_request_kwargs={"model": "gpt-3.5-turbo-instruct"}
+        )
+
+        # Create an endpoint
+        endpoint = Endpoint(config)
+
         # Create an iModel instance
-        config = {
-            "base_url": "https://api.openai.com/v1",
-            "endpoint": "completions",
-            "api_key": "your-api-key",
-            "model_name": "gpt-3.5-turbo-instruct",
-            "default_headers": {
-                "Content-Type": "application/json"
-            },
-            "kwargs": {
-                "model": "gpt-3.5-turbo-instruct"
-            }
-        }
-        
-        async with iModel(executor, config) as model:
+        async with iModel(endpoint, executor) as model:
             # Make multiple completion requests
             prompts = [
                 "Write a short poem about AI",
                 "Explain quantum computing in simple terms",
                 "List 5 benefits of exercise"
             ]
-            
+
             events = []
             for prompt in prompts:
-                event = await model.acompletion(
-                    prompt=prompt,
-                    max_tokens=150,
-                    temperature=0.7,
-                    num_tokens_to_consume=len(prompt) + 150  # Estimate token usage
+                # Using the generic invoke method
+                event = await model.invoke(
+                    request_payload={
+                        "prompt": prompt,
+                        "max_tokens": 150,
+                        "temperature": 0.7
+                    },
+                    http_path="completions",
+                    num_api_tokens_needed=len(prompt) + 150,  # Estimate token usage
+                    metadata={"prompt": prompt}
                 )
                 events.append((prompt, event))
                 print(f"Submitted request for prompt: {prompt[:20]}...")
-            
+
             # Wait for all requests to complete
-            while any(event.status not in [RequestStatus.COMPLETED, RequestStatus.FAILED] 
+            while any(event.status not in [RequestStatus.COMPLETED, RequestStatus.FAILED]
                      for _, event in events):
                 await asyncio.sleep(0.1)
-            
+
             # Process results
             for prompt, event in events:
                 print(f"\nPrompt: {prompt}")
@@ -219,13 +295,17 @@ async def main():
 
 asyncio.run(main())
 ```
-
 ## Integration with Other Components
 
 The iModel class is designed to work with:
 
-1. **Executor**: For managing API call concurrency and rate limiting.
-2. **NetworkRequestEvent**: For tracking the status and results of API calls.
-3. **EndpointConfig**: For configuring the model endpoint.
+1. **Endpoint**: For managing client creation and lifecycle.
+2. **Executor**: For managing API call concurrency and rate limiting.
+3. **NetworkRequestEvent**: For tracking the status and results of API calls.
+4. **ServiceEndpointConfig**: For configuring the endpoint.
 
-This integration allows for efficient and controlled access to AI model APIs, with proper rate limiting and concurrency control.
+This integration allows for a clean separation of concerns:
+- ServiceEndpointConfig defines the configuration
+- Endpoint manages client creation and lifecycle
+- iModel uses the client for making API calls
+- Executor handles rate limiting and concurrency
