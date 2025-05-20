@@ -70,7 +70,7 @@ class TestIModel:
     @pytest.mark.asyncio
     async def test_init(self, mock_executor, mock_endpoint):
         """Test initialization with an Endpoint instance."""
-        model = iModel(mock_endpoint, mock_executor)
+        model = iModel(endpoint=mock_endpoint, executor=mock_executor)
 
         assert model.executor == mock_executor
         assert model.endpoint == mock_endpoint
@@ -78,7 +78,7 @@ class TestIModel:
     @pytest.mark.asyncio
     async def test_invoke_http(self, mock_executor, mock_endpoint):
         """Test invoking an HTTP endpoint."""
-        model = iModel(mock_endpoint, mock_executor)
+        model = iModel(endpoint=mock_endpoint, executor=mock_executor)
 
         # Configure the mock endpoint for HTTP transport
         mock_endpoint.config.transport_type = "http"
@@ -104,7 +104,7 @@ class TestIModel:
     @pytest.mark.asyncio
     async def test_invoke_sdk(self, mock_executor, mock_endpoint):
         """Test invoking an SDK endpoint."""
-        model = iModel(mock_endpoint, mock_executor)
+        model = iModel(endpoint=mock_endpoint, executor=mock_executor)
 
         # Configure the mock endpoint for SDK transport
         mock_endpoint.config.transport_type = "sdk"
@@ -132,7 +132,7 @@ class TestIModel:
     @pytest.mark.asyncio
     async def test_acompletion(self, mock_executor, mock_endpoint):
         """Test making a completion request."""
-        model = iModel(mock_endpoint, mock_executor)
+        model = iModel(endpoint=mock_endpoint, executor=mock_executor)
 
         # Configure the mock endpoint
         mock_endpoint.config.transport_type = "http"
@@ -187,7 +187,7 @@ class TestIModel:
         mock_endpoint.__aenter__ = AsyncMock(return_value=mock_endpoint)
         mock_endpoint.__aexit__ = AsyncMock()
 
-        async with iModel(mock_endpoint, mock_executor) as model:
+        async with iModel(endpoint=mock_endpoint, executor=mock_executor) as model:
             assert model.endpoint == mock_endpoint
 
         # Verify __aexit__ was called

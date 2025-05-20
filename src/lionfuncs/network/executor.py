@@ -140,7 +140,9 @@ class Executor:
                 # Set the result with the extracted or default values
                 event.set_result(
                     status_code=status_code,
-                    headers=headers,
+                    headers=headers.copy()
+                    if headers is not None
+                    else None,  # Pass a copy
                     body=body,
                 )
                 # Status is set to COMPLETED by set_result
