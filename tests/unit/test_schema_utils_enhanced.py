@@ -190,7 +190,6 @@ class TestSchemaUtilsEnhanced:
             """
             return {}
 
-
         schema = function_to_openai_schema(complex_function)
 
         # Check basic structure

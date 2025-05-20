@@ -20,6 +20,7 @@ provides methods for making API calls to model endpoints, using the Executor for
 rate limiting and concurrency control.
 
 #### Constructor
+
 ```python
 def __init__(
     self,
@@ -72,8 +73,8 @@ endpoint = Endpoint(config)
 # Create an iModel instance
 model = iModel(endpoint, executor)
 ```
-```
 
+````
 #### Methods
 
 ##### invoke
@@ -88,18 +89,23 @@ async def invoke(
     sdk_method_name: Optional[str] = None,  # e.g., "chat.completions.create"
     **additional_request_params: Any,
 ) -> NetworkRequestEvent
-```
+````
 
 Makes a generic call to the configured API endpoint.
 
 **Parameters:**
 
-- `request_payload`: The primary payload for the request (dict or Pydantic model).
+- `request_payload`: The primary payload for the request (dict or Pydantic
+  model).
 - `num_api_tokens_needed`: Estimated API tokens this call will consume.
-- `http_path`: Specific path for HTTP requests (appended to Endpoint's base_url).
+- `http_path`: Specific path for HTTP requests (appended to Endpoint's
+  base_url).
 - `http_method`: HTTP method (e.g., "GET", "POST"). Overrides Endpoint default.
-- `sdk_method_name`: Specific SDK method to call (e.g., "chat.completions.create").
-- `**additional_request_params`: Further keyword arguments for the API call, merged with/overriding Endpoint's defaults and payload. Can include 'metadata' for NetworkRequestEvent.
+- `sdk_method_name`: Specific SDK method to call (e.g.,
+  "chat.completions.create").
+- `**additional_request_params`: Further keyword arguments for the API call,
+  merged with/overriding Endpoint's defaults and payload. Can include 'metadata'
+  for NetworkRequestEvent.
 
 **Returns:**
 
@@ -219,7 +225,8 @@ Internally, the iModel class:
 
 ## Configuration
 
-The iModel is configured through the Endpoint's ServiceEndpointConfig, which can be configured for either HTTP or SDK transport:
+The iModel is configured through the Endpoint's ServiceEndpointConfig, which can
+be configured for either HTTP or SDK transport:
 
 ### HTTP Transport Configuration
 
@@ -237,6 +244,7 @@ The iModel is configured through the Endpoint's ServiceEndpointConfig, which can
 - `default_request_kwargs`: Default parameters for all SDK method calls
 
 ## Usage Example
+
 ## Usage Example
 
 ```python
@@ -323,6 +331,7 @@ async def main():
 
 asyncio.run(main())
 ```
+
 ## Integration with Other Components
 
 The iModel class is designed to work with:

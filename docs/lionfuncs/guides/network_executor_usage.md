@@ -15,9 +15,12 @@ calls with proper rate limiting, concurrency control, and request tracking:
 - **Executor**: Manages a queue of API call tasks, enforces concurrency and rate
   limits.
 - **NetworkRequestEvent**: Tracks the lifecycle of API requests.
-- **Endpoint**: Manages the creation, configuration, and lifecycle of API clients.
-- **ServiceEndpointConfig**: Provides comprehensive configuration for API endpoints.
-- **iModel**: Client for interacting with API models using the Endpoint and Executor.
+- **Endpoint**: Manages the creation, configuration, and lifecycle of API
+  clients.
+- **ServiceEndpointConfig**: Provides comprehensive configuration for API
+  endpoints.
+- **iModel**: Client for interacting with API models using the Endpoint and
+  Executor.
 
 These components work together to provide a robust solution for making API calls
 to model endpoints, with features like:
@@ -185,7 +188,8 @@ asyncio.run(main())
 
 ### Using SDK Transport
 
-You can also use SDK transport to interact with APIs through their official SDKs:
+You can also use SDK transport to interact with APIs through their official
+SDKs:
 
 ```python
 # Create a service endpoint configuration for SDK transport
@@ -217,7 +221,7 @@ async with iModel(endpoint, executor) as model:
         # sdk_method_name is optional if default_sdk_method_name is set in the config
         num_api_tokens_needed=200  # Estimate of token usage
     )
-    
+
     # Process the result...
 ```
 
@@ -449,7 +453,7 @@ async def main():
             # Use the model
             event = await model.invoke(request_payload={"prompt": "Hello, world!"})
             # Process the event...
-        
+
         # The endpoint is still open here, so close it if needed
         await endpoint.close()
 
@@ -469,6 +473,7 @@ async def main():
 
 asyncio.run(main())
 ```
+
 ## Conclusion
 
 The Network Executor and iModel components provide a robust solution for making

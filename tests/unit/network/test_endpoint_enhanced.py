@@ -158,6 +158,7 @@ class TestEndpointEnhanced:
     @pytest.mark.asyncio
     async def test_context_manager_with_exception(self, http_config):
         """Test async context manager when an exception occurs."""
+
         # This test is tricky because the context manager's __aexit__ is called during exception handling
         # Let's use a different approach to test this behavior
         # Create a custom Endpoint class that we can track

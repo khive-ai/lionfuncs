@@ -4,7 +4,9 @@ title: "lionfuncs.network.endpoint"
 
 # lionfuncs.network.endpoint
 
-The `endpoint` module provides the Endpoint class, which manages the creation, configuration, and lifecycle of API clients (AsyncAPIClient or SDK Adapters) based on a ServiceEndpointConfig.
+The `endpoint` module provides the Endpoint class, which manages the creation,
+configuration, and lifecycle of API clients (AsyncAPIClient or SDK Adapters)
+based on a ServiceEndpointConfig.
 
 ## Classes
 
@@ -14,7 +16,9 @@ The `endpoint` module provides the Endpoint class, which manages the creation, c
 class Endpoint
 ```
 
-Manages the creation, configuration, and lifecycle of API clients (AsyncAPIClient or SDK Adapters) based on a ServiceEndpointConfig. It acts as a factory and context manager for these clients.
+Manages the creation, configuration, and lifecycle of API clients
+(AsyncAPIClient or SDK Adapters) based on a ServiceEndpointConfig. It acts as a
+factory and context manager for these clients.
 
 #### Constructor
 
@@ -57,7 +61,8 @@ endpoint = Endpoint(config)
 async def get_client(self) -> Union[AsyncAPIClient, AbstractSDKAdapter]
 ```
 
-Provides a configured and ready-to-use client instance. Manages singleton creation and enters client's async context if applicable.
+Provides a configured and ready-to-use client instance. Manages singleton
+creation and enters client's async context if applicable.
 
 **Returns:**
 
@@ -99,7 +104,9 @@ await endpoint.close()
 
 #### Context Manager
 
-The Endpoint class supports the async context manager protocol, which automatically initializes the client when entering the context and closes it when exiting.
+The Endpoint class supports the async context manager protocol, which
+automatically initializes the client when entering the context and closes it
+when exiting.
 
 ```python
 async with Endpoint(config) as endpoint:
@@ -112,14 +119,18 @@ async with Endpoint(config) as endpoint:
 
 The Endpoint class:
 
-1. Lazily creates and configures a client (AsyncAPIClient or SDK adapter) based on the ServiceEndpointConfig.
-2. Manages the lifecycle of the client, ensuring proper initialization and cleanup.
+1. Lazily creates and configures a client (AsyncAPIClient or SDK adapter) based
+   on the ServiceEndpointConfig.
+2. Manages the lifecycle of the client, ensuring proper initialization and
+   cleanup.
 3. Provides thread-safe access to the client through an async lock.
 4. Supports both HTTP and SDK transport types.
 
-For HTTP transport, it creates an AsyncAPIClient with the configured base URL, timeout, headers, and other parameters.
+For HTTP transport, it creates an AsyncAPIClient with the configured base URL,
+timeout, headers, and other parameters.
 
-For SDK transport, it uses the create_sdk_adapter factory function to create an appropriate SDK adapter based on the provider name.
+For SDK transport, it uses the create_sdk_adapter factory function to create an
+appropriate SDK adapter based on the provider name.
 
 ## Integration with Other Components
 
@@ -131,6 +142,7 @@ The Endpoint class is designed to work with:
 4. **iModel**: Which uses the Endpoint to get a client for making API calls.
 
 This integration allows for a clean separation of concerns:
+
 - ServiceEndpointConfig defines the configuration
 - Endpoint manages client creation and lifecycle
 - iModel uses the client for making API calls

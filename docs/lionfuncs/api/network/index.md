@@ -15,8 +15,10 @@ network primitives.
 - [**resilience**](resilience.md): Resilience patterns like circuit breaker and
   retry with backoff.
 - [**adapters**](adapters.md): SDK adapters for third-party APIs.
-- [**primitives**](primitives.md): Network primitives like rate limiters and endpoint configurations.
-- [**endpoint**](endpoint.md): Endpoint class for managing API clients and adapters.
+- [**primitives**](primitives.md): Network primitives like rate limiters and
+  endpoint configurations.
+- [**endpoint**](endpoint.md): Endpoint class for managing API clients and
+  adapters.
 - [**events**](events.md): Event classes for tracking API request lifecycles.
 - [**executor**](executor.md): Executor for managing and rate-limiting API
   calls.
@@ -59,9 +61,12 @@ import them directly from `lionfuncs.network`:
   auth/content headers.
 - [`EndpointConfig`](primitives.md#endpointconfig): Configuration for an API
   endpoint (legacy).
-- [`ServiceEndpointConfig`](primitives.md#serviceendpointconfig): Comprehensive configuration for API endpoints.
-- [`HttpTransportConfig`](primitives.md#httptransportconfig): Configuration for HTTP transport.
-- [`SdkTransportConfig`](primitives.md#sdktransportconfig): Configuration for SDK transport.
+- [`ServiceEndpointConfig`](primitives.md#serviceendpointconfig): Comprehensive
+  configuration for API endpoints.
+- [`HttpTransportConfig`](primitives.md#httptransportconfig): Configuration for
+  HTTP transport.
+- [`SdkTransportConfig`](primitives.md#sdktransportconfig): Configuration for
+  SDK transport.
 - [`TokenBucketRateLimiter`](primitives.md#tokenbucketratelimiter): Rate limiter
   using the token bucket algorithm.
 - [`EndpointRateLimiter`](primitives.md#endpointratelimiter): Rate limiter for
@@ -73,7 +78,8 @@ import them directly from `lionfuncs.network`:
 
 ### From endpoint
 
-- [`Endpoint`](endpoint.md#endpoint): Class for managing the creation, configuration, and lifecycle of API clients.
+- [`Endpoint`](endpoint.md#endpoint): Class for managing the creation,
+  configuration, and lifecycle of API clients.
 
 ### From events
 
