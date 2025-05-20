@@ -5,6 +5,7 @@ File system utilities for lionfuncs.
 from .core import (
     chunk_content,
     concat_files,
+    create_path,
     dir_to_files,
     list_files,
     read_file,
@@ -21,4 +22,5 @@ __all__ = [
     "dir_to_files",
     "read_image_to_base64",
     "pdf_to_images",
+    "create_path",
 ]
