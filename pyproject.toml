@@ -1,6 +1,6 @@
 [project]
 name            = "lionfuncs"
-version         = "3.1.0"
+version         = "3.1.1"
 description     = "Hnady python functions"
 readme          = "README.md"
 requires-python = ">=3.10"

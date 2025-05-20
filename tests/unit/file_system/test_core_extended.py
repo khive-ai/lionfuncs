@@ -21,7 +21,7 @@ def create_dummy_file(path: Path, content: str = "dummy content"):
 def test_create_path_with_windows_style_paths(tmp_path: Path):
     """Test _create_path with Windows-style paths in the filename."""
     dir_path = tmp_path / "main_dir"
-    file_path = fs_core._create_path(dir_path, "sub1\\sub2\\testfile.txt")
+    file_path = fs_core.create_path(dir_path, "sub1\\sub2\\testfile.txt")
     expected_path = dir_path / "sub1" / "sub2" / "testfile.txt"
     assert file_path == expected_path
     assert file_path.parent.exists()
@@ -35,7 +35,7 @@ def test_create_path_directory_creation_error(tmp_path: Path):
     # Mock os.mkdir to raise OSError
     with mock.patch.object(Path, "mkdir", side_effect=OSError("Permission denied")):
         with pytest.raises(LionFileError, match="Failed to create directory"):
-            fs_core._create_path(dir_path, "testfile.txt")
+            fs_core.create_path(dir_path, "testfile.txt")
 
 
 # Tests for _chunk_by_chars_internal edge cases

@@ -16,28 +16,28 @@ def create_dummy_file(path: Path, content: str = "dummy content"):
 # Tests for _create_path (internal helper, but crucial)
 def test_create_path_basic(tmp_path: Path):
     dir_path = tmp_path / "test_dir"
-    file_path = fs_core._create_path(dir_path, "testfile.txt")
+    file_path = fs_core.create_path(dir_path, "testfile.txt")
     assert file_path == dir_path / "testfile.txt"
     assert dir_path.exists()
 
 
 def test_create_path_with_extension_arg(tmp_path: Path):
-    file_path = fs_core._create_path(tmp_path, "testfile", extension="log")
+    file_path = fs_core.create_path(tmp_path, "testfile", extension="log")
     assert file_path == tmp_path / "testfile.log"
 
 
 def test_create_path_filename_has_extension(tmp_path: Path):
-    file_path = fs_core._create_path(tmp_path, "testfile.md")
+    file_path = fs_core.create_path(tmp_path, "testfile.md")
     assert file_path == tmp_path / "testfile.md"
 
 
 def test_create_path_filename_has_extension_and_arg_overrides(tmp_path: Path):
-    file_path = fs_core._create_path(tmp_path, "testfile.md", extension="txt")
+    file_path = fs_core.create_path(tmp_path, "testfile.md", extension="txt")
     assert file_path == tmp_path / "testfile.txt"
 
 
 def test_create_path_timestamp(tmp_path: Path):
-    file_path = fs_core._create_path(tmp_path, "ts_file.txt", timestamp=True)
+    file_path = fs_core.create_path(tmp_path, "ts_file.txt", timestamp=True)
     assert "_" in file_path.stem  # Check if timestamp was added
     assert file_path.name.endswith("_ts_file.txt") or file_path.stem.startswith(
         "ts_file_"
@@ -45,29 +45,29 @@ def test_create_path_timestamp(tmp_path: Path):
 
 
 def test_create_path_random_hash(tmp_path: Path):
-    file_path = fs_core._create_path(tmp_path, "hash_file.txt", random_hash_digits=6)
+    file_path = fs_core.create_path(tmp_path, "hash_file.txt", random_hash_digits=6)
     assert len(file_path.stem.split("-")[-1]) == 6  # Check for hash
 
 
 def test_create_path_file_exists_ok(tmp_path: Path):
-    file_path1 = fs_core._create_path(tmp_path, "exists.txt", file_exist_ok=False)
+    file_path1 = fs_core.create_path(tmp_path, "exists.txt", file_exist_ok=False)
     file_path1.touch()
-    file_path2 = fs_core._create_path(tmp_path, "exists.txt", file_exist_ok=True)
+    file_path2 = fs_core.create_path(tmp_path, "exists.txt", file_exist_ok=True)
     assert file_path1 == file_path2
 
 
 def test_create_path_file_exists_not_ok(tmp_path: Path):
-    file_path = fs_core._create_path(tmp_path, "exists_not_ok.txt")
+    file_path = fs_core.create_path(tmp_path, "exists_not_ok.txt")
     file_path.touch()
     with pytest.raises(
         LionFileError, match="already exists and file_exist_ok is False"
     ):
-        fs_core._create_path(tmp_path, "exists_not_ok.txt", file_exist_ok=False)
+        fs_core.create_path(tmp_path, "exists_not_ok.txt", file_exist_ok=False)
 
 
 def test_create_path_with_subdirs_in_filename(tmp_path: Path):
     dir_path = tmp_path / "main_dir"
-    file_path = fs_core._create_path(dir_path, "sub1/sub2/testfile.txt")
+    file_path = fs_core.create_path(dir_path, "sub1/sub2/testfile.txt")
     expected_path = dir_path / "sub1" / "sub2" / "testfile.txt"
     assert file_path == expected_path
     assert file_path.parent.exists()
