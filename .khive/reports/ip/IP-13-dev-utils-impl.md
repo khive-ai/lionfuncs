@@ -226,38 +226,38 @@ The implementation will follow Test-Driven Development (TDD) principles:
 gantt
     title Implementation Sequence
     dateFormat  YYYY-MM-DD
-    
+
     section Setup
     Create feature branch          :t1, 2025-05-19, 1d
     Set up test structure          :t2, after t1, 1d
-    
+
     section Text Utilities
     Create text_utils.py module    :t3, after t2, 1d
     Implement string similarity tests :t4, after t3, 1d
     Implement string similarity functions :t5, after t4, 2d
-    
+
     section Parsers
     Create parsers.py module       :t6, after t2, 1d
     Implement fuzzy JSON parsing tests :t7, after t6, 1d
     Implement fuzzy JSON parsing   :t8, after t7, 2d
-    
+
     section Dictionary Utilities
     Enhance utils.py               :t9, after t2, 1d
     Implement to_dict tests        :t10, after t9, 1d
     Create dict_utils.py module    :t11, after t2, 1d
     Implement fuzzy_match_keys tests :t12, after t11, 1d
     Implement fuzzy_match_keys     :t13, after t5 t12, 2d
-    
+
     section Schema Utilities
     Create schema_utils.py module  :t14, after t2, 1d
     Implement function schema tests :t15, after t14, 1d
     Implement function schema generation :t16, after t15, 2d
-    
+
     section Formatting Utilities
     Create format_utils.py module  :t17, after t2, 1d
     Implement as_readable tests    :t18, after t17, 1d
     Implement as_readable          :t19, after t9 t18, 2d
-    
+
     section Finalization
     Update module __init__.py files :t20, after t5 t8 t13 t16 t19, 1d
     Run tests and verify coverage  :t21, after t20, 1d
@@ -308,10 +308,10 @@ def test_string_similarity_levenshtein():
     # Arrange
     s1 = "kitten"
     s2 = "sitting"
-    
+
     # Act
     similarity = string_similarity(s1, s2, method="levenshtein")
-    
+
     # Assert
     assert 0.0 <= similarity <= 1.0
     assert similarity == 0.5714285714285714  # Expected value for these strings
@@ -323,10 +323,10 @@ def test_string_similarity_levenshtein():
 def test_fuzzy_parse_json_fixes_common_errors():
     # Arrange
     malformed_json = "{'key': 'value', 'array': [1, 2, 3,]}"  # Single quotes and trailing comma
-    
+
     # Act
     result = fuzzy_parse_json(malformed_json, attempt_fix=True)
-    
+
     # Assert
     assert result == {"key": "value", "array": [1, 2, 3]}
 ```

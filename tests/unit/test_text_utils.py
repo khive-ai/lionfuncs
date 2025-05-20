@@ -162,6 +162,7 @@ class TestStringSimilarity:
 
     def test_string_similarity_custom_callable(self):
         """Test string_similarity with custom callable."""
+
         def custom_similarity(s1, s2):
             return 0.5  # Always return 0.5
 

@@ -1,6 +1,7 @@
 """Utilities for advanced dictionary manipulation."""
 
-from typing import Any, Callable, Literal, Sequence
+from collections.abc import Sequence
+from typing import Any, Literal
 
 from lionfuncs.text_utils import string_similarity
 
@@ -56,7 +57,11 @@ def fuzzy_match_keys(
         raise ValueError("Threshold must be between 0.0 and 1.0")
 
     # Extract expected keys
-    expected_keys = list(reference_keys) if isinstance(reference_keys, Sequence) else list(reference_keys.keys())
+    expected_keys = (
+        list(reference_keys)
+        if isinstance(reference_keys, Sequence)
+        else list(reference_keys.keys())
+    )
     if not expected_keys:
         return data_dict.copy()  # Return copy of original if no expected keys
 
@@ -93,8 +98,10 @@ def fuzzy_match_keys(
             # Prepare strings for comparison based on case sensitivity
             compare_key = key if case_sensitive else key.lower()
             compare_expected = expected_key if case_sensitive else expected_key.lower()
-            
-            score = string_similarity(compare_key, compare_expected, method=default_method)
+
+            score = string_similarity(
+                compare_key, compare_expected, method=default_method
+            )
             if score > best_score and score >= threshold:
                 best_score = score
                 best_match = expected_key

@@ -125,9 +125,7 @@ def _jaro_distance(s1: str, s2: str) -> float:
     transpositions //= 2
 
     return (
-        matches / s1_len
-        + matches / s2_len
-        + (matches - transpositions) / matches
+        matches / s1_len + matches / s2_len + (matches - transpositions) / matches
     ) / 3.0
 
 
@@ -219,8 +217,8 @@ def _cosine_similarity(text1: str, text2: str) -> float:
         float: Cosine similarity score between 0 and 1
     """
     # Process strings: remove punctuation and convert to lowercase
-    s1_processed = re.sub(r'[^\w\s]', '', text1).lower()
-    s2_processed = re.sub(r'[^\w\s]', '', text2).lower()
+    s1_processed = re.sub(r"[^\w\s]", "", text1).lower()
+    s2_processed = re.sub(r"[^\w\s]", "", text2).lower()
 
     # Tokenize into words
     tokens1 = s1_processed.split()
@@ -263,7 +261,10 @@ def _sequence_matcher_similarity(s1: str, s2: str) -> float:
 def string_similarity(
     s1: str,
     s2: str,
-    method: Literal["levenshtein", "jaro_winkler", "hamming", "cosine", "sequence_matcher"] | Callable[[str, str], float] = "levenshtein",
+    method: Literal[
+        "levenshtein", "jaro_winkler", "hamming", "cosine", "sequence_matcher"
+    ]
+    | Callable[[str, str], float] = "levenshtein",
     **kwargs: Any,
 ) -> float:
     """Calculate the similarity between two strings using the specified method.

@@ -1,16 +1,15 @@
 """Tests for the schema_utils module."""
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
-import pytest
 from pydantic import BaseModel, Field
+
 from lionfuncs.schema_utils import (
     _extract_docstring_parts,
     _get_type_name,
     function_to_openai_schema,
     pydantic_model_to_schema,
 )
-
 
 
 class TestSchemaUtils:
@@ -28,8 +27,8 @@ class TestSchemaUtils:
 
     def test_get_type_name_complex_types(self):
         """Test _get_type_name with complex types."""
-        assert _get_type_name(List[str]) == "array"
-        assert _get_type_name(Dict[str, int]) == "object"
+        assert _get_type_name(list[str]) == "array"
+        assert _get_type_name(dict[str, int]) == "object"
         assert _get_type_name(Optional[str]) == "string"
         assert _get_type_name(Union[str, int]) == "any"
 
@@ -79,15 +78,16 @@ class TestSchemaUtils:
         assert "param1" in params
         assert "that spans multiple lines" in params["param1"]
 
-    def test_pydantic_model_to_schema(self): # Test private function indirectly
+    def test_pydantic_model_to_schema(self):  # Test private function indirectly
         """Test _pydantic_model_to_schema function."""
+
         class User(BaseModel):
             name: str
             age: int
             email: Optional[str] = None
-    
-        schema = pydantic_model_to_schema(User) # This would fail as it's private
-    
+
+        schema = pydantic_model_to_schema(User)  # This would fail as it's private
+
         assert schema["type"] == "object"
         assert "properties" in schema
         assert "name" in schema["properties"]
@@ -100,20 +100,21 @@ class TestSchemaUtils:
 
     def test_function_to_openai_schema_simple(self):
         """Test function_to_openai_schema with a simple function."""
+
         def sample_function(a: int, b: str) -> bool:
             """Sample function for testing.
-            
+
             Args:
                 a: An integer parameter
                 b: A string parameter
-                
+
             Returns:
                 A boolean result
             """
             return True
-        
+
         schema = function_to_openai_schema(sample_function)
-        
+
         assert schema["name"] == "sample_function"
         assert "Sample function for testing" in schema["description"]
         assert "parameters" in schema
@@ -129,28 +130,30 @@ class TestSchemaUtils:
 
     def test_function_to_openai_schema_with_defaults(self):
         """Test function_to_openai_schema with default parameters."""
+
         def sample_function(a: int, b: str = "default") -> bool:
             """Sample function with default parameter."""
             return True
-        
+
         schema = function_to_openai_schema(sample_function)
-        
+
         assert "a" in schema["parameters"]["required"]
         assert "b" not in schema["parameters"]["required"]
 
     def test_function_to_openai_schema_complex_types(self):
         """Test function_to_openai_schema with complex parameter types."""
+
         def complex_function(
-            a: List[int],
-            b: Dict[str, Any],
+            a: list[int],
+            b: dict[str, Any],
             c: Optional[str] = None,
-            d: Union[int, str] = 0
-        ) -> Dict[str, Any]:
+            d: Union[int, str] = 0,
+        ) -> dict[str, Any]:
             """Complex function with various parameter types."""
             return {}
-        
+
         schema = function_to_openai_schema(complex_function)
-        
+
         assert schema["parameters"]["properties"]["a"]["type"] == "array"
         assert schema["parameters"]["properties"]["b"]["type"] == "object"
         assert schema["parameters"]["properties"]["c"]["type"] == "string"
@@ -162,18 +165,19 @@ class TestSchemaUtils:
 
     def test_function_to_openai_schema_with_pydantic_model(self):
         """Test function_to_openai_schema with Pydantic model parameter."""
+
         class UserModel(BaseModel):
             name: str
             age: int
             email: Optional[str] = None
-            tags: List[str] = Field(default_factory=list)
-        
+            tags: list[str] = Field(default_factory=list)
+
         def create_user(user: UserModel) -> dict:
             """Create a new user."""
             return {}
-        
+
         schema = function_to_openai_schema(create_user)
-        
+
         assert schema["name"] == "create_user"
         assert "parameters" in schema
         assert "user" in schema["parameters"]["properties"]
@@ -182,23 +186,24 @@ class TestSchemaUtils:
 
     def test_function_to_openai_schema_with_self_cls(self):
         """Test function_to_openai_schema with self/cls parameters."""
+
         class TestClass:
             def instance_method(self, a: int, b: str) -> bool:
                 """Instance method."""
                 return True
-            
+
             @classmethod
             def class_method(cls, a: int, b: str) -> bool:
                 """Class method."""
                 return True
-        
+
         # Instance method
         schema = function_to_openai_schema(TestClass.instance_method)
         assert "parameters" in schema
         assert "a" in schema["parameters"]["properties"]
         assert "b" in schema["parameters"]["properties"]
         assert "self" not in schema["parameters"]["properties"]
-        
+
         # Class method
         schema = function_to_openai_schema(TestClass.class_method)
         assert "parameters" in schema
@@ -208,12 +213,13 @@ class TestSchemaUtils:
 
     def test_function_to_openai_schema_without_annotations(self):
         """Test function_to_openai_schema with function without type annotations."""
+
         def untyped_function(a, b=None):
             """Untyped function."""
             return True
-        
+
         schema = function_to_openai_schema(untyped_function)
-        
+
         assert schema["name"] == "untyped_function"
         assert "parameters" in schema
         assert "a" in schema["parameters"]["properties"]

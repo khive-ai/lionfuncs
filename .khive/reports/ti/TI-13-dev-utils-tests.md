@@ -93,13 +93,13 @@ def string_pairs():
 @pytest.mark.parametrize("method", ["levenshtein", "jaro_winkler", "hamming", "cosine", "sequence_matcher"])
 def test_string_similarity_methods(string_pairs, method):
     s1, s2 = string_pairs[0]  # kitten, sitting
-    
+
     # Skip hamming for different length strings
     if method == "hamming" and len(s1) != len(s2):
         pytest.skip("Hamming similarity requires strings of equal length")
-    
+
     similarity = string_similarity(s1, s2, method=method)
-    
+
     assert 0.0 <= similarity <= 1.0
     # Each method will have a different expected value, but should be in range
 ```
@@ -114,11 +114,11 @@ def test_string_similarity_methods(string_pairs, method):
 def test_string_similarity_edge_cases():
     # Identical strings should have similarity 1.0
     assert string_similarity("hello", "hello", method="levenshtein") == 1.0
-    
+
     # Empty strings
     assert string_similarity("", "", method="levenshtein") == 1.0
     assert string_similarity("test", "", method="levenshtein") == 0.0
-    
+
     # Case sensitivity
     assert string_similarity("Hello", "hello", method="levenshtein") < 1.0
 ```
@@ -135,9 +135,9 @@ def test_cosine_similarity_vectorization():
     # Test with word tokenization
     s1 = "The quick brown fox jumps over the lazy dog"
     s2 = "The brown fox jumped over the dog"
-    
+
     similarity = _cosine_similarity(s1, s2)
-    
+
     assert 0.0 <= similarity <= 1.0
     assert similarity > 0.7  # Should be fairly similar
 ```
@@ -153,9 +153,9 @@ def test_cosine_similarity_vectorization():
 ```python
 def test_fuzzy_parse_json_valid():
     valid_json = '{"name": "John", "age": 30, "city": "New York"}'
-    
+
     result = fuzzy_parse_json(valid_json)
-    
+
     assert result == {"name": "John", "age": 30, "city": "New York"}
 ```
 
@@ -175,7 +175,7 @@ common errors.
 ])
 def test_fuzzy_parse_json_common_errors(malformed_json, expected):
     result = fuzzy_parse_json(malformed_json, attempt_fix=True)
-    
+
     assert result == expected
 ```
 
@@ -189,11 +189,11 @@ strict mode.
 ```python
 def test_fuzzy_parse_json_strict():
     malformed_json = "{'name': 'John'}"
-    
+
     # Should not raise in non-strict mode
     result = fuzzy_parse_json(malformed_json, attempt_fix=True, strict=False)
     assert result == {"name": "John"}
-    
+
     # Should raise in strict mode
     with pytest.raises(ValueError):
         fuzzy_parse_json(malformed_json, attempt_fix=False, strict=True)
@@ -216,7 +216,7 @@ issues.
 ])
 def test_fix_json_string(input_str, expected):
     result = _fix_json_string(input_str)
-    
+
     assert result == expected
 ```
 
@@ -236,7 +236,7 @@ def sample_pydantic_model():
         name: str
         age: int
         tags: list[str] = []
-    
+
     return SampleModel(name="John", age=30, tags=["a", "b"])
 ```
 
@@ -245,7 +245,7 @@ def sample_pydantic_model():
 ```python
 def test_to_dict_pydantic_model(sample_pydantic_model):
     result = to_dict(sample_pydantic_model)
-    
+
     assert result == {"name": "John", "age": 30, "tags": ["a", "b"]}
 ```
 
@@ -263,7 +263,7 @@ def sample_dataclass():
         name: str
         age: int
         tags: list[str] = field(default_factory=list)
-    
+
     return SampleData(name="John", age=30, tags=["a", "b"])
 ```
 
@@ -272,7 +272,7 @@ def sample_dataclass():
 ```python
 def test_to_dict_dataclass(sample_dataclass):
     result = to_dict(sample_dataclass)
-    
+
     assert result == {"name": "John", "age": 30, "tags": ["a", "b"]}
 ```
 
@@ -294,9 +294,9 @@ def test_to_dict_nested():
         },
         "tags": ["a", "b", "c"]
     }
-    
+
     result = to_dict(nested_dict)
-    
+
     assert result == nested_dict
 ```
 
@@ -315,7 +315,7 @@ def model_with_options():
         age: int
         email: str | None = None
         internal_id: str = "default"
-    
+
     return OptionsModel(name="John", age=30, email="john@example.com")
 ```
 
@@ -328,11 +328,11 @@ def test_to_dict_options(model_with_options):
     assert "name" in result
     assert "age" in result
     assert "email" not in result
-    
+
     # Test exclude option
     result = to_dict(model_with_options, exclude=["internal_id"])
     assert "internal_id" not in result
-    
+
     # Test exclude_none option
     model_with_options.email = None
     result = to_dict(model_with_options, exclude_none=True)
@@ -352,9 +352,9 @@ formats.
 @pytest.mark.parametrize("format_type", ["auto", "yaml_like", "json", "repr"])
 def test_as_readable_format_types(format_type):
     data = {"name": "John", "age": 30, "tags": ["a", "b"]}
-    
+
     result = as_readable(data, format_type=format_type)
-    
+
     assert isinstance(result, str)
     # For JSON format, verify it's valid JSON
     if format_type == "json":
@@ -379,9 +379,9 @@ def test_as_readable_nested_data():
         },
         "tags": ["a", "b", "c"]
     }
-    
+
     result = as_readable(nested_data, format_type="yaml_like")
-    
+
     assert "person:" in result
     assert "name: John" in result
     assert "address:" in result
@@ -408,9 +408,9 @@ def test_format_dict_yaml_like():
         "tags": ["a", "b", "c"],
         "bio": "This is\na multi-line\nstring"
     }
-    
+
     result = _format_dict_yaml_like(data)
-    
+
     assert "name: John" in result
     assert "age: 30" in result
     assert "address:" in result
@@ -429,10 +429,10 @@ def test_format_dict_yaml_like():
 ```python
 def test_is_in_notebook(monkeypatch):
     # Mock IPython not being available
-    monkeypatch.setattr("builtins.__import__", lambda name, *args, **kwargs: 
+    monkeypatch.setattr("builtins.__import__", lambda name, *args, **kwargs:
                        raise ImportError() if name == "IPython" else __import__(name, *args, **kwargs))
     assert not _is_in_notebook()
-    
+
     # Mock IPython being available but not in notebook
     class MockIPython:
         @staticmethod
@@ -444,11 +444,11 @@ def test_is_in_notebook(monkeypatch):
                         __name__ = "TerminalInteractiveShell"
                     return _Class()
             return Shell()
-    
-    monkeypatch.setattr("builtins.__import__", lambda name, *args, **kwargs: 
+
+    monkeypatch.setattr("builtins.__import__", lambda name, *args, **kwargs:
                        MockIPython if name == "IPython" else __import__(name, *args, **kwargs))
     assert not _is_in_notebook()
-    
+
     # Mock IPython being available in notebook
     class MockIPythonNotebook:
         @staticmethod
@@ -459,12 +459,12 @@ def test_is_in_notebook(monkeypatch):
                     class _Class:
                         __name__ = "ZMQInteractiveShell"
                     return _Class()
-                
+
                 def has_trait(self, trait):
                     return trait == "kernel"
             return Shell()
-    
-    monkeypatch.setattr("builtins.__import__", lambda name, *args, **kwargs: 
+
+    monkeypatch.setattr("builtins.__import__", lambda name, *args, **kwargs:
                        MockIPythonNotebook if name == "IPython" else __import__(name, *args, **kwargs))
     assert _is_in_notebook()
 ```
@@ -482,9 +482,9 @@ matches.
 def test_fuzzy_match_keys_exact():
     data = {"name": "John", "age": 30, "city": "New York"}
     reference_keys = ["name", "age", "city"]
-    
+
     result = fuzzy_match_keys(data, reference_keys)
-    
+
     assert result == data
 ```
 
@@ -499,15 +499,15 @@ based on threshold.
 def test_fuzzy_match_keys_fuzzy():
     data = {"Name": "John", "Age": 30, "City": "New York"}
     reference_keys = ["name", "age", "city"]
-    
+
     # With case sensitivity, should not match
     result = fuzzy_match_keys(data, reference_keys, case_sensitive=True)
     assert "name" not in result
-    
+
     # Without case sensitivity, should match
     result = fuzzy_match_keys(data, reference_keys, case_sensitive=False)
     assert "name" in result
-    
+
     # Test with typos
     data = {"nmae": "John", "aeg": 30, "ctiy": "New York"}
     result = fuzzy_match_keys(data, reference_keys, threshold=0.7)
@@ -528,9 +528,9 @@ algorithms.
 def test_fuzzy_match_keys_algorithms(algorithm):
     data = {"nmae": "John", "aeg": 30, "ctiy": "New York"}
     reference_keys = ["name", "age", "city"]
-    
+
     result = fuzzy_match_keys(data, reference_keys, default_method=algorithm, threshold=0.7)
-    
+
     # All algorithms should match these keys with threshold 0.7
     assert "name" in result
     assert "age" in result
@@ -554,16 +554,16 @@ on options.
 def test_fuzzy_match_keys_handle_unmatched(handle_unmatched, expected_keys):
     data = {"name": "John", "age": 30, "city": "New York", "extra": "value"}
     reference_keys = ["name", "age", "city", "missing"]
-    
+
     result = fuzzy_match_keys(
-        data, 
-        reference_keys, 
+        data,
+        reference_keys,
         handle_unmatched=handle_unmatched,
         fill_value="default"
     )
-    
+
     assert set(result.keys()) == set(expected_keys)
-    
+
     if handle_unmatched in ["fill", "force"]:
         assert result["missing"] == "default"
 ```
@@ -581,18 +581,18 @@ for simple functions.
 def test_function_to_openai_schema_simple():
     def sample_function(a: int, b: str) -> bool:
         """Sample function for testing.
-        
+
         Args:
             a: An integer parameter
             b: A string parameter
-            
+
         Returns:
             A boolean result
         """
         return True
-    
+
     schema = function_to_openai_schema(sample_function)
-    
+
     assert schema["name"] == "sample_function"
     assert "description" in schema
     assert "parameters" in schema
@@ -616,7 +616,7 @@ parameter types.
 ```python
 def test_function_to_openai_schema_complex_types():
     from typing import List, Dict, Optional, Literal
-    
+
     def complex_function(
         a: List[int],
         b: Dict[str, Any],
@@ -625,16 +625,16 @@ def test_function_to_openai_schema_complex_types():
     ) -> Dict[str, Any]:
         """Complex function with various parameter types."""
         return {}
-    
+
     schema = function_to_openai_schema(complex_function)
-    
+
     assert schema["name"] == "complex_function"
     assert "parameters" in schema
     assert "a" in schema["parameters"]["properties"]
     assert "b" in schema["parameters"]["properties"]
     assert "c" in schema["parameters"]["properties"]
     assert "d" in schema["parameters"]["properties"]
-    
+
     # Check that optional parameters are not in required list
     assert "c" not in schema["parameters"]["required"]
     assert "d" not in schema["parameters"]["required"]
@@ -651,15 +651,15 @@ descriptions from docstrings.
 def test_function_to_openai_schema_docstrings():
     def documented_function(a: int, b: str) -> None:
         """This is the function description.
-        
+
         Args:
             a: Description for parameter a
             b: Description for parameter b
         """
         pass
-    
+
     schema = function_to_openai_schema(documented_function)
-    
+
     assert schema["description"] == "This is the function description."
     # If parameter descriptions are implemented:
     # assert schema["parameters"]["properties"]["a"]["description"] == "Description for parameter a"
@@ -679,13 +679,13 @@ def test_function_to_openai_schema_pydantic_models():
         name: str
         age: int
         email: str | None = None
-    
+
     def create_user(user: UserModel) -> dict:
         """Create a new user."""
         return {}
-    
+
     schema = function_to_openai_schema(create_user)
-    
+
     assert schema["name"] == "create_user"
     assert "parameters" in schema
     assert "user" in schema["parameters"]["properties"]
@@ -707,11 +707,11 @@ functions.
 def test_fuzzy_match_keys_with_string_similarity():
     data = {"nmae": "John", "aeg": 30, "ctiy": "New York"}
     reference_keys = ["name", "age", "city"]
-    
+
     # Test with different similarity algorithms
     for algorithm in ["levenshtein", "jaro_winkler", "sequence_matcher"]:
         result = fuzzy_match_keys(data, reference_keys, default_method=algorithm, threshold=0.7)
-        
+
         # All should match these keys with threshold 0.7
         assert "name" in result
         assert "age" in result
@@ -731,11 +731,11 @@ def test_as_readable_with_to_dict():
         name: str
         age: int
         nested: dict
-    
+
     model = SampleModel(name="John", age=30, nested={"key": "value"})
-    
+
     result = as_readable(model)
-    
+
     assert "name" in result
     assert "John" in result
     assert "age" in result
@@ -757,7 +757,7 @@ class MockIPython:
                 class _Class:
                     __name__ = "ZMQInteractiveShell"
                 return _Class()
-            
+
             def has_trait(self, trait):
                 return trait == "kernel"
         return Shell()
@@ -800,7 +800,7 @@ def create_sample_pydantic_model():
         name: str
         age: int
         tags: list[str] = []
-    
+
     return SampleModel(name="John", age=30, tags=["a", "b"])
 
 def create_sample_dataclass():
@@ -810,7 +810,7 @@ def create_sample_dataclass():
         name: str
         age: int
         tags: list[str] = field(default_factory=list)
-    
+
     return SampleData(name="John", age=30, tags=["a", "b"])
 ```
 

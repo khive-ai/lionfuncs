@@ -2,6 +2,7 @@
 
 import json
 import logging
+
 import pytest
 
 from lionfuncs.parsers import _fix_json_string, fuzzy_parse_json
@@ -14,10 +15,22 @@ class TestFuzzyParseJson:
         "json_string,expected",
         [
             ('{"name": "John", "age": 30}', {"name": "John", "age": 30}),
-            ('{"name": "John", "age": 30, "is_active": true}', {"name": "John", "age": 30, "is_active": True}),
-            ('{"name": "John", "age": 30, "data": null}', {"name": "John", "age": 30, "data": None}),
-            ('{"name": "John", "tags": ["a", "b", "c"]}', {"name": "John", "tags": ["a", "b", "c"]}),
-            ('{"name": "John", "address": {"city": "New York"}}', {"name": "John", "address": {"city": "New York"}}),
+            (
+                '{"name": "John", "age": 30, "is_active": true}',
+                {"name": "John", "age": 30, "is_active": True},
+            ),
+            (
+                '{"name": "John", "age": 30, "data": null}',
+                {"name": "John", "age": 30, "data": None},
+            ),
+            (
+                '{"name": "John", "tags": ["a", "b", "c"]}',
+                {"name": "John", "tags": ["a", "b", "c"]},
+            ),
+            (
+                '{"name": "John", "address": {"city": "New York"}}',
+                {"name": "John", "address": {"city": "New York"}},
+            ),
         ],
     )
     def test_fuzzy_parse_json_valid(self, json_string, expected):
@@ -28,11 +41,26 @@ class TestFuzzyParseJson:
     @pytest.mark.parametrize(
         "malformed_json,expected",
         [
-            ("{'name': 'John', 'age': 30}", {"name": "John", "age": 30}),  # Single quotes
-            ('{"name": "John", "age": 30,}', {"name": "John", "age": 30}),  # Trailing comma
-            ('{"name": "John", "age": None}', {"name": "John", "age": None}),  # Python None
-            ('{"name": "John", "age": True}', {"name": "John", "age": True}),  # Python True
-            ('{"name": "John", "age": False}', {"name": "John", "age": False}),  # Python False
+            (
+                "{'name': 'John', 'age': 30}",
+                {"name": "John", "age": 30},
+            ),  # Single quotes
+            (
+                '{"name": "John", "age": 30,}',
+                {"name": "John", "age": 30},
+            ),  # Trailing comma
+            (
+                '{"name": "John", "age": None}',
+                {"name": "John", "age": None},
+            ),  # Python None
+            (
+                '{"name": "John", "age": True}',
+                {"name": "John", "age": True},
+            ),  # Python True
+            (
+                '{"name": "John", "age": False}',
+                {"name": "John", "age": False},
+            ),  # Python False
             ('{name: "John", age: 30}', {"name": "John", "age": 30}),  # Unquoted keys
         ],
     )
@@ -53,7 +81,9 @@ class TestFuzzyParseJson:
             fuzzy_parse_json(invalid_json, attempt_fix=False, strict=True)
 
         # Invalid JSON should parse with attempt_fix=True even in strict mode
-        assert fuzzy_parse_json(invalid_json, attempt_fix=True, strict=True) == {"name": "John"}
+        assert fuzzy_parse_json(invalid_json, attempt_fix=True, strict=True) == {
+            "name": "John"
+        }
 
     def test_fuzzy_parse_json_empty_input(self):
         """Test fuzzy_parse_json with empty input."""
@@ -77,14 +107,14 @@ class TestFuzzyParseJson:
     def test_fuzzy_parse_json_logging(self, caplog):
         """Test fuzzy_parse_json with logging enabled."""
         caplog.set_level(logging.WARNING)
-        
+
         # Invalid JSON should log warnings when log_errors=True
         invalid_json = "{'name': 'John', invalid}"
         result = fuzzy_parse_json(invalid_json, attempt_fix=True, log_errors=True)
-        
+
         # Should still return None for unparseable JSON
         assert result is None
-        
+
         # Should have logged warnings
         assert len(caplog.records) > 0
         assert any("JSON parsing failed" in record.message for record in caplog.records)
@@ -103,9 +133,9 @@ class TestFuzzyParseJson:
     def test_fix_json_string(self, input_str, expected):
         """Test _fix_json_string function."""
         result = _fix_json_string(input_str)
-        
+
         # Parse both to compare the actual JSON content
         expected_json = json.loads(expected)
         result_json = json.loads(result)
-        
+
         assert result_json == expected_json
