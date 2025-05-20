@@ -127,6 +127,7 @@ asyncio.run(main())
 ```
 
 The examples effectively demonstrate:
+
 - Core functionality of the library
 - Practical use cases
 - Proper import patterns

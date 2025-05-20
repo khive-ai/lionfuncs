@@ -11,11 +11,21 @@ type: "research"
 
 ## Summary
 
-This report analyzes the utilities in `.khive/dev/` directory for potential integration into the main `src/lionfuncs` library. I've examined the existing structure of the `lionfuncs` package, reviewed the functionality of the development utilities, and identified candidate functions for integration, along with recommendations for placement and necessary refactoring.
+This report analyzes the utilities in `.khive/dev/` directory for potential
+integration into the main `src/lionfuncs` library. I've examined the existing
+structure of the `lionfuncs` package, reviewed the functionality of the
+development utilities, and identified candidate functions for integration, along
+with recommendations for placement and necessary refactoring.
 
 ## Background
 
-The `lionfuncs` library provides general-purpose utilities for Python programming with a focus on clean, well-tested code. The `.khive/dev/` directory contains additional utilities that have been developed during the course of the project but haven't been integrated into the main library. These utilities include string processing, data validation, conversion, and schema generation functions that could benefit the broader user base if included in the main library.
+The `lionfuncs` library provides general-purpose utilities for Python
+programming with a focus on clean, well-tested code. The `.khive/dev/` directory
+contains additional utilities that have been developed during the course of the
+project but haven't been integrated into the main library. These utilities
+include string processing, data validation, conversion, and schema generation
+functions that could benefit the broader user base if included in the main
+library.
 
 ## Analysis
 
@@ -24,8 +34,10 @@ The `lionfuncs` library provides general-purpose utilities for Python programmin
 The current structure of `src/lionfuncs` includes:
 
 - Core utility modules:
-  - `utils.py`: General utilities, including type conversion and environment variable handling
-  - `async_utils.py`: Asynchronous utilities, including throttling, concurrency control, and task management
+  - `utils.py`: General utilities, including type conversion and environment
+    variable handling
+  - `async_utils.py`: Asynchronous utilities, including throttling, concurrency
+    control, and task management
   - `concurrency.py`: Concurrency primitives
   - `errors.py`: Error handling utilities
 
@@ -35,7 +47,8 @@ The current structure of `src/lionfuncs` includes:
 
 ### `.khive/dev/` Utilities Overview
 
-The `.khive/dev/` directory contains 16 Python files with various utility functions:
+The `.khive/dev/` directory contains 16 Python files with various utility
+functions:
 
 1. **Data Conversion and Formatting**
    - `as_readable.py`: Converts data to human-readable formats
@@ -60,7 +73,8 @@ The `.khive/dev/` directory contains 16 Python files with various utility functi
 
 ## Integration Candidates
 
-After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities, I've identified the following candidates for integration:
+After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities,
+I've identified the following candidates for integration:
 
 ### 1. String Similarity Utilities
 
@@ -69,6 +83,7 @@ After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities, I
 **Recommended Target:** New module `src/lionfuncs/text_utils.py`
 
 **Functions to Integrate:**
+
 - `string_similarity`: Main interface function
 - Supporting similarity algorithms:
   - `levenshtein_distance`/`levenshtein_similarity`
@@ -77,9 +92,13 @@ After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities, I
   - `cosine_similarity`
   - `sequence_matcher_similarity`
 
-**Rationale:** String similarity is a general-purpose utility with applications across many domains. It's well-implemented with multiple algorithms and a clean API. It has minimal dependencies (standard library only) and includes thorough documentation.
+**Rationale:** String similarity is a general-purpose utility with applications
+across many domains. It's well-implemented with multiple algorithms and a clean
+API. It has minimal dependencies (standard library only) and includes thorough
+documentation.
 
 **Refactoring Notes:**
+
 - Consider making the supporting algorithm functions private (`_function_name`)
 - Update function signatures to use more type hints
 - Add more examples in docstrings
@@ -89,17 +108,23 @@ After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities, I
 
 **Source:** `as_readable.py`
 
-**Recommended Target:** `src/lionfuncs/utils.py` or new `src/lionfuncs/format_utils.py`
+**Recommended Target:** `src/lionfuncs/utils.py` or new
+`src/lionfuncs/format_utils.py`
 
 **Functions to Integrate:**
+
 - `as_readable`: Formats data for human readability
 - `format_dict`: YAML-like dictionary formatter
 - `in_notebook`: Helper to detect Jupyter environment
 
-**Rationale:** The ability to format complex data structures for human readability is broadly useful. The implementation is clean and handles multiple formats and edge cases well.
+**Rationale:** The ability to format complex data structures for human
+readability is broadly useful. The implementation is clean and handles multiple
+formats and edge cases well.
 
 **Refactoring Notes:**
-- Remove dependency on `to_dict` from `.khive/dev/` or integrate that function as well
+
+- Remove dependency on `to_dict` from `.khive/dev/` or integrate that function
+  as well
 - Simplify IPython detection (currently imports conditionally)
 - Add more examples showing different formatting options
 
@@ -110,12 +135,16 @@ After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities, I
 **Recommended Target:** New module `src/lionfuncs/parsers.py`
 
 **Functions to Integrate:**
+
 - `fuzzy_parse_json`: Main parsing function
 - `fix_json_string`: JSON string repair utility
 
-**Rationale:** Robust JSON parsing with error recovery is valuable when dealing with user input or imperfect data sources. The implementation handles common JSON issues (quotes, whitespace, brackets) well.
+**Rationale:** Robust JSON parsing with error recovery is valuable when dealing
+with user input or imperfect data sources. The implementation handles common
+JSON issues (quotes, whitespace, brackets) well.
 
 **Refactoring Notes:**
+
 - Improve error messages to be more specific
 - Consider adding options to control the level of "fuzziness"
 - Add more comprehensive examples showing the types of errors it can handle
@@ -127,12 +156,15 @@ After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities, I
 **Recommended Target:** `src/lionfuncs/utils.py` (extending existing `to_list`)
 
 **Functions to Integrate:**
+
 - `to_dict`: Main conversion function
 - `recursive_to_dict`: Helper for nested conversions
 
-**Rationale:** Complements the existing `to_list` function in `utils.py` and provides robust dictionary conversion from various input types.
+**Rationale:** Complements the existing `to_list` function in `utils.py` and
+provides robust dictionary conversion from various input types.
 
 **Refactoring Notes:**
+
 - Remove dependencies on other `.khive/dev/` modules where possible
 - Refactor to use only Pydantic v2 APIs (`model_dump`)
 - Improve error handling with more specific exception types
@@ -140,18 +172,22 @@ After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities, I
 
 ### 5. Key Fuzzy Matching
 
-**Source:** `fuzzy_match_keys.py` 
+**Source:** `fuzzy_match_keys.py`
 
 **Recommended Target:** New module `src/lionfuncs/dict_utils.py`
 
 **Functions to Integrate:**
+
 - `fuzzy_match_keys`: Fuzzy dictionary key matching
 
-**Rationale:** A useful utility for working with user-provided data where keys might not match exactly. It pairs well with the string similarity functions.
+**Rationale:** A useful utility for working with user-provided data where keys
+might not match exactly. It pairs well with the string similarity functions.
 
 **Refactoring Notes:**
+
 - Will need to integrate string similarity functions as a dependency
-- Remove dependency on `KeysDict` and `Params` types if not available in `lionfuncs`
+- Remove dependency on `KeysDict` and `Params` types if not available in
+  `lionfuncs`
 - Simplify the parameter class to be more focused
 
 ### 6. Function Schema Generation
@@ -161,11 +197,15 @@ After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities, I
 **Recommended Target:** New module `src/lionfuncs/schema_utils.py`
 
 **Functions to Integrate:**
+
 - `function_to_schema`: Generates OpenAI-compatible function schemas
 
-**Rationale:** Useful for generating OpenAI function calling schemas automatically from Python functions, which is a common need when working with AI APIs.
+**Rationale:** Useful for generating OpenAI function calling schemas
+automatically from Python functions, which is a common need when working with AI
+APIs.
 
 **Refactoring Notes:**
+
 - Remove dependencies on `lionagi` modules
 - Simplify the `FunctionSchema` class
 - Update to match latest OpenAPI/JSON Schema standards
@@ -175,19 +215,25 @@ After analyzing both the existing `lionfuncs` and the `.khive/dev/` utilities, I
 
 The following utilities are **not recommended** for integration at this time:
 
-1. **`breakdown_pydantic_annotation.py`**: Too specialized for general use and tightly coupled to Pydantic internals.
+1. **`breakdown_pydantic_annotation.py`**: Too specialized for general use and
+   tightly coupled to Pydantic internals.
 
-2. **`extract_code_block.py`**: Functionality is narrow and might be better served by existing libraries like Markdown-it.
+2. **`extract_code_block.py`**: Functionality is narrow and might be better
+   served by existing libraries like Markdown-it.
 
-3. **`xml_parser.py`**: XML parsing is comprehensively covered by standard library and other packages like lxml.
+3. **`xml_parser.py`**: XML parsing is comprehensively covered by standard
+   library and other packages like lxml.
 
-4. **`to_xml.py`**: XML serialization is less commonly needed and better handled by specialized libraries.
+4. **`to_xml.py`**: XML serialization is less commonly needed and better handled
+   by specialized libraries.
 
 5. **`validate_boolean.py`**: Functionality is too limited to warrant inclusion.
 
-6. **`json_schema.py`**: Overlap with Pydantic's schema functionality and specialized use cases.
+6. **`json_schema.py`**: Overlap with Pydantic's schema functionality and
+   specialized use cases.
 
-7. **`common_field_validators.py`**: Too specialized for Pydantic field validation.
+7. **`common_field_validators.py`**: Too specialized for Pydantic field
+   validation.
 
 ## Integration Strategy
 
@@ -201,7 +247,8 @@ Based on my analysis, I recommend the following integration strategy:
 
 2. **Enhance Existing Modules:**
    - Add `to_dict` to `utils.py` to complement `to_list`
-   - Add `as_readable` and related functions to `utils.py` or a new `format_utils.py`
+   - Add `as_readable` and related functions to `utils.py` or a new
+     `format_utils.py`
 
 3. **Integration Order:**
    1. `string_similarity.py` → `text_utils.py` (minimal dependencies)
@@ -218,30 +265,42 @@ Based on my analysis, I recommend the following integration strategy:
 
 ## Recommendations
 
-1. **Create New Modules**: Implement the new modules outlined above to organize the functionality logically.
+1. **Create New Modules**: Implement the new modules outlined above to organize
+   the functionality logically.
 
-2. **Prioritize Integration**: Focus on integrating the string similarity functions first, as they provide a foundation for other utilities and have minimal dependencies.
+2. **Prioritize Integration**: Focus on integrating the string similarity
+   functions first, as they provide a foundation for other utilities and have
+   minimal dependencies.
 
-3. **Refactor Iteratively**: Refactor each utility to align with `lionfuncs` conventions and to remove dependencies on external modules before integration.
+3. **Refactor Iteratively**: Refactor each utility to align with `lionfuncs`
+   conventions and to remove dependencies on external modules before
+   integration.
 
-4. **Update Documentation**: Ensure all integrated functions have clear documentation and examples.
+4. **Update Documentation**: Ensure all integrated functions have clear
+   documentation and examples.
 
-5. **Comprehensive Testing**: Develop thorough unit tests for all integrated functionality.
+5. **Comprehensive Testing**: Develop thorough unit tests for all integrated
+   functionality.
 
 ## Conclusion
 
-The `.khive/dev/` directory contains several utilities that would enhance the `lionfuncs` library. By focusing on the most broadly useful, well-implemented functions, we can improve the library while maintaining code quality and minimizing technical debt. The integration should be done incrementally, starting with the utilities that have the fewest dependencies.
+The `.khive/dev/` directory contains several utilities that would enhance the
+`lionfuncs` library. By focusing on the most broadly useful, well-implemented
+functions, we can improve the library while maintaining code quality and
+minimizing technical debt. The integration should be done incrementally,
+starting with the utilities that have the fewest dependencies.
 
 ## References
 
 Citations from research:
 
-1. Standard library documentation for string comparison algorithms (pplx:523fd9f6-de96-4c63-895f-0a23729d9b6c)
+1. Standard library documentation for string comparison algorithms
+   (pplx:523fd9f6-de96-4c63-895f-0a23729d9b6c)
 2. Python packaging best practices (pplx:658af63d-dd8d-4dad-b12b-9db3ad0a810c)
 
 ## Appendix A: Raw Search Results
 
-```json
+````json
 [
   {
     "success": true,
@@ -316,4 +375,4 @@ Citations from research:
     }
   }
 ]
-```
+````
