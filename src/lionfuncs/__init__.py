@@ -1,6 +1,6 @@
 """lionfuncs - A collection of general-purpose Python utilities."""
 
-__version__ = "3.0.0"
+__version__ = "3.1.0"
 
 from lionfuncs.dict_utils import fuzzy_match_keys
 from lionfuncs.format_utils import as_readable
