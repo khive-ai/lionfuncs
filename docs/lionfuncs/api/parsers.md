@@ -4,7 +4,8 @@ title: "lionfuncs.parsers"
 
 # lionfuncs.parsers
 
-The `parsers` module provides robust parsing utilities for various data formats, with a focus on handling malformed or non-standard input.
+The `parsers` module provides robust parsing utilities for various data formats,
+with a focus on handling malformed or non-standard input.
 
 ## Functions
 
@@ -23,20 +24,26 @@ def fuzzy_parse_json(
 Parse a JSON string with optional fuzzy fixing for common errors.
 
 Attempts to parse a JSON string, with options to fix common formatting issues:
+
 1. First tries to parse the string directly
-2. If that fails and attempt_fix=True, tries to fix common issues and parse again
+2. If that fails and attempt_fix=True, tries to fix common issues and parse
+   again
 3. If all parsing attempts fail, either returns None or raises an exception
 
 #### Parameters
 
 - **json_string** (`str`): The JSON string to parse
-- **attempt_fix** (`bool`, optional): Whether to attempt fixing common JSON formatting issues. Defaults to `True`.
-- **strict** (`bool`, optional): If True, raises exceptions on parsing failures instead of returning None. Defaults to `False`.
-- **log_errors** (`bool`, optional): If True, logs parsing errors using the logging module. Defaults to `False`.
+- **attempt_fix** (`bool`, optional): Whether to attempt fixing common JSON
+  formatting issues. Defaults to `True`.
+- **strict** (`bool`, optional): If True, raises exceptions on parsing failures
+  instead of returning None. Defaults to `False`.
+- **log_errors** (`bool`, optional): If True, logs parsing errors using the
+  logging module. Defaults to `False`.
 
 #### Returns
 
-- `Any | None`: The parsed JSON data (dict, list, or primitive types) or None if parsing fails and strict=False
+- `Any | None`: The parsed JSON data (dict, list, or primitive types) or None if
+  parsing fails and strict=False
 
 #### Raises
 
@@ -82,6 +89,8 @@ print(result)  # {'broken': 'json'}
 
 ## Internal Functions
 
-The following functions are used internally by the module and are not part of the public API:
+The following functions are used internally by the module and are not part of
+the public API:
 
-- `_fix_json_string(json_string: str) -> str`: Fix common JSON formatting issues such as single quotes, trailing commas, and Python-style boolean/null values.
+- `_fix_json_string(json_string: str) -> str`: Fix common JSON formatting issues
+  such as single quotes, trailing commas, and Python-style boolean/null values.

@@ -264,21 +264,30 @@ def to_dict(
 
 Convert various object types to a dictionary representation.
 
-Handles Pydantic models, dataclasses, dictionaries, lists, and other objects. For Pydantic models, uses model_dump() with appropriate options. For other types, attempts to convert to a dictionary-like structure.
+Handles Pydantic models, dataclasses, dictionaries, lists, and other objects.
+For Pydantic models, uses model_dump() with appropriate options. For other
+types, attempts to convert to a dictionary-like structure.
 
 #### Parameters
 
 - **obj** (`Any`): The object to convert to a dictionary
-- **fields** (`list[str] | None`, optional): Optional list of field names to include (for Pydantic models). Defaults to `None`.
-- **exclude** (`list[str] | None`, optional): Optional list of field names to exclude (for Pydantic models). Defaults to `None`.
-- **by_alias** (`bool`, optional): Whether to use field aliases (for Pydantic models). Defaults to `False`.
-- **exclude_none** (`bool`, optional): Whether to exclude None values (for Pydantic models). Defaults to `False`.
-- **exclude_unset** (`bool`, optional): Whether to exclude unset fields (for Pydantic models). Defaults to `False`.
-- **exclude_defaults** (`bool`, optional): Whether to exclude fields with default values (for Pydantic models). Defaults to `False`.
+- **fields** (`list[str] | None`, optional): Optional list of field names to
+  include (for Pydantic models). Defaults to `None`.
+- **exclude** (`list[str] | None`, optional): Optional list of field names to
+  exclude (for Pydantic models). Defaults to `None`.
+- **by_alias** (`bool`, optional): Whether to use field aliases (for Pydantic
+  models). Defaults to `False`.
+- **exclude_none** (`bool`, optional): Whether to exclude None values (for
+  Pydantic models). Defaults to `False`.
+- **exclude_unset** (`bool`, optional): Whether to exclude unset fields (for
+  Pydantic models). Defaults to `False`.
+- **exclude_defaults** (`bool`, optional): Whether to exclude fields with
+  default values (for Pydantic models). Defaults to `False`.
 
 #### Returns
 
-- `dict | list | Any`: A dictionary representation of the object, or the original object if it cannot be converted to a dictionary
+- `dict | list | Any`: A dictionary representation of the object, or the
+  original object if it cannot be converted to a dictionary
 
 #### Raises
 
@@ -315,7 +324,7 @@ print(user_dict)  # {'name': 'John'}
 class Product:
     name: str
     price: float
-    
+
 product = Product(name="Widget", price=19.99)
 product_dict = to_dict(product)
 print(product_dict)  # {'name': 'Widget', 'price': 19.99}
