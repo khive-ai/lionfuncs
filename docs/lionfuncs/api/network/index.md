@@ -17,9 +17,13 @@ network primitives.
 - [**adapters**](adapters.md): SDK adapters for third-party APIs.
 - [**primitives**](primitives.md): Network primitives like `Endpoint` and rate
   limiters.
+- [**events**](events.md): Event classes for tracking API request lifecycles.
+- [**executor**](executor.md): Executor for managing and rate-limiting API calls.
+- [**imodel**](imodel.md): Client for interacting with API models using the Executor.
 
 ## Components
 
+The `network` module re-exports all components from its submodules, so you can
 The `network` module re-exports all components from its submodules, so you can
 import them directly from `lionfuncs.network`:
 
@@ -64,6 +68,18 @@ import them directly from `lionfuncs.network`:
 - [`match_endpoint`](primitives.md#match_endpoint): Function to select an
   `Endpoint` instance.
 
+### From events
+
+- [`NetworkRequestEvent`](events.md#networkrequestevent): Event class for tracking the lifecycle of a network request.
+- [`RequestStatus`](events.md#requeststatus): Enum of possible states for a network request.
+
+### From executor
+
+- [`Executor`](executor.md#executor): Executor for managing and rate-limiting API calls.
+
+### From imodel
+
+- [`iModel`](imodel.md#imodel): Client for interacting with API models using the Executor.
 ## Installation
 
 The network utilities are included in the base `lionfuncs` package:

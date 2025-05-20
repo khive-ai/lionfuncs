@@ -50,6 +50,12 @@ pip install lionfuncs[media]
   - **[adapters](api/network/adapters.md)**: SDK adapters for third-party APIs.
   - **[primitives](api/network/primitives.md)**: Network primitives like
     `Endpoint` and rate limiters.
+  - **[events](api/network/events.md)**: Event classes for tracking API request
+    lifecycles.
+  - **[executor](api/network/executor.md)**: Executor for managing and
+    rate-limiting API calls.
+  - **[imodel](api/network/imodel.md)**: Client for interacting with API models
+    using the Executor.
 
 ## Quick Start
 
@@ -119,6 +125,7 @@ For more detailed examples and usage patterns, check out the following guides:
 - [File System Utilities Guide](guides/file_system_utils.md)
 - [Network Client Guide](guides/network_client.md)
 - [Resilience Patterns Guide](guides/resilience_patterns.md)
+- [Network Executor Usage Guide](guides/network_executor_usage.md)
 
 ## API Reference
 

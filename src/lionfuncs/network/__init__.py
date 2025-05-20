@@ -12,6 +12,9 @@ from .adapters import (
     create_sdk_adapter,
 )
 from .client import AsyncAPIClient
+from .events import NetworkRequestEvent, RequestStatus
+from .executor import Executor
+from .imodel import iModel
 from .primitives import (
     AdaptiveRateLimiter,
     Endpoint,
@@ -44,4 +47,11 @@ __all__ = [
     "OpenAIAdapter",
     "AnthropicAdapter",
     "create_sdk_adapter",
+    # Events
+    "NetworkRequestEvent",
+    "RequestStatus",
+    # Executor
+    "Executor",
+    # iModel
+    "iModel",
 ]
