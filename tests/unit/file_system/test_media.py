@@ -192,4 +192,3 @@ def test_pdf_to_images_exception_handling(
         else:
             if "pdf2image.exceptions" in sys.modules:
                 del sys.modules["pdf2image.exceptions"]
-                del sys.modules["pdf2image.exceptions"]

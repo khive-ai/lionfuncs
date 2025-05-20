@@ -32,8 +32,13 @@ Initialize the iModel.
 
 **Parameters:**
 
-- `endpoint`: A configured Endpoint instance providing access to the API client/adapter.
-- `executor`: An Executor instance for managing API call execution.
+- `executor`: An instance of Executor for making API calls.
+- `model_endpoint_config`: Configuration for the model endpoint, either as a
+  dictionary or EndpointConfig.
+
+**Raises:**
+
+- `TypeError`: If model_endpoint_config is not a dict or EndpointConfig.
 
 **Example:**
 
@@ -178,12 +183,22 @@ else:
 
 ##### close_session
 
-This method has been deprecated. Use the async context manager pattern instead.
+```python
+async def close_session() -> None
+```
+
+Close the HTTP session if it exists.
+
+**Example:**
+
+```python
+await model.close_session()
+```
 
 #### Context Manager
 
 The iModel class supports the async context manager protocol, which
-automatically initializes the Endpoint's client when entering the context and closes it
+automatically creates an HTTP session when entering the context and closes it
 when exiting.
 
 ```python
@@ -196,11 +211,11 @@ async with iModel(endpoint, executor) as model:
 
 Internally, the iModel class:
 
-1. Uses the provided Endpoint to get a configured client (AsyncAPIClient or SDKAdapter).
-2. Prepares request parameters based on input and Endpoint configuration.
-3. Constructs the actual API call coroutine using the client.
-4. Submits the call coroutine to the Executor via executor.submit_task().
-5. Returns the NetworkRequestEvent from the Executor, allowing the caller to track the request.
+1. Maintains an aiohttp.ClientSession for making HTTP requests.
+2. Uses the provided Executor to submit API call tasks.
+3. Constructs API requests based on the model_endpoint_config.
+4. Returns NetworkRequestEvent objects for tracking the status and results of
+   API calls.
 
 ## Configuration
 
@@ -255,7 +270,20 @@ async def main():
         endpoint = Endpoint(config)
 
         # Create an iModel instance
-        async with iModel(endpoint, executor) as model:
+        config = {
+            "base_url": "https://api.openai.com/v1",
+            "endpoint": "completions",
+            "api_key": "your-api-key",
+            "model_name": "gpt-3.5-turbo-instruct",
+            "default_headers": {
+                "Content-Type": "application/json"
+            },
+            "kwargs": {
+                "model": "gpt-3.5-turbo-instruct"
+            }
+        }
+
+        async with iModel(executor, config) as model:
             # Make multiple completion requests
             prompts = [
                 "Write a short poem about AI",
@@ -304,8 +332,5 @@ The iModel class is designed to work with:
 3. **NetworkRequestEvent**: For tracking the status and results of API calls.
 4. **ServiceEndpointConfig**: For configuring the endpoint.
 
-This integration allows for a clean separation of concerns:
-- ServiceEndpointConfig defines the configuration
-- Endpoint manages client creation and lifecycle
-- iModel uses the client for making API calls
-- Executor handles rate limiting and concurrency
+This integration allows for efficient and controlled access to AI model APIs,
+with proper rate limiting and concurrency control.

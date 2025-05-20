@@ -1,14 +1,14 @@
 ---
-title: Code Review Report - PR #20 Rework
+title: "Code Review Report - PR #20 Rework (2nd Re-review)"
 by: khive-reviewer
 created: 2025-05-20
-updated: 2025-05-20
-version: 1.0
+updated: 2025-05-20 # Date of this re-review
+version: "1.2" # Version incremented
 doc_type: CRR
 output_subdir: crr
-description: Code review for PR #20, focusing on network module rework and addressing Issue #19.
-date: 2025-05-20
-reviewer: @khive-reviewer
+description: "Second re-review of PR #20, confirming resolution of all previous test failures and coverage issues for network module rework (Issue #19)."
+date: 2025-05-20 # Date of this re-review
+reviewer: "@khive-reviewer"
 pr_number: 20
 pr_link: https://github.com/khive-ai/lionfuncs/pull/20
 ---
@@ -32,260 +32,200 @@ maintainability, security, performance, and consistency with the project style.
 
 ---
 
-# Code Review: Network Module Rework (PR #20 for Issue #19)
+# Code Review: Network Module Rework (PR #20 for Issue #19) - 2nd Re-review
 
 ## 1. Overview
 
 **Component:** [`src/lionfuncs/network/`](src/lionfuncs/network/)
-(`endpoint.py`, `executor.py`, `imodel.py`, `primitives.py`) and related tests.
-**Implementation Date:** As per PR #20 commits. **Reviewed By:** @khive-reviewer
-**Review Date:** 2025-05-20
+(`endpoint.py`, `executor.py`, `imodel.py`, `primitives.py`, `adapters.py`),
+[`src/lionfuncs/file_system/media.py`](src/lionfuncs/file_system/media.py) and
+related tests. **Implementation Date:** As per PR #20 commits. **Reviewed By:**
+@khive-reviewer **Review Date:** 2025-05-20 (This Re-review)
 
-**Implementation Scope:**
+**Implementation Scope:** This re-review verifies fixes applied by the
+Implementer based on CRR-19.md v1.1, specifically:
 
-- Rework of network components to address feedback from Issue #19.
-- Introduction of `Endpoint` class in `iModel`.
-- Implementation of generic `invoke` method in `iModel`.
-- Implementation of optional API token limiting in `Executor`.
-- Refactoring of
-  [`src/lionfuncs/network/endpoint.py`](src/lionfuncs/network/endpoint.py),
-  [`src/lionfuncs/network/executor.py`](src/lionfuncs/network/executor.py),
-  [`src/lionfuncs/network/imodel.py`](src/lionfuncs/network/imodel.py).
+- Resolution of 18 previously reported test failures.
+- Achievement of >80% test coverage for modules:
+  - [`src/lionfuncs/file_system/media.py`](src/lionfuncs/file_system/media.py)
+  - [`src/lionfuncs/network/adapters.py`](src/lionfuncs/network/adapters.py)
+  - [`src/lionfuncs/network/executor.py`](src/lionfuncs/network/executor.py)
+  - [`src/lionfuncs/network/imodel.py`](src/lionfuncs/network/imodel.py)
+- General re-assessment of code quality and adherence to
+  [`TDS-19.md`](.khive/reports/tds/TDS-19.md).
 
 **Reference Documents:**
 
 - Technical Design:
   [`.khive/reports/tds/TDS-19.md`](.khive/reports/tds/TDS-19.md)
-- Implementation Plan:
-  [`.khive/reports/ip/IP-19.md`](.khive/reports/ip/IP-19.md)
 - Test Plan: [`.khive/reports/ti/TI-19.md`](.khive/reports/ti/TI-19.md)
+- Previous CRR: [`.khive/reports/crr/CRR-19.md`](.khive/reports/crr/CRR-19.md)
+  (version 1.1)
 
 ## 2. Review Summary
 
 ### 2.1 Overall Assessment
 
-| Aspect                      | Rating   | Notes                                                                                      |
-| --------------------------- | -------- | ------------------------------------------------------------------------------------------ |
-| **Specification Adherence** | ⚠️ (TBE) | Cannot fully assess due to test failures.                                                  |
-| **Code Quality**            | ⚠️ (TBE) | Cannot fully assess due to test failures. Linting reported as passed by implementer.       |
-| **Test Coverage**           | ⭐       | **CRITICAL: 25% reported by CI. Required: ≥80%. Tests are failing due to an ImportError.** |
-| **Security**                | ⚠️ (TBE) | Token limiting feature needs verification once tests pass.                                 |
-| **Performance**             | ⚠️ (TBE) | Cannot assess.                                                                             |
-| **Documentation**           | ⚠️ (TBE) | Code comments and docstrings to be reviewed once tests pass.                               |
-
-_(TBE = To Be Evaluated)_
+| Aspect                      | Rating  | Notes                                                                                                                                                                                                                                          |
+| --------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Specification Adherence** | ✅ Pass | Code adheres well to [`TDS-19.md`](.khive/reports/tds/TDS-19.md). The new `Endpoint` class, refactored `iModel`, and `Executor` clarifications are correctly implemented.                                                                      |
+| **Code Quality**            | ✅ Pass | Code is clean, readable, and maintainable. Good use of async patterns, error handling, and logging. Optional dependency handling in `media.py` is well-executed.                                                                               |
+| **Test Coverage**           | ✅ Pass | **All 471 tests pass.** Overall coverage is 95%. Key modules meet/exceed >80% target: `media.py` (91%), `adapters.py` (90%), `executor.py` (100%), `imodel.py` (98%). Tests appear meaningful as per [`TI-19.md`](.khive/reports/ti/TI-19.md). |
+| **Security**                | ✅ Pass | No new security concerns identified. Optional API token limiting in `Executor` is clear.                                                                                                                                                       |
+| **Performance**             | ✅ Pass | No performance bottlenecks apparent from the changes. The architecture with `Executor` for concurrency and rate-limiting is sound.                                                                                                             |
+| **Documentation**           | ✅ Pass | Code comments and docstrings are adequate. [`TDS-19.md`](.khive/reports/tds/TDS-19.md) and [`TI-19.md`](.khive/reports/ti/TI-19.md) provide good context.                                                                                      |
 
 ### 2.2 Key Strengths
 
-- (To be evaluated once tests pass and coverage is adequate)
-
-### 2.3 Key Concerns
-
-- **CRITICAL: Test Failure:** An `ImportError` in
-  [`tests/unit/test_schema_utils.py`](tests/unit/test_schema_utils.py:7)
-  prevents the test suite from completing.
-- **CRITICAL: Low Test Coverage:** Current coverage is 25%, far below the 80%
-  minimum. Key new/refactored modules have very low coverage:
-  - [`src/lionfuncs/network/endpoint.py`](src/lionfuncs/network/endpoint.py):
-    26%
+- **All 18 previously reported test failures are resolved.**
+- **All 471 tests now pass.**
+- **Test coverage for all targeted modules now meets or significantly exceeds
+  the >80% requirement:**
+  - [`src/lionfuncs/file_system/media.py`](src/lionfuncs/file_system/media.py):
+    91%
+  - [`src/lionfuncs/network/adapters.py`](src/lionfuncs/network/adapters.py):
+    90%
   - [`src/lionfuncs/network/executor.py`](src/lionfuncs/network/executor.py):
-    24%
-  - [`src/lionfuncs/network/imodel.py`](src/lionfuncs/network/imodel.py): 16%
-  - [`src/lionfuncs/schema_utils.py`](src/lionfuncs/schema_utils.py): 16%
-- Inability to verify PR objectives due to test issues.
+    100%
+  - [`src/lionfuncs/network/imodel.py`](src/lionfuncs/network/imodel.py): 98%
+- Overall project test coverage is high at 95%.
+- The implementation adheres well to the design specified in
+  [`TDS-19.md`](.khive/reports/tds/TDS-19.md).
+- Excellent handling of the optional `pdf2image` dependency in
+  [`src/lionfuncs/file_system/media.py`](src/lionfuncs/file_system/media.py),
+  preventing `AttributeError`s.
+- Code quality is good, with clear logic and appropriate use of async features.
+
+### 2.3 Minor Observations
+
+- A `PytestUnraisableExceptionWarning` was observed during the test run,
+  originating from
+  `tests/unit/network/test_executor_enhanced.py::TestExecutorEnhanced::test_submit_task_with_minimal_parameters`
+  related to `RuntimeError: Event loop is closed` during `BoundedQueue.get`.
+  This did not cause a test failure but is noted for awareness. It might
+  indicate a subtle issue with async resource cleanup in that specific test or
+  the code it tests under certain conditions.
 
 ## 3. Specification Adherence
 
-(Cannot be fully evaluated until test issues are resolved and coverage is
-adequate.)
+The implementation successfully adheres to the Technical Design Specification
+([`.khive/reports/tds/TDS-19.md`](.khive/reports/tds/TDS-19.md)).
 
-### 3.1 API Contract Implementation
-
-(To be evaluated)
-
-### 3.2 Data Model Implementation
-
-(To be evaluated)
-
-### 3.3 Behavior Implementation
-
-(To be evaluated)
+- The new `Endpoint` class
+  ([`src/lionfuncs/network/endpoint.py`](src/lionfuncs/network/endpoint.py)) is
+  implemented as designed, managing client/adapter creation and lifecycle.
+- The `iModel` class
+  ([`src/lionfuncs/network/imodel.py`](src/lionfuncs/network/imodel.py)) has
+  been refactored to use the `Endpoint` and `Executor`, and its `invoke` method
+  correctly handles different transport types.
+- The `Executor` class
+  ([`src/lionfuncs/network/executor.py`](src/lionfuncs/network/executor.py))
+  correctly implements the optional API token rate limiter and handles the
+  revised `api_call_coroutine` signature from `iModel`.
+- The `ServiceEndpointConfig` in
+  [`src/lionfuncs/network/primitives.py`](src/lionfuncs/network/primitives.py)
+  supports the new architecture.
 
 ## 4. Code Quality Assessment
 
-(Cannot be fully evaluated until test issues are resolved and coverage is
-adequate. Implementer reported `uv run pre-commit run --all-files` passed.)
+The code quality is high.
 
-### 4.1 Code Structure and Organization
-
-(To be evaluated)
-
-### 4.2 Code Style and Consistency
-
-(To be evaluated)
-
-### 4.3 Error Handling
-
-(To be evaluated)
-
-### 4.4 Type Safety
-
-(To be evaluated)
+- **Readability:** Code is well-formatted and easy to follow.
+- **Maintainability:** The separation of concerns between `Endpoint`, `iModel`,
+  and `Executor` enhances maintainability. The adapter pattern in
+  [`src/lionfuncs/network/adapters.py`](src/lionfuncs/network/adapters.py) is
+  extensible.
+- **Error Handling:** Custom exceptions (`LionFileError`, `LionSDKError`,
+  `APIClientError`) are used appropriately. Optional dependencies are handled
+  gracefully.
+- **Async Usage:** `async/await` is used correctly throughout the new and
+  refactored network components.
 
 ## 5. Test Coverage Analysis
 
 ### 5.1 Unit Test Coverage
 
-**Overall Coverage: 25% (Requirement: ≥80%)**
+**Overall Reported Coverage: 95% (Requirement: ≥80%) - All 471 tests pass.**
 
-| Module                                                                   | Coverage | Notes                                                   |
-| ------------------------------------------------------------------------ | -------- | ------------------------------------------------------- |
-| [`src/lionfuncs/network/endpoint.py`](src/lionfuncs/network/endpoint.py) | 26%      | Critical new component with insufficient test coverage  |
-| [`src/lionfuncs/network/executor.py`](src/lionfuncs/network/executor.py) | 24%      | Modified component with token limiting feature untested |
-| [`src/lionfuncs/network/imodel.py`](src/lionfuncs/network/imodel.py)     | 16%      | Core component with generic invoke method untested      |
-| [`src/lionfuncs/schema_utils.py`](src/lionfuncs/schema_utils.py)         | 16%      | Support module with potential import error              |
+| Module                                                                     | Coverage | Status  | Notes                                                                                                                                                            |
+| -------------------------------------------------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`src/lionfuncs/network/endpoint.py`](src/lionfuncs/network/endpoint.py)   | 100%     | ✅ Pass | Meets coverage, tests pass.                                                                                                                                      |
+| [`src/lionfuncs/network/executor.py`](src/lionfuncs/network/executor.py)   | 100%     | ✅ Pass | Meets coverage, tests pass. (Note: 1 warning during test execution, see 2.3)                                                                                     |
+| [`src/lionfuncs/network/imodel.py`](src/lionfuncs/network/imodel.py)       | 98%      | ✅ Pass | Meets coverage, tests pass.                                                                                                                                      |
+| [`src/lionfuncs/schema_utils.py`](src/lionfuncs/schema_utils.py)           | 100%     | ✅ Pass | Meets coverage, tests pass.                                                                                                                                      |
+| [`src/lionfuncs/file_system/media.py`](src/lionfuncs/file_system/media.py) | 91%      | ✅ Pass | Meets coverage, tests pass. Previous `AttributeError` resolved.                                                                                                  |
+| [`src/lionfuncs/network/adapters.py`](src/lionfuncs/network/adapters.py)   | 90%      | ✅ Pass | Meets coverage, tests pass. Previous `ModuleNotFoundError` issues resolved (likely through correct mocking or test environment setup for optional dependencies). |
 
-### 5.2 Integration Test Coverage
+### 5.2 Test Quality Assessment
 
-(Cannot be evaluated due to test failures)
-
-### 5.3 Test Quality Assessment
-
-**Critical Issues:**
-
-- **ImportError in
-  [`tests/unit/test_schema_utils.py`](tests/unit/test_schema_utils.py:7)**:
-  Cannot import `pydantic_model_to_schema` from `lionfuncs.schema_utils`
-- **Insufficient Coverage**: Overall coverage is 25%, far below the 80%
-  requirement
-- **Untested Core Functionality**: The new `Endpoint` class, generic `invoke`
-  method, and token limiting features are largely untested
+- All previously critical test failures are **resolved**.
+- The tests, as outlined in [`TI-19.md`](.khive/reports/ti/TI-19.md), appear
+  meaningful and cover various aspects including unit functionality, error
+  handling, and integration between components.
+- The `PytestUnraisableExceptionWarning` in `test_executor_enhanced.py` is the
+  only minor blemish in an otherwise clean test run. This does not prevent
+  approval but could be investigated by the development team if it persists or
+  appears in other areas.
 
 ## 6. Security Assessment
 
-(Cannot be fully evaluated until test issues are resolved)
+No security vulnerabilities were identified in the reviewed code. The handling
+of API keys via `ServiceEndpointConfig` and `Endpoint` appears standard. The
+optional API token rate limiter in `Executor` functions as described.
 
 ## 7. Performance Assessment
 
-(Cannot be fully evaluated until test issues are resolved)
+The refactored components do not introduce any obvious performance regressions.
+The use of `asyncio` for network operations and the `Executor` for managing
+concurrency and rate-limiting are appropriate for I/O-bound tasks.
 
 ## 8. Detailed Findings
 
-### 8.1 Critical Issues
+All critical issues from the previous review (CRR v1.1) have been successfully
+addressed.
 
-#### Issue 1: [Title]
+### 8.1 Minor Observation
 
-**Location:** `file.py:line_number`\
-**Description:** [Detailed description of the issue]\
-**Impact:** [Impact on functionality, security, performance, etc.]\
-**Recommendation:** [Specific recommendation for fixing the issue]
+#### Issue 1: PytestUnraisableExceptionWarning
 
-```python
-# Current implementation
-def problematic_function():
-    # Issue details
-    pass
-
-# Recommended implementation
-def improved_function():
-    # Fixed implementation
-    pass
-```
-
-#### Issue 2: [Title]
-
-**Location:** `file.py:line_number`\
-**Description:** [Detailed description of the issue]\
-**Impact:** [Impact on functionality, security, performance, etc.]\
-**Recommendation:** [Specific recommendation for fixing the issue]
-
-### 8.2 Improvements
-
-#### Improvement 1: [Title]
-
-**Location:** `file.py:line_number`\
-**Description:** [Detailed description of the potential improvement]\
-**Benefit:** [Benefit of implementing the improvement]\
-**Suggestion:** [Specific suggestion for implementing the improvement]
-
-```python
-# Current implementation
-def current_function():
-    # Code that could be improved
-    pass
-
-# Suggested implementation
-def improved_function():
-    # Improved implementation
-    pass
-```
-
-#### Improvement 2: [Title]
-
-**Location:** `file.py:line_number`\
-**Description:** [Detailed description of the potential improvement]\
-**Benefit:** [Benefit of implementing the improvement]\
-**Suggestion:** [Specific suggestion for implementing the improvement]
-
-### 8.3 Positive Highlights
-
-#### Highlight 1: [Title]
-
-**Location:** `file.py:line_number`\
-**Description:** [Detailed description of the positive aspect]\
-**Strength:** [Why this is particularly good]
-
-```python
-# Example of excellent code
-def exemplary_function():
-    # Well-implemented code
-    pass
-```
-
-#### Highlight 2: [Title]
-
-**Location:** `file.py:line_number`\
-**Description:** [Detailed description of the positive aspect]\
-**Strength:** [Why this is particularly good]
+**Description:** A `PytestUnraisableExceptionWarning`
+(`RuntimeError: Event loop is closed`) occurs in
+`tests/unit/network/test_executor_enhanced.py::TestExecutorEnhanced::test_submit_task_with_minimal_parameters`.
+**Impact:** This is a warning and does not cause test failure. It might indicate
+a subtle issue in test teardown or async resource management under specific test
+conditions. **Recommendation:** While not blocking this PR, it would be
+beneficial for the development team to investigate this warning at a convenient
+time to ensure long-term stability and prevent potential elusive bugs.
 
 ## 9. Recommendations Summary
 
 ### 9.1 Critical Fixes (Must Address)
 
-1. Fix the ImportError in
-   [`tests/unit/test_schema_utils.py`](tests/unit/test_schema_utils.py:7)
-   related to missing `pydantic_model_to_schema` function
-2. Significantly improve test coverage for the network module, particularly for:
-   - `Endpoint` class in
-     [`src/lionfuncs/network/endpoint.py`](src/lionfuncs/network/endpoint.py)
-   - Token limiting in
-     [`src/lionfuncs/network/executor.py`](src/lionfuncs/network/executor.py)
-   - Generic `invoke` method in
-     [`src/lionfuncs/network/imodel.py`](src/lionfuncs/network/imodel.py)
-3. Ensure overall test coverage meets or exceeds the 80% requirement
+- None. All critical issues from the previous review have been resolved.
 
-### 9.2 Important Improvements (Should Address)
+### 9.2 Important Improvements (Should Address - after critical fixes)
 
-1. Improve documentation for the new `Endpoint` class and its integration with
-   `iModel`
-2. Add more integration tests between the connected components
+- None required for this PR to be approved.
 
-### 9.3 Minor Suggestions (Nice to Have)
+### 9.3 Minor Suggestions (Consider for future)
 
-1. Enhance logging for API token limiting feature
-2. Add more examples to docstrings
+1. **Investigate `PytestUnraisableExceptionWarning`:** As noted in 8.1, consider
+   investigating the cause of this warning in `test_executor_enhanced.py` to
+   ensure robust async resource handling in tests.
 
 ## 10. Conclusion
 
-The PR cannot be approved in its current state due to failing tests and
-insufficient test coverage. The ImportError in
-[`tests/unit/test_schema_utils.py`](tests/unit/test_schema_utils.py) must be
-resolved, and test coverage must be improved significantly to meet the 80%
-requirement. Once these issues are addressed, a more thorough review of the
-implementation details can be conducted.
+The Implementer has successfully addressed all critical issues identified in the
+previous review (CRR-19.md v1.1).
 
-**Decision: REQUEST_CHANGES**
+- All 18 previously failing tests now pass.
+- Test coverage for all specified modules (`media.py`, `adapters.py`,
+  `executor.py`, `imodel.py`) meets or exceeds the 80% quality gate.
+- The overall code quality is good, and the implementation adheres to the
+  Technical Design Specification ([`TDS-19.md`](.khive/reports/tds/TDS-19.md)).
 
-The current implementation does not meet khive quality standards due to failing
-tests and insufficient test coverage. Please address the issues outlined in
-section 9.1 Critical Fixes before requesting another review.
+The PR now meets the required quality standards.
+
+**Decision: APPROVE**
+
+The PR is approved for merging.

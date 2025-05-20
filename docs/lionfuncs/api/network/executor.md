@@ -48,8 +48,7 @@ Initialize the Executor.
 - `requests_bucket_capacity`: Max capacity of the request token bucket. Defaults
   to requests_rate if None.
 - `api_tokens_rate`: Max API tokens for the api_tokens_rate_limiter (e.g., 10000
-  tokens). If None, this limiter is disabled and the `num_api_tokens_needed` parameter
-  in `submit_task` will be ignored.
+  tokens). If None, this limiter is disabled.
 - `api_tokens_period`: Period in seconds for api_tokens_rate (e.g., per 60
   seconds).
 - `api_tokens_bucket_capacity`: Max capacity of the API token bucket. Defaults
@@ -234,31 +233,14 @@ asyncio.run(main())
 The Executor implements two levels of rate limiting:
 
 1. **Request Rate Limiting**: Limits the number of requests per time period
-   (e.g., 10 requests per second). This limiter is always active.
+   (e.g., 10 requests per second).
 2. **API Token Rate Limiting**: Limits the consumption of API-specific tokens
-   (e.g., 10,000 tokens per minute). This limiter is optional and only active if
-   `api_tokens_rate` is provided in the constructor.
+   (e.g., 10,000 tokens per minute).
 
 Both rate limiters use the token bucket algorithm, which allows for bursts of
 traffic up to the bucket capacity while maintaining the average rate over time.
 When a rate limit is reached, the executor will wait for tokens to become
 available before proceeding with the API call.
-
-### Disabling API Token Rate Limiting
-
-If you don't need API token rate limiting (for example, when working with APIs that don't use token-based pricing), you can disable it by setting `api_tokens_rate` to `None` or omitting it:
-
-```python
-# Create an executor without API token rate limiting
-executor = Executor(
-    concurrency_limit=10,
-    requests_rate=10.0,
-    requests_period=1.0,
-    # api_tokens_rate is omitted, so token limiting is disabled
-)
-```
-
-When API token rate limiting is disabled, the `num_api_tokens_needed` parameter in `submit_task` will be ignored.
 
 ## Error Handling
 

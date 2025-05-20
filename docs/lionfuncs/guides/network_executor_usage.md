@@ -124,7 +124,8 @@ asyncio.run(main())
 
 ## Using Endpoint, ServiceEndpointConfig, and iModel
 
-The new architecture uses Endpoint and ServiceEndpointConfig to provide a more flexible and powerful way to interact with APIs:
+The iModel class provides a higher-level interface for interacting with model
+APIs:
 
 ```python
 import asyncio
@@ -153,9 +154,6 @@ async def main():
             http_config=HttpTransportConfig(method="POST"),
             default_request_kwargs={"model": "gpt-3.5-turbo-instruct"}
         )
-
-        # Create an endpoint
-        endpoint = Endpoint(http_config)
 
         # Create an iModel instance
         async with iModel(endpoint, executor) as model:
@@ -432,18 +430,22 @@ asyncio.run(main())
 ```
 
 ### Resource Cleanup
-### Resource Cleanup
 
 Always ensure proper cleanup of resources using context managers:
 
 ```python
 async def main():
-    async with Executor(concurrency_limit=5) as executor:
-        # Create an endpoint
-        endpoint = Endpoint(config)
-        
-        # Use the endpoint with iModel in a context manager
-        async with iModel(endpoint, executor) as model:
+    # Create the executor
+    executor = Executor(concurrency_limit=5)
+
+    try:
+        # Start the executor
+        await executor.start()
+
+        # Create the iModel
+        model = iModel(executor, config)
+
+        try:
             # Use the model
             event = await model.invoke(request_payload={"prompt": "Hello, world!"})
             # Process the event...
@@ -469,7 +471,7 @@ asyncio.run(main())
 ```
 ## Conclusion
 
-The Network Executor, Endpoint, and iModel components provide a robust solution for making
+The Network Executor and iModel components provide a robust solution for making
 rate-limited API calls to model endpoints. By using these components, you can:
 
 - Enforce concurrency and rate limits

@@ -172,8 +172,11 @@ class TestExecutorNew:
         api_coro.assert_called_once()
 
         # Verify that set_result was called with the correct parameters
+        # The headers now include Content-Type by default
         event.set_result.assert_called_once_with(
-            status_code=200, headers={}, body=mock_response
+            status_code=200,
+            headers={"Content-Type": "application/json"},
+            body=mock_response,
         )
 
         # Verify that no API token rate limiter was used

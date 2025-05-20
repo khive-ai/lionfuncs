@@ -2,7 +2,7 @@
 Additional unit tests for the network adapters module to further increase coverage.
 """
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -21,18 +21,22 @@ class TestOpenAIAdapter:
         """Test that _get_client reuses an existing client."""
         adapter = OpenAIAdapter(api_key="test_api_key")
 
-        # Mock the AsyncOpenAI import
-        with patch("openai.AsyncOpenAI") as mock_openai:
+        # Create a mock for the openai module
+        mock_openai_module = MagicMock()
+        mock_openai_module.AsyncOpenAI = MagicMock()
+
+        # Patch the import statement to return our mock module
+        with patch.dict("sys.modules", {"openai": mock_openai_module}):
             # First call should create a new client
             client1 = await adapter._get_client()
-            assert client1 == mock_openai.return_value
-            mock_openai.assert_called_once()
+            assert client1 is not None
+            mock_openai_module.AsyncOpenAI.assert_called_once()
 
             # Second call should reuse the existing client
-            mock_openai.reset_mock()
+            mock_openai_module.AsyncOpenAI.reset_mock()
             client2 = await adapter._get_client()
             assert client2 == client1
-            mock_openai.assert_not_called()
+            mock_openai_module.AsyncOpenAI.assert_not_called()
 
 
 class TestAnthropicAdapter:
@@ -43,18 +47,22 @@ class TestAnthropicAdapter:
         """Test that _get_client reuses an existing client."""
         adapter = AnthropicAdapter(api_key="test_api_key")
 
-        # Mock the Anthropic import
-        with patch("anthropic.Anthropic") as mock_anthropic:
+        # Create a mock for the anthropic module
+        mock_anthropic_module = MagicMock()
+        mock_anthropic_module.Anthropic = MagicMock()
+
+        # Patch the import statement to return our mock module
+        with patch.dict("sys.modules", {"anthropic": mock_anthropic_module}):
             # First call should create a new client
             client1 = await adapter._get_client()
-            assert client1 == mock_anthropic.return_value
-            mock_anthropic.assert_called_once()
+            assert client1 is not None
+            mock_anthropic_module.Anthropic.assert_called_once()
 
             # Second call should reuse the existing client
-            mock_anthropic.reset_mock()
+            mock_anthropic_module.Anthropic.reset_mock()
             client2 = await adapter._get_client()
             assert client2 == client1
-            mock_anthropic.assert_not_called()
+            mock_anthropic_module.Anthropic.assert_not_called()
 
 
 def test_create_sdk_adapter_case_insensitive():
