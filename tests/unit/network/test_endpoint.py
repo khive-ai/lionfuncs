@@ -2,17 +2,16 @@
 Unit tests for the Endpoint class.
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
 
 from lionfuncs.network.endpoint import Endpoint
 from lionfuncs.network.primitives import (
-    ServiceEndpointConfig,
     HttpTransportConfig,
     SdkTransportConfig,
+    ServiceEndpointConfig,
 )
-from lionfuncs.network.client import AsyncAPIClient
-from lionfuncs.network.adapters import AbstractSDKAdapter
 
 
 @pytest.fixture
@@ -22,7 +21,7 @@ def http_config():
         name="test_http",
         transport_type="http",
         base_url="https://api.example.com",
-        http_config=HttpTransportConfig()
+        http_config=HttpTransportConfig(),
     )
 
 
@@ -33,9 +32,7 @@ def sdk_config():
         name="test_sdk",
         transport_type="sdk",
         api_key="test_api_key",
-        sdk_config=SdkTransportConfig(
-            sdk_provider_name="openai"
-        )
+        sdk_config=SdkTransportConfig(sdk_provider_name="openai"),
     )
 
 
@@ -46,7 +43,7 @@ class TestEndpoint:
     async def test_init(self, http_config):
         """Test Endpoint initialization."""
         endpoint = Endpoint(http_config)
-        
+
         assert endpoint.config == http_config
         assert endpoint._client_instance is None
         assert endpoint._closed is False
@@ -56,33 +53,35 @@ class TestEndpoint:
         """Test _create_client for HTTP transport."""
         with patch("lionfuncs.network.endpoint.AsyncAPIClient") as mock_client_class:
             mock_client = mock_client_class.return_value
-            
+
             endpoint = Endpoint(http_config)
             client = await endpoint._create_client()
-            
+
             assert client == mock_client
             mock_client_class.assert_called_once_with(
                 base_url="https://api.example.com",
                 timeout=60.0,
                 headers={},
-                **{}  # Empty client_constructor_kwargs
+                **{},  # Empty client_constructor_kwargs
             )
 
     @pytest.mark.asyncio
     async def test_create_client_sdk(self, sdk_config):
         """Test _create_client for SDK transport."""
-        with patch("lionfuncs.network.endpoint.create_sdk_adapter") as mock_create_adapter:
+        with patch(
+            "lionfuncs.network.endpoint.create_sdk_adapter"
+        ) as mock_create_adapter:
             mock_adapter = MagicMock()
             mock_create_adapter.return_value = mock_adapter
-            
+
             endpoint = Endpoint(sdk_config)
             client = await endpoint._create_client()
-            
+
             assert client == mock_adapter
             mock_create_adapter.assert_called_once_with(
                 provider="openai",
                 api_key="test_api_key",
-                **{}  # Empty client_constructor_kwargs
+                **{},  # Empty client_constructor_kwargs
             )
 
     @pytest.mark.asyncio
@@ -92,13 +91,13 @@ class TestEndpoint:
         invalid_config = ServiceEndpointConfig(
             name="test_invalid",
             transport_type="http",  # Start with valid type
-            base_url="https://api.example.com"
+            base_url="https://api.example.com",
         )
         # Hack to set an invalid transport type
         object.__setattr__(invalid_config, "transport_type", "invalid")
-        
+
         endpoint = Endpoint(invalid_config)
-        
+
         with pytest.raises(ValueError, match="Unsupported transport_type"):
             await endpoint._create_client()
 
@@ -108,19 +107,19 @@ class TestEndpoint:
         with patch("lionfuncs.network.endpoint.AsyncAPIClient") as mock_client_class:
             mock_client = mock_client_class.return_value
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-            
+
             endpoint = Endpoint(http_config)
-            
+
             # First call should create the client
             client1 = await endpoint.get_client()
             assert client1 == mock_client
             mock_client_class.assert_called_once()
             mock_client.__aenter__.assert_called_once()
-            
+
             # Second call should return the same client without creating a new one
             mock_client_class.reset_mock()
             mock_client.__aenter__.reset_mock()
-            
+
             client2 = await endpoint.get_client()
             assert client2 == mock_client
             mock_client_class.assert_not_called()
@@ -131,7 +130,7 @@ class TestEndpoint:
         """Test that get_client raises RuntimeError if endpoint is closed."""
         endpoint = Endpoint(http_config)
         endpoint._closed = True
-        
+
         with pytest.raises(RuntimeError, match="Endpoint .* is closed"):
             await endpoint.get_client()
 
@@ -143,19 +142,19 @@ class TestEndpoint:
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
             mock_client.__aexit__ = AsyncMock()
             # Make sure close is not defined to force using __aexit__
-            if hasattr(mock_client, 'close'):
-                delattr(mock_client, 'close')
-            
+            if hasattr(mock_client, "close"):
+                delattr(mock_client, "close")
+
             endpoint = Endpoint(http_config)
             await endpoint.get_client()  # Create and initialize client
-            
+
             # Close the endpoint
             await endpoint.close()
-            
+
             assert endpoint._client_instance is None
             assert endpoint._closed is True
             mock_client.__aexit__.assert_called_once_with(None, None, None)
-            
+
             # Calling close again should be a no-op
             mock_client.__aexit__.reset_mock()
             await endpoint.close()
@@ -170,13 +169,13 @@ class TestEndpoint:
         mock_client.__aexit__ = None
         # Add a synchronous close method
         mock_client.close = MagicMock()
-        
+
         endpoint = Endpoint(http_config)
         endpoint._client_instance = mock_client  # Manually set client
-        
+
         # Close the endpoint
         await endpoint.close()
-        
+
         assert endpoint._client_instance is None
         assert endpoint._closed is True
         mock_client.close.assert_called_once()
@@ -190,13 +189,13 @@ class TestEndpoint:
         mock_client.__aexit__ = None
         # Add an asynchronous close method
         mock_client.close = AsyncMock()
-        
+
         endpoint = Endpoint(http_config)
         endpoint._client_instance = mock_client  # Manually set client
-        
+
         # Close the endpoint
         await endpoint.close()
-        
+
         assert endpoint._client_instance is None
         assert endpoint._closed is True
         mock_client.close.assert_called_once()
@@ -209,14 +208,14 @@ class TestEndpoint:
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
             mock_client.__aexit__ = AsyncMock()
             # Make sure close is not defined to force using __aexit__
-            if hasattr(mock_client, 'close'):
-                delattr(mock_client, 'close')
-            
+            if hasattr(mock_client, "close"):
+                delattr(mock_client, "close")
+
             # Use as async context manager
             async with Endpoint(http_config) as endpoint:
                 assert endpoint._client_instance == mock_client
                 mock_client.__aenter__.assert_called_once()
-            
+
             # Should be closed after exiting context
             assert endpoint._closed is True
             mock_client.__aexit__.assert_called_once_with(None, None, None)

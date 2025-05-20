@@ -200,14 +200,14 @@ sequenceDiagram
     EP->>EP: _create_client() if not exists (instantiates AsyncAPIClient or SDKAdapter)
     EP-->>-IM: Returns configured Client instance
     deactivate EP
-    
+
     IM->>IM: Prepare api_call_coroutine (lambda wrapping Client.request() or Client.call())
     IM->>+EX: submit_task(api_call_coroutine, event_details)
     activate EX
     EX-->>-IM: Returns NetworkRequestEvent (NRE)
     deactivate EX
     IM-->>-App: Returns NRE
-    
+
     Note right of EX: Executor manages queue, rate limits, concurrency.
     EX->>+Client: Worker executes adapted_api_call_coro()
     activate Client
@@ -215,7 +215,7 @@ sequenceDiagram
     ExternalAPI-->>Client: Response/Error
     Client-->>-EX: Returns result or raises error
     deactivate Client
-    
+
     EX->>NRE: Update NRE with result/error
 ```
 
@@ -246,32 +246,32 @@ class HttpTransportConfig(BaseModel):
 class SdkTransportConfig(BaseModel):
     sdk_provider_name: str # e.g., "openai", "anthropic" (maps to adapter factory)
     # Default SDK method to call if not specified in iModel.invoke()
-    # default_sdk_method_name: Optional[str] = None 
+    # default_sdk_method_name: Optional[str] = None
     pass
 
 class ServiceEndpointConfig(BaseModel):
     name: str = Field(description="User-defined name for this endpoint configuration, e.g., 'openai_chat_completions_gpt4'")
     transport_type: Literal["http", "sdk"] = Field(description="Specifies if direct HTTP or an SDK adapter is used.")
-    
+
     # Common fields for both transport types
     api_key: Optional[str] = Field(None, description="API key. Can be set via env var or direct value.")
     base_url: Optional[str] = Field(None, description="Base URL for HTTP calls or if required by an SDK.")
     timeout: float = Field(60.0, description="Default request timeout in seconds.")
-    
+
     # Headers for HTTP transport, can also be used by some SDKs if they accept custom headers.
     default_headers: Dict[str, str] = Field(default_factory=dict, description="Default headers for HTTP requests.")
-    
+
     # Keyword arguments passed directly to the constructor of AsyncAPIClient or the specific SDK client.
     # For AsyncAPIClient, this can include 'auth', 'event_hooks', etc.
     # For SDKs, this includes any specific init params for that SDK (e.g., 'organization' for OpenAI).
     client_constructor_kwargs: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Specific configuration block for HTTP transport
     http_config: Optional[HttpTransportConfig] = Field(None, description="Configuration specific to HTTP transport.")
-    
+
     # Specific configuration block for SDK transport
     sdk_config: Optional[SdkTransportConfig] = Field(None, description="Configuration specific to SDK transport.")
-    
+
     # Default keyword arguments to be included in every request made through this endpoint.
     # These can be overridden by call-specific arguments in iModel.invoke().
     # For HTTP, these might be default query params or JSON body elements.
@@ -317,7 +317,7 @@ from lionfuncs.network.adapters import AbstractSDKAdapter, create_sdk_adapter
 
 class Endpoint:
     """
-    Manages the creation, configuration, and lifecycle of API clients 
+    Manages the creation, configuration, and lifecycle of API clients
     (AsyncAPIClient or SDK Adapters) based on a ServiceEndpointConfig.
     It acts as a factory and context manager for these clients.
     """
@@ -341,13 +341,13 @@ class Endpoint:
                 timeout=self.config.timeout,
                 headers=self.config.default_headers,
                 # Pass resilience configs if they are part of ServiceEndpointConfig and AsyncAPIClient accepts them
-                # retry_config=self.config.retry_config, 
+                # retry_config=self.config.retry_config,
                 # circuit_breaker=self.config.circuit_breaker_config.build() if self.config.circuit_breaker_config else None,
                 **self.config.client_constructor_kwargs
             )
         elif self.config.transport_type == "sdk":
             # sdk_config is guaranteed by validator
-            sdk_conf = self.config.sdk_config 
+            sdk_conf = self.config.sdk_config
             return create_sdk_adapter(
                 provider=sdk_conf.sdk_provider_name,
                 api_key=self.config.api_key, # api_key is passed to adapter factory
@@ -364,7 +364,7 @@ class Endpoint:
         """
         if self._closed:
             raise RuntimeError(f"Endpoint '{self.config.name}' is closed.")
-        
+
         if self._client_instance is None:
             async with self._lock:
                 if self._client_instance is None: # Double-check after acquiring lock
@@ -395,7 +395,7 @@ class Endpoint:
 
     async def __aenter__(self) -> "Endpoint":
         """Enters the async context, ensuring the client is initialized."""
-        await self.get_client() 
+        await self.get_client()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -482,7 +482,7 @@ class iModel:
         sdk_method_name: Optional[str] = None, # e.g., "chat.completions.create"
         # Additional kwargs to pass to AsyncAPIClient.request or SDKAdapter.call
         # These are merged with Endpoint's default_request_kwargs and the payload
-        **additional_request_params: Any 
+        **additional_request_params: Any
     ) -> NetworkRequestEvent:
         """
         Makes a generic call to the configured API endpoint.
@@ -514,10 +514,10 @@ class iModel:
 
         # How payload_dict is merged depends on whether it's the body or part of kwargs
         # For SDKs, often all parts become kwargs. For HTTP POST, payload_dict is json body.
-        
+
         # For SDKs, merge payload_dict and additional_request_params into merged_call_args
         # For HTTP, payload_dict might be 'json' body, additional_request_params could be 'params' for GET
-        
+
         # --- Determine call type and prepare ---
         actual_api_call_coroutine = None
         event_endpoint_url_str: str = ""
@@ -528,9 +528,9 @@ class iModel:
             if not self.endpoint.config.base_url: # Should be caught by ServiceEndpointConfig validation
                 raise ValueError("base_url is required for HTTP transport in Endpoint config.")
 
-            _http_method = (http_method or 
+            _http_method = (http_method or
                            (self.endpoint.config.http_config.method if self.endpoint.config.http_config else "POST")).upper()
-            
+
             _path = (http_path or "").lstrip('/')
             event_endpoint_url_str = f"{self.endpoint.config.base_url.rstrip('/')}/{_path}"
             event_method_str = _http_method
@@ -554,9 +554,9 @@ class iModel:
             if not self.endpoint.config.sdk_config: # Should be caught by ServiceEndpointConfig validation
                 raise ValueError("sdk_config is required for SDK transport in Endpoint config.")
 
-            _sdk_method_name = (sdk_method_name or 
+            _sdk_method_name = (sdk_method_name or
                                 self.endpoint.config.sdk_config.default_sdk_method_name if hasattr(self.endpoint.config.sdk_config, 'default_sdk_method_name') else "call")
-            
+
             event_endpoint_url_str = f"sdk://{self.endpoint.config.sdk_config.sdk_provider_name}/{_sdk_method_name}"
             event_method_str = "SDK_CALL"
 
@@ -593,12 +593,12 @@ class iModel:
                 response_body = await actual_api_call_coroutine()
                 # Assuming success, provide a generic success status.
                 # Headers might not be applicable/available for all SDK calls.
-                return 200, {}, response_body 
+                return 200, {}, response_body
             except APIClientError as e: # From AsyncAPIClient
                 # Re-raise to be caught by Executor's worker, which will populate event
                 # Or, extract details here if needed for a more specific (status, headers, body_error) tuple
                 logger.debug(f"iModel: APIClientError caught: {e.status_code} {e.message}")
-                raise 
+                raise
             except LionSDKError as e: # From SDKAdapter
                 logger.debug(f"iModel: LionSDKError caught: {e}")
                 raise
@@ -678,11 +678,11 @@ return from `iModel`'s `adapted_executor_coroutine`.
 # Conceptual change in Executor._worker for TDS-19
 # ... (inside _worker try block, after acquiring limits) ...
                 event.update_status(RequestStatus.CALLING)
-                
+
                 # New expectation: api_coro() returns the body on success, or raises an exception.
                 # The (status_code, headers, body) tuple is no longer returned by api_coro.
                 response_body = await api_coro() # This is the change
-                
+
                 # If successful, set a generic success status. Detailed status is in response_body or error.
                 event.set_result(
                     status_code=200, # Generic success

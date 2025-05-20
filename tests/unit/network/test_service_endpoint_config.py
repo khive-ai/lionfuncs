@@ -3,12 +3,11 @@ Unit tests for the ServiceEndpointConfig model.
 """
 
 import pytest
-from pydantic import ValidationError
 
 from lionfuncs.network.primitives import (
-    ServiceEndpointConfig,
     HttpTransportConfig,
     SdkTransportConfig,
+    ServiceEndpointConfig,
 )
 
 
@@ -21,9 +20,9 @@ class TestServiceEndpointConfig:
             name="test_http",
             transport_type="http",
             base_url="https://api.example.com",
-            http_config=HttpTransportConfig()
+            http_config=HttpTransportConfig(),
         )
-        
+
         assert config.name == "test_http"
         assert config.transport_type == "http"
         assert config.base_url == "https://api.example.com"
@@ -37,11 +36,13 @@ class TestServiceEndpointConfig:
 
     def test_http_transport_config_missing_base_url(self):
         """Test that HTTP transport config without base_url fails validation."""
-        with pytest.raises(ValueError, match="base_url must be provided for HTTP transport type"):
+        with pytest.raises(
+            ValueError, match="base_url must be provided for HTTP transport type"
+        ):
             ServiceEndpointConfig(
                 name="test_http",
                 transport_type="http",
-                http_config=HttpTransportConfig()
+                http_config=HttpTransportConfig(),
             )
 
     def test_sdk_transport_config_valid(self):
@@ -50,11 +51,9 @@ class TestServiceEndpointConfig:
             name="test_sdk",
             transport_type="sdk",
             api_key="test_api_key",
-            sdk_config=SdkTransportConfig(
-                sdk_provider_name="openai"
-            )
+            sdk_config=SdkTransportConfig(sdk_provider_name="openai"),
         )
-        
+
         assert config.name == "test_sdk"
         assert config.transport_type == "sdk"
         assert config.api_key == "test_api_key"
@@ -69,11 +68,11 @@ class TestServiceEndpointConfig:
 
     def test_sdk_transport_config_missing_sdk_config(self):
         """Test that SDK transport config without sdk_config fails validation."""
-        with pytest.raises(ValueError, match="sdk_config must be provided for SDK transport type"):
+        with pytest.raises(
+            ValueError, match="sdk_config must be provided for SDK transport type"
+        ):
             ServiceEndpointConfig(
-                name="test_sdk",
-                transport_type="sdk",
-                api_key="test_api_key"
+                name="test_sdk", transport_type="sdk", api_key="test_api_key"
             )
 
     def test_sdk_transport_config_with_default_method(self):
@@ -84,10 +83,10 @@ class TestServiceEndpointConfig:
             api_key="test_api_key",
             sdk_config=SdkTransportConfig(
                 sdk_provider_name="openai",
-                default_sdk_method_name="chat.completions.create"
-            )
+                default_sdk_method_name="chat.completions.create",
+            ),
         )
-        
+
         assert config.sdk_config.default_sdk_method_name == "chat.completions.create"
 
     def test_with_custom_timeout(self):
@@ -96,9 +95,9 @@ class TestServiceEndpointConfig:
             name="test_http",
             transport_type="http",
             base_url="https://api.example.com",
-            timeout=120.0
+            timeout=120.0,
         )
-        
+
         assert config.timeout == 120.0
 
     def test_with_custom_headers(self):
@@ -108,9 +107,9 @@ class TestServiceEndpointConfig:
             name="test_http",
             transport_type="http",
             base_url="https://api.example.com",
-            default_headers=custom_headers
+            default_headers=custom_headers,
         )
-        
+
         assert config.default_headers == custom_headers
 
     def test_with_client_constructor_kwargs(self):
@@ -120,9 +119,9 @@ class TestServiceEndpointConfig:
             name="test_http",
             transport_type="http",
             base_url="https://api.example.com",
-            client_constructor_kwargs=constructor_kwargs
+            client_constructor_kwargs=constructor_kwargs,
         )
-        
+
         assert config.client_constructor_kwargs == constructor_kwargs
 
     def test_with_default_request_kwargs(self):
@@ -132,9 +131,9 @@ class TestServiceEndpointConfig:
             name="test_http",
             transport_type="http",
             base_url="https://api.example.com",
-            default_request_kwargs=request_kwargs
+            default_request_kwargs=request_kwargs,
         )
-        
+
         assert config.default_request_kwargs == request_kwargs
 
     def test_invalid_transport_type(self):
@@ -144,7 +143,7 @@ class TestServiceEndpointConfig:
             ServiceEndpointConfig(
                 name="test_invalid",
                 transport_type="invalid",  # Not "http" or "sdk"
-                base_url="https://api.example.com"
+                base_url="https://api.example.com",
             )
 
     def test_extra_fields_forbidden(self):
@@ -156,7 +155,7 @@ class TestServiceEndpointConfig:
                 "name": "test_http",
                 "transport_type": "http",
                 "base_url": "https://api.example.com",
-                "invalid_field": "value"  # This field is not defined in the model
+                "invalid_field": "value",  # This field is not defined in the model
             }
             # Pass the dict to the model constructor
             ServiceEndpointConfig(**config_dict)
