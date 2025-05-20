@@ -7,7 +7,7 @@ allowing the AsyncAPIClient to delegate calls to specific SDK implementations.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Protocol, TypeVar
+from typing import Any, Protocol, TypeVar, runtime_checkable
 
 from lionfuncs.errors import LionSDKError
 
@@ -15,6 +15,7 @@ T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
+@runtime_checkable
 class AbstractSDKAdapter(Protocol):
     """
     Protocol defining the interface for SDK adapters.
@@ -22,6 +23,8 @@ class AbstractSDKAdapter(Protocol):
     SDK adapters provide a consistent interface for interacting with different
     AI service SDKs (OpenAI, Anthropic, etc.) through a common API.
     """
+
+    __slots__ = ()  # Make it a runtime checkable protocol
 
     async def call(self, method_name: str, **kwargs) -> Any:
         """

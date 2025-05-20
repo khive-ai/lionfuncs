@@ -653,3 +653,85 @@ class AdaptiveRateLimiter(TokenBucketRateLimiter):
                 logger.debug(
                     f"Adjusted tokens due to rate reduction: {self.tokens:.2f}/{self.max_tokens}"
                 )
+
+
+class HttpTransportConfig(BaseModel):
+    """Configuration for HTTP transport in ServiceEndpointConfig."""
+
+    method: str = "POST"  # Default HTTP method if not overridden at call time
+
+
+class SdkTransportConfig(BaseModel):
+    """Configuration for SDK transport in ServiceEndpointConfig."""
+
+    sdk_provider_name: str  # e.g., "openai", "anthropic" (maps to adapter factory)
+    default_sdk_method_name: Optional[str] = (
+        None  # Default SDK method to call if not specified in invoke()
+    )
+
+
+class ServiceEndpointConfig(BaseModel):
+    """
+    Comprehensive configuration for API endpoints.
+
+    This model provides a complete configuration for the Endpoint class,
+    supporting both HTTP and SDK transport types.
+    """
+
+    name: str = Field(
+        description="User-defined name for this endpoint configuration, e.g., 'openai_chat_completions_gpt4'"
+    )
+    transport_type: Literal["http", "sdk"] = Field(
+        description="Specifies if direct HTTP or an SDK adapter is used."
+    )
+
+    # Common fields for both transport types
+    api_key: Optional[str] = Field(
+        None, description="API key. Can be set via env var or direct value."
+    )
+    base_url: Optional[str] = Field(
+        None, description="Base URL for HTTP calls or if required by an SDK."
+    )
+    timeout: float = Field(60.0, description="Default request timeout in seconds.")
+
+    # Headers for HTTP transport, can also be used by some SDKs if they accept custom headers.
+    default_headers: dict[str, str] = Field(
+        default_factory=dict, description="Default headers for HTTP requests."
+    )
+
+    # Keyword arguments passed directly to the constructor of AsyncAPIClient or the specific SDK client.
+    # For AsyncAPIClient, this can include 'auth', 'event_hooks', etc.
+    # For SDKs, this includes any specific init params for that SDK (e.g., 'organization' for OpenAI).
+    client_constructor_kwargs: dict[str, Any] = Field(default_factory=dict)
+
+    # Specific configuration block for HTTP transport
+    http_config: Optional[HttpTransportConfig] = Field(
+        None, description="Configuration specific to HTTP transport."
+    )
+
+    # Specific configuration block for SDK transport
+    sdk_config: Optional[SdkTransportConfig] = Field(
+        None, description="Configuration specific to SDK transport."
+    )
+
+    # Default keyword arguments to be included in every request made through this endpoint.
+    # These can be overridden by call-specific arguments in iModel.invoke().
+    # For HTTP, these might be default query params or JSON body elements.
+    # For SDK, these are default parameters for the SDK method call.
+    default_request_kwargs: dict[str, Any] = Field(default_factory=dict)
+
+    def model_post_init(self, __context):
+        """Validate transport-specific configuration after initialization."""
+        if self.transport_type == "http" and self.http_config is None:
+            # Default HttpTransportConfig if not provided
+            self.http_config = HttpTransportConfig()
+
+        if self.transport_type == "sdk" and self.sdk_config is None:
+            raise ValueError("sdk_config must be provided for SDK transport type.")
+
+        if self.transport_type == "http" and not self.base_url:
+            raise ValueError("base_url must be provided for HTTP transport type.")
+
+    model_config = {
+        "extra": "forbid"  # Disallow extra fields not defined in the model
+    }

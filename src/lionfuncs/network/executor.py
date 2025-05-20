@@ -124,10 +124,17 @@ class Executor:
                     )
 
                 event.update_status(RequestStatus.CALLING)
-                # The api_coro is expected to return a tuple: (status_code, headers, body)
-                # or raise an exception.
-                response_status_code, response_headers, response_body = await api_coro()
-                event.set_result(response_status_code, response_headers, response_body)
+
+                # New expectation: api_coro() returns the body on success, or raises an exception.
+                # The (status_code, headers, body) tuple is no longer returned by api_coro.
+                response_body = await api_coro()
+
+                # If successful, set a generic success status. Detailed status is in response_body or error.
+                event.set_result(
+                    status_code=200,  # Generic success
+                    headers={},  # Headers might not be uniformly available; can be added to metadata if needed
+                    body=response_body,
+                )
                 # Status is set to COMPLETED by set_result
         except Exception as e:
             event.set_error(e)

@@ -18,8 +18,10 @@ network primitives.
 - [**primitives**](primitives.md): Network primitives like `Endpoint` and rate
   limiters.
 - [**events**](events.md): Event classes for tracking API request lifecycles.
-- [**executor**](executor.md): Executor for managing and rate-limiting API calls.
-- [**imodel**](imodel.md): Client for interacting with API models using the Executor.
+- [**executor**](executor.md): Executor for managing and rate-limiting API
+  calls.
+- [**imodel**](imodel.md): Client for interacting with API models using the
+  Executor.
 
 ## Components
 
@@ -70,16 +72,21 @@ import them directly from `lionfuncs.network`:
 
 ### From events
 
-- [`NetworkRequestEvent`](events.md#networkrequestevent): Event class for tracking the lifecycle of a network request.
-- [`RequestStatus`](events.md#requeststatus): Enum of possible states for a network request.
+- [`NetworkRequestEvent`](events.md#networkrequestevent): Event class for
+  tracking the lifecycle of a network request.
+- [`RequestStatus`](events.md#requeststatus): Enum of possible states for a
+  network request.
 
 ### From executor
 
-- [`Executor`](executor.md#executor): Executor for managing and rate-limiting API calls.
+- [`Executor`](executor.md#executor): Executor for managing and rate-limiting
+  API calls.
 
 ### From imodel
 
-- [`iModel`](imodel.md#imodel): Client for interacting with API models using the Executor.
+- [`iModel`](imodel.md#imodel): Client for interacting with API models using the
+  Executor.
+
 ## Installation
 
 The network utilities are included in the base `lionfuncs` package:

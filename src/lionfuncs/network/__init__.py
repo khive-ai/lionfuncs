@@ -12,15 +12,19 @@ from .adapters import (
     create_sdk_adapter,
 )
 from .client import AsyncAPIClient
+from .endpoint import Endpoint
 from .events import NetworkRequestEvent, RequestStatus
 from .executor import Executor
 from .imodel import iModel
+from .primitives import AdaptiveRateLimiter
+from .primitives import Endpoint as OldEndpoint  # Renamed to avoid conflict
 from .primitives import (
-    AdaptiveRateLimiter,
-    Endpoint,
     EndpointConfig,
     EndpointRateLimiter,
     HeaderFactory,
+    HttpTransportConfig,
+    SdkTransportConfig,
+    ServiceEndpointConfig,
     TokenBucketRateLimiter,
     match_endpoint,
 )
@@ -36,7 +40,11 @@ __all__ = [
     "RetryConfig",
     # Primitives
     "EndpointConfig",
-    "Endpoint",
+    "OldEndpoint",  # Renamed to avoid conflict
+    "Endpoint",  # New Endpoint class
+    "ServiceEndpointConfig",  # New config model
+    "HttpTransportConfig",  # New HTTP config model
+    "SdkTransportConfig",  # New SDK config model
     "HeaderFactory",
     "TokenBucketRateLimiter",
     "EndpointRateLimiter",

@@ -7,7 +7,7 @@ from typing import Any, Callable, Union, get_type_hints
 
 from pydantic import BaseModel
 
-__all__ = ["function_to_openai_schema"]
+__all__ = ["function_to_openai_schema", "pydantic_model_to_openai_schema"]
 
 
 # Python type to JSON schema type mapping
@@ -180,7 +180,7 @@ def function_to_openai_schema(func: Callable) -> dict[str, Any]:
     return schema
 
 
-def pydantic_model_to_schema(model_class: type[BaseModel]) -> dict[str, Any]:
+def pydantic_model_to_openai_schema(model_class: type[BaseModel]) -> dict[str, Any]:
     """Convert a Pydantic model to an OpenAI parameter schema.
 
     Args:

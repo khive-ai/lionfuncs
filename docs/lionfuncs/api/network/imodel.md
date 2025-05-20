@@ -4,7 +4,8 @@ title: "lionfuncs.network.imodel"
 
 # lionfuncs.network.imodel
 
-The `imodel` module provides the iModel class, which uses the Executor for making rate-limited API calls to model endpoints.
+The `imodel` module provides the iModel class, which uses the Executor for
+making rate-limited API calls to model endpoints.
 
 ## Classes
 
@@ -14,7 +15,9 @@ The `imodel` module provides the iModel class, which uses the Executor for makin
 class iModel
 ```
 
-Client for interacting with API models using the Executor. The iModel class provides methods for making API calls to model endpoints, using the Executor for rate limiting and concurrency control.
+Client for interacting with API models using the Executor. The iModel class
+provides methods for making API calls to model endpoints, using the Executor for
+rate limiting and concurrency control.
 
 #### Constructor
 
@@ -29,13 +32,17 @@ def __init__(
 Initialize the iModel.
 
 **Parameters:**
+
 - `executor`: An instance of Executor for making API calls.
-- `model_endpoint_config`: Configuration for the model endpoint, either as a dictionary or EndpointConfig.
+- `model_endpoint_config`: Configuration for the model endpoint, either as a
+  dictionary or EndpointConfig.
 
 **Raises:**
+
 - `TypeError`: If model_endpoint_config is not a dict or EndpointConfig.
 
 **Example:**
+
 ```python
 from lionfuncs.network.executor import Executor
 from lionfuncs.network.imodel import iModel
@@ -79,6 +86,7 @@ async def acompletion(
 Make an asynchronous completion request.
 
 **Parameters:**
+
 - `prompt`: The prompt to complete.
 - `max_tokens`: Maximum number of tokens to generate.
 - `temperature`: Sampling temperature.
@@ -86,12 +94,15 @@ Make an asynchronous completion request.
 - `**kwargs`: Additional parameters for the completion request.
 
 **Returns:**
+
 - A NetworkRequestEvent tracking the request.
 
 **Raises:**
+
 - `RuntimeError`: If the executor is not running.
 
 **Example:**
+
 ```python
 # Make a completion request
 event = await model.acompletion(
@@ -117,13 +128,16 @@ async def close_session() -> None
 Close the HTTP session if it exists.
 
 **Example:**
+
 ```python
 await model.close_session()
 ```
 
 #### Context Manager
 
-The iModel class supports the async context manager protocol, which automatically creates an HTTP session when entering the context and closes it when exiting.
+The iModel class supports the async context manager protocol, which
+automatically creates an HTTP session when entering the context and closes it
+when exiting.
 
 ```python
 async with iModel(executor, config) as model:
@@ -138,7 +152,8 @@ Internally, the iModel class:
 1. Maintains an aiohttp.ClientSession for making HTTP requests.
 2. Uses the provided Executor to submit API call tasks.
 3. Constructs API requests based on the model_endpoint_config.
-4. Returns NetworkRequestEvent objects for tracking the status and results of API calls.
+4. Returns NetworkRequestEvent objects for tracking the status and results of
+   API calls.
 
 ## Configuration
 
@@ -183,7 +198,7 @@ async def main():
                 "model": "gpt-3.5-turbo-instruct"
             }
         }
-        
+
         async with iModel(executor, config) as model:
             # Make multiple completion requests
             prompts = [
@@ -191,7 +206,7 @@ async def main():
                 "Explain quantum computing in simple terms",
                 "List 5 benefits of exercise"
             ]
-            
+
             events = []
             for prompt in prompts:
                 event = await model.acompletion(
@@ -202,12 +217,12 @@ async def main():
                 )
                 events.append((prompt, event))
                 print(f"Submitted request for prompt: {prompt[:20]}...")
-            
+
             # Wait for all requests to complete
-            while any(event.status not in [RequestStatus.COMPLETED, RequestStatus.FAILED] 
+            while any(event.status not in [RequestStatus.COMPLETED, RequestStatus.FAILED]
                      for _, event in events):
                 await asyncio.sleep(0.1)
-            
+
             # Process results
             for prompt, event in events:
                 print(f"\nPrompt: {prompt}")
@@ -228,4 +243,5 @@ The iModel class is designed to work with:
 2. **NetworkRequestEvent**: For tracking the status and results of API calls.
 3. **EndpointConfig**: For configuring the model endpoint.
 
-This integration allows for efficient and controlled access to AI model APIs, with proper rate limiting and concurrency control.
+This integration allows for efficient and controlled access to AI model APIs,
+with proper rate limiting and concurrency control.
