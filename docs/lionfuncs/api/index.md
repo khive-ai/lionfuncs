@@ -13,6 +13,11 @@ functions, and decorators in the `lionfuncs` package.
 
 - [**utils**](utils.md): General utility functions.
 - [**errors**](errors.md): Custom exception classes.
+- [**text_utils**](text_utils.md): String similarity and text processing utilities.
+- [**parsers**](parsers.md): Robust parsing utilities for various data formats.
+- [**dict_utils**](dict_utils.md): Utilities for advanced dictionary manipulation.
+- [**format_utils**](format_utils.md): Utilities for formatting data into human-readable strings.
+- [**schema_utils**](schema_utils.md): Utilities for generating and manipulating schemas.
 
 ### File System
 
@@ -41,6 +46,11 @@ The following diagram shows the dependencies between the modules:
 lionfuncs
 ├── utils
 ├── errors
+├── text_utils
+├── parsers
+├── dict_utils (depends on: text_utils)
+├── format_utils (depends on: utils)
+├── schema_utils
 ├── file_system
 │   ├── core (depends on: errors)
 │   └── media (depends on: errors)
@@ -65,6 +75,8 @@ The `lionfuncs` package exposes the following public APIs:
 - `get_env_dict(var_name, default=None)`: Get a dictionary environment variable.
 - `to_list(input_, flatten=False, dropna=False, unique=False, use_values=False, flatten_tuple_set=False)`:
   Convert input to a list with optional transformations.
+- `to_dict(obj, fields=None, exclude=None, by_alias=False, exclude_none=False, exclude_unset=False, exclude_defaults=False)`:
+  Convert various object types to a dictionary representation.
 
 ### lionfuncs.errors
 
@@ -122,3 +134,24 @@ The `lionfuncs` package exposes the following public APIs:
 - `HeaderFactory`: Utility for creating auth/content headers.
 - `TokenBucketRateLimiter`, `EndpointRateLimiter`, `AdaptiveRateLimiter`: Rate
   limiting classes.
+
+### lionfuncs.text_utils
+
+- `string_similarity(s1, s2, method="levenshtein", **kwargs)`: Calculate the similarity between two strings using various algorithms.
+
+### lionfuncs.parsers
+
+- `fuzzy_parse_json(json_string, attempt_fix=True, strict=False, log_errors=False)`: Parse a JSON string with optional fuzzy fixing for common errors.
+
+### lionfuncs.dict_utils
+
+- `fuzzy_match_keys(data_dict, reference_keys, threshold=0.8, default_method="levenshtein", case_sensitive=False, handle_unmatched="ignore", fill_value=None, fill_mapping=None, strict=False)`: Match dictionary keys against reference keys using string similarity.
+
+### lionfuncs.format_utils
+
+- `as_readable(data, format_type="auto", indent=2, max_depth=None, in_notebook_override=None)`: Convert data into a human-readable string format.
+
+### lionfuncs.schema_utils
+
+- `function_to_openai_schema(func)`: Generate an OpenAI function schema from a Python function.
+- `pydantic_model_to_schema(model_class)`: Convert a Pydantic model to an OpenAI parameter schema.
