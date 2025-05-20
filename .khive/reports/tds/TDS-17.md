@@ -230,13 +230,13 @@ class Executor:
         """
         self.work_queue = WorkQueue(maxsize=queue_capacity, num_workers=num_workers)
         self.capacity_limiter = CapacityLimiter(limit=concurrency_limit)
-        
+
         self.requests_rate_limiter = TokenBucketRateLimiter(
             rate=requests_rate,
             period=requests_period,
             bucket_capacity=requests_bucket_capacity
         )
-        
+
         self.api_tokens_rate_limiter: Optional[TokenBucketRateLimiter] = None
         if api_tokens_rate is not None:
             self.api_tokens_rate_limiter = TokenBucketRateLimiter(
@@ -244,7 +244,7 @@ class Executor:
                 period=api_tokens_period,
                 bucket_capacity=api_tokens_bucket_capacity
             )
-            
+
         self._is_running = False
 
     async def _worker(self, task_data: Dict[str, Any]):
@@ -253,7 +253,7 @@ class Executor:
         """
         api_coro: Callable[[], Coroutine[Any, Any, Any]] = task_data["api_coro"]
         event: NetworkRequestEvent = task_data["event"]
-        
+
         event.update_status(RequestStatus.PROCESSING)
         try:
             async with self.capacity_limiter:
@@ -273,7 +273,7 @@ class Executor:
                         event.add_log(f"Waiting {wait_time_api_tokens:.2f}s for API token rate limit ({num_api_tokens_needed} tokens).")
                         await asyncio.sleep(wait_time_api_tokens)
                     event.add_log(f"Acquired API token rate limit ({num_api_tokens_needed} tokens).")
-                
+
                 event.update_status(RequestStatus.CALLING)
                 # The api_coro is expected to return a tuple: (status_code, headers, body)
                 # or raise an exception.
@@ -291,7 +291,7 @@ class Executor:
 
 
     async def submit_task(
-        self, 
+        self,
         api_call_coroutine: Callable[[], Coroutine[Any, Any, Any]], # Should return (status_code, headers, body)
         endpoint_url: Optional[str] = None,
         method: Optional[str] = None,
@@ -304,7 +304,7 @@ class Executor:
         Submits a new API call task to the executor.
 
         Args:
-            api_call_coroutine: A callable that returns a coroutine. 
+            api_call_coroutine: A callable that returns a coroutine.
                                 The coroutine should perform the API call and return a tuple
                                 (status_code: int, headers: Dict, body: Any) or raise an exception.
             endpoint_url: URL of the API endpoint.
@@ -319,7 +319,7 @@ class Executor:
         """
         if not self._is_running:
             raise RuntimeError("Executor is not running. Call start() first.")
-        
+
         event = NetworkRequestEvent(
             request_id=str(uuid.uuid4()),
             endpoint_url=endpoint_url,
@@ -330,7 +330,7 @@ class Executor:
             metadata=metadata or {}
         )
         event.update_status(RequestStatus.QUEUED)
-        
+
         task_data = {
             "api_coro": api_call_coroutine,
             "event": event,
@@ -394,32 +394,32 @@ class NetworkRequestEvent:
     created_at: datetime.datetime = field(default_factory=datetime.datetime.utcnow)
     updated_at: datetime.datetime = field(default_factory=datetime.datetime.utcnow)
     status: RequestStatus = RequestStatus.PENDING
-    
+
     # Request details
     endpoint_url: Optional[str] = None
     method: Optional[str] = None
     headers: Optional[Dict[str, Any]] = None
     payload: Optional[Any] = None # Or request_body
-    
+
     # Execution details
     num_api_tokens_needed: int = 0 # For API token rate limiter
-    
+
     # Response details
     response_status_code: Optional[int] = None
     response_headers: Optional[Dict[str, Any]] = None
     response_body: Optional[Any] = None
-    
+
     # Error details
     error_type: Optional[str] = None
     error_message: Optional[str] = None
     error_details: Optional[str] = None # Store traceback string
-    
+
     # Timing
     queued_at: Optional[datetime.datetime] = None
     processing_started_at: Optional[datetime.datetime] = None
     call_started_at: Optional[datetime.datetime] = None
     completed_at: Optional[datetime.datetime] = None # or failed_at / cancelled_at
-    
+
     # Logs/Metadata
     logs: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -438,7 +438,7 @@ class NetworkRequestEvent:
         old_status = self.status
         self.status = new_status
         now = datetime.datetime.utcnow()
-        
+
         if old_status != new_status: # Log status change
             self.add_log(f"Status changed from {old_status.value} to {new_status.value}")
 
@@ -526,7 +526,7 @@ class iModel:
     def __init__(self, executor: Executor, model_endpoint_config: Dict[str, Any]):
         self.executor = executor
         self.config = model_endpoint_config # e.g., {'base_url': '...', 'api_key': '...'}
-        self.http_session: Optional[aiohttp.ClientSession] = None 
+        self.http_session: Optional[aiohttp.ClientSession] = None
 
     async def _get_session(self) -> aiohttp.ClientSession:
         if self.http_session is None or self.http_session.closed:
@@ -548,10 +548,10 @@ class iModel:
         method = "POST"
         payload = {"prompt": prompt, "max_tokens": 150} # Example
         headers = {"Authorization": f"Bearer {self.config['api_key']}"} # Example
-        
+
         # Prepare the coroutine for the actual API call
         api_call_coro = lambda: self._make_actual_api_call(method, endpoint_url, headers, payload)
-        
+
         request_event = await self.executor.submit_task(
             api_call_coroutine=api_call_coro,
             endpoint_url=endpoint_url,
@@ -561,7 +561,7 @@ class iModel:
             num_api_tokens_needed=num_tokens_to_consume,
             metadata={"model_name": self.config.get("model_name", "unknown")}
         )
-        
+
         return request_event
 
     # Ensure to provide a way to close the session, e.g., via context manager for iModel

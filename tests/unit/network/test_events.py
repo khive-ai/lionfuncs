@@ -19,7 +19,7 @@ class TestNetworkRequestEvent(unittest.TestCase):
     def test_init_default_values(self):
         """Test initialization with default values."""
         event = NetworkRequestEvent(request_id="test-id")
-        
+
         self.assertEqual(event.request_id, "test-id")
         self.assertEqual(event.status, RequestStatus.PENDING)
         self.assertEqual(event.num_api_tokens_needed, 0)
@@ -49,9 +49,9 @@ class TestNetworkRequestEvent(unittest.TestCase):
             headers={"Content-Type": "application/json"},
             payload={"prompt": "Hello"},
             num_api_tokens_needed=100,
-            metadata={"model": "gpt-4"}
+            metadata={"model": "gpt-4"},
         )
-        
+
         self.assertEqual(event.request_id, "test-id")
         self.assertEqual(event.endpoint_url, "https://api.example.com/v1/completions")
         self.assertEqual(event.method, "POST")
@@ -63,57 +63,57 @@ class TestNetworkRequestEvent(unittest.TestCase):
     def test_update_status(self):
         """Test status updates and timestamp tracking."""
         event = NetworkRequestEvent(request_id="test-id")
-        
+
         # Initial state
         self.assertEqual(event.status, RequestStatus.PENDING)
         self.assertIsNone(event.queued_at)
-        
+
         # Update to QUEUED
         with patch("datetime.datetime") as mock_datetime:
             mock_now = datetime.datetime(2025, 5, 20, 12, 0, 0)
             mock_datetime.utcnow.return_value = mock_now
-            
+
             event.update_status(RequestStatus.QUEUED)
-            
+
             self.assertEqual(event.status, RequestStatus.QUEUED)
             self.assertEqual(event.queued_at, mock_now)
             self.assertIsNone(event.processing_started_at)
             self.assertEqual(len(event.logs), 1)
             self.assertIn("Status changed from PENDING to QUEUED", event.logs[0])
-        
+
         # Update to PROCESSING
         with patch("datetime.datetime") as mock_datetime:
             mock_now = datetime.datetime(2025, 5, 20, 12, 0, 1)
             mock_datetime.utcnow.return_value = mock_now
-            
+
             event.update_status(RequestStatus.PROCESSING)
-            
+
             self.assertEqual(event.status, RequestStatus.PROCESSING)
             self.assertEqual(event.processing_started_at, mock_now)
             self.assertIsNone(event.call_started_at)
             self.assertEqual(len(event.logs), 2)
             self.assertIn("Status changed from QUEUED to PROCESSING", event.logs[1])
-        
+
         # Update to CALLING
         with patch("datetime.datetime") as mock_datetime:
             mock_now = datetime.datetime(2025, 5, 20, 12, 0, 2)
             mock_datetime.utcnow.return_value = mock_now
-            
+
             event.update_status(RequestStatus.CALLING)
-            
+
             self.assertEqual(event.status, RequestStatus.CALLING)
             self.assertEqual(event.call_started_at, mock_now)
             self.assertIsNone(event.completed_at)
             self.assertEqual(len(event.logs), 3)
             self.assertIn("Status changed from PROCESSING to CALLING", event.logs[2])
-        
+
         # Update to COMPLETED
         with patch("datetime.datetime") as mock_datetime:
             mock_now = datetime.datetime(2025, 5, 20, 12, 0, 3)
             mock_datetime.utcnow.return_value = mock_now
-            
+
             event.update_status(RequestStatus.COMPLETED)
-            
+
             self.assertEqual(event.status, RequestStatus.COMPLETED)
             self.assertEqual(event.completed_at, mock_now)
             self.assertEqual(len(event.logs), 4)
@@ -122,21 +122,23 @@ class TestNetworkRequestEvent(unittest.TestCase):
     def test_set_result(self):
         """Test setting result and status transition to COMPLETED."""
         event = NetworkRequestEvent(request_id="test-id")
-        
+
         with patch("datetime.datetime") as mock_datetime:
             mock_now = datetime.datetime(2025, 5, 20, 12, 0, 0)
             mock_datetime.utcnow.return_value = mock_now
             mock_datetime.isoformat = datetime.datetime.isoformat
-            
+
             event.set_result(
                 status_code=200,
                 headers={"Content-Type": "application/json"},
-                body={"result": "Success"}
+                body={"result": "Success"},
             )
-            
+
             self.assertEqual(event.status, RequestStatus.COMPLETED)
             self.assertEqual(event.response_status_code, 200)
-            self.assertEqual(event.response_headers, {"Content-Type": "application/json"})
+            self.assertEqual(
+                event.response_headers, {"Content-Type": "application/json"}
+            )
             self.assertEqual(event.response_body, {"result": "Success"})
             self.assertEqual(event.completed_at, mock_now)
             self.assertEqual(len(event.logs), 2)  # Status change log + completion log
@@ -145,15 +147,15 @@ class TestNetworkRequestEvent(unittest.TestCase):
     def test_set_error(self):
         """Test error setting and status transition to FAILED."""
         event = NetworkRequestEvent(request_id="test-id")
-        
+
         with patch("datetime.datetime") as mock_datetime:
             mock_now = datetime.datetime(2025, 5, 20, 12, 0, 0)
             mock_datetime.utcnow.return_value = mock_now
             mock_datetime.isoformat = datetime.datetime.isoformat
-            
+
             exception = ValueError("Test error")
             event.set_error(exception)
-            
+
             self.assertEqual(event.status, RequestStatus.FAILED)
             self.assertEqual(event.error_type, "ValueError")
             self.assertEqual(event.error_message, "Test error")
@@ -165,10 +167,10 @@ class TestNetworkRequestEvent(unittest.TestCase):
     def test_add_log(self):
         """Test log addition."""
         event = NetworkRequestEvent(request_id="test-id")
-        
+
         # Use a simpler approach without mocking datetime.isoformat
         event.add_log("Test log message")
-        
+
         self.assertEqual(len(event.logs), 1)
         self.assertIn("Test log message", event.logs[0])
         # Just verify the log entry contains a timestamp format

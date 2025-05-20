@@ -12,11 +12,12 @@ enforces concurrency and rate limits, and tracks request lifecycles.
 import asyncio
 import logging
 import uuid
-from typing import Any, Callable, Coroutine, Dict, Optional
+from collections.abc import Coroutine
+from typing import Any, Callable, Optional
 
-from lionfuncs.concurrency import WorkQueue, CapacityLimiter
-from lionfuncs.network.primitives import TokenBucketRateLimiter
+from lionfuncs.concurrency import CapacityLimiter, WorkQueue
 from lionfuncs.network.events import NetworkRequestEvent, RequestStatus
+from lionfuncs.network.primitives import TokenBucketRateLimiter
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class Executor:
         api_tokens_rate: Optional[float] = None,  # e.g., 10000 tokens
         api_tokens_period: float = 60.0,  # e.g., per 60 seconds
         api_tokens_bucket_capacity: Optional[float] = None,  # Defaults to rate if None
-        num_workers: int = 5  # Number of workers for the WorkQueue
+        num_workers: int = 5,  # Number of workers for the WorkQueue
     ):
         """
         Initialize the Executor.
@@ -61,21 +62,21 @@ class Executor:
         self.work_queue = WorkQueue(maxsize=queue_capacity)
         self._num_workers = num_workers
         self.capacity_limiter = CapacityLimiter(total_tokens=concurrency_limit)
-        
+
         self.requests_rate_limiter = TokenBucketRateLimiter(
             rate=requests_rate,
             period=requests_period,
-            max_tokens=requests_bucket_capacity
+            max_tokens=requests_bucket_capacity,
         )
-        
+
         self.api_tokens_rate_limiter: Optional[TokenBucketRateLimiter] = None
         if api_tokens_rate is not None:
             self.api_tokens_rate_limiter = TokenBucketRateLimiter(
                 rate=api_tokens_rate,
                 period=api_tokens_period,
-                max_tokens=api_tokens_bucket_capacity
+                max_tokens=api_tokens_bucket_capacity,
             )
-            
+
         self._is_running = False
         logger.debug(
             f"Initialized Executor with queue_capacity={queue_capacity}, "
@@ -84,7 +85,7 @@ class Executor:
             f"api_tokens_period={api_tokens_period}, num_workers={num_workers}"
         )
 
-    async def _worker(self, task_data: Dict[str, Any]) -> None:
+    async def _worker(self, task_data: dict[str, Any]) -> None:
         """
         Internal worker coroutine that processes a single task from the queue.
 
@@ -93,7 +94,7 @@ class Executor:
         """
         api_coro: Callable[[], Coroutine[Any, Any, Any]] = task_data["api_coro"]
         event: NetworkRequestEvent = task_data["event"]
-        
+
         event.update_status(RequestStatus.PROCESSING)
         try:
             async with self.capacity_limiter:
@@ -101,19 +102,27 @@ class Executor:
                 # Acquire request rate limit token
                 wait_time_req = await self.requests_rate_limiter.acquire(tokens=1)
                 if wait_time_req > 0:
-                    event.add_log(f"Waiting {wait_time_req:.2f}s for request rate limit.")
+                    event.add_log(
+                        f"Waiting {wait_time_req:.2f}s for request rate limit."
+                    )
                     await asyncio.sleep(wait_time_req)
                 event.add_log("Acquired request rate limit token.")
 
                 # Acquire API token rate limit tokens (if applicable)
                 num_api_tokens_needed = event.num_api_tokens_needed
                 if self.api_tokens_rate_limiter and num_api_tokens_needed > 0:
-                    wait_time_api_tokens = await self.api_tokens_rate_limiter.acquire(tokens=num_api_tokens_needed)
+                    wait_time_api_tokens = await self.api_tokens_rate_limiter.acquire(
+                        tokens=num_api_tokens_needed
+                    )
                     if wait_time_api_tokens > 0:
-                        event.add_log(f"Waiting {wait_time_api_tokens:.2f}s for API token rate limit ({num_api_tokens_needed} tokens).")
+                        event.add_log(
+                            f"Waiting {wait_time_api_tokens:.2f}s for API token rate limit ({num_api_tokens_needed} tokens)."
+                        )
                         await asyncio.sleep(wait_time_api_tokens)
-                    event.add_log(f"Acquired API token rate limit ({num_api_tokens_needed} tokens).")
-                
+                    event.add_log(
+                        f"Acquired API token rate limit ({num_api_tokens_needed} tokens)."
+                    )
+
                 event.update_status(RequestStatus.CALLING)
                 # The api_coro is expected to return a tuple: (status_code, headers, body)
                 # or raise an exception.
@@ -126,20 +135,22 @@ class Executor:
             logger.exception(f"Error processing API call: {e}")
 
     async def submit_task(
-        self, 
-        api_call_coroutine: Callable[[], Coroutine[Any, Any, Any]],  # Should return (status_code, headers, body)
+        self,
+        api_call_coroutine: Callable[
+            [], Coroutine[Any, Any, Any]
+        ],  # Should return (status_code, headers, body)
         endpoint_url: Optional[str] = None,
         method: Optional[str] = None,
-        headers: Optional[Dict[str, Any]] = None,
+        headers: Optional[dict[str, Any]] = None,
         payload: Optional[Any] = None,
         num_api_tokens_needed: int = 0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[dict[str, Any]] = None,
     ) -> NetworkRequestEvent:
         """
         Submit a new API call task to the executor.
 
         Args:
-            api_call_coroutine: A callable that returns a coroutine. 
+            api_call_coroutine: A callable that returns a coroutine.
                                 The coroutine should perform the API call and return a tuple
                                 (status_code: int, headers: Dict, body: Any) or raise an exception.
             endpoint_url: URL of the API endpoint.
@@ -157,7 +168,7 @@ class Executor:
         """
         if not self._is_running:
             raise RuntimeError("Executor is not running. Call start() first.")
-        
+
         event = NetworkRequestEvent(
             request_id=str(uuid.uuid4()),
             endpoint_url=endpoint_url,
@@ -165,10 +176,10 @@ class Executor:
             headers=headers,
             payload=payload,
             num_api_tokens_needed=num_api_tokens_needed,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
         event.update_status(RequestStatus.QUEUED)
-        
+
         task_data = {
             "api_coro": api_call_coroutine,
             "event": event,
@@ -185,10 +196,12 @@ class Executor:
         """
         if self._is_running:
             return
-        
+
         self._is_running = True
         await self.work_queue.start()
-        await self.work_queue.process(worker_func=self._worker, num_workers=self._num_workers)
+        await self.work_queue.process(
+            worker_func=self._worker, num_workers=self._num_workers
+        )
         logger.info("Executor started")
 
     async def stop(self, graceful: bool = True) -> None:
@@ -201,7 +214,7 @@ class Executor:
         """
         if not self._is_running:
             return
-        
+
         self._is_running = False
         await self.work_queue.stop(timeout=None if graceful else 0.1)
         logger.info(f"Executor stopped (graceful={graceful})")

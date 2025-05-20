@@ -12,8 +12,12 @@ requests, handling resilience patterns, and working with SDK adapters.
 The `lionfuncs.network` module provides a robust set of tools for interacting
 with APIs and web services. At its core is the `AsyncAPIClient`, a powerful
 async HTTP client built on top of `httpx`. The module also includes resilience
-patterns like circuit breaker and retry with backoff, as well as adapters for
-third-party SDKs.
+patterns like circuit breaker and retry with backoff, adapters for
+third-party SDKs, and components for managing rate-limited API calls like
+`Executor`, `NetworkRequestEvent`, and `iModel`.
+
+> **Note:** For detailed information on using the new `Executor` and `iModel` components,
+> see the [Network Executor Usage Guide](network_executor_usage.md).
 
 ## Making HTTP Requests with AsyncAPIClient
 
@@ -693,9 +697,67 @@ asyncio.run(main())
 7. **Use SDK Adapters**: Use SDK adapters for third-party APIs to maintain a
    consistent interface.
 
+## Advanced API Call Management with Executor and iModel
+
+For more advanced API call management, especially when dealing with rate limits and token-based APIs, the `lionfuncs.network` module provides the `Executor` and `iModel` components:
+
+- **Executor**: Manages a queue of API call tasks, enforces concurrency and rate limits, and tracks request lifecycles.
+- **NetworkRequestEvent**: Tracks the lifecycle of API requests, including status, timing, and result information.
+- **iModel**: Client for interacting with API models using the Executor.
+
+Here's a brief example of using these components:
+
+```python
+import asyncio
+from lionfuncs.network.executor import Executor
+from lionfuncs.network.imodel import iModel
+from lionfuncs.network.events import RequestStatus
+
+async def main():
+    # Create an executor with rate limiting
+    async with Executor(
+        concurrency_limit=5,
+        requests_rate=10.0,
+        requests_period=1.0,
+        api_tokens_rate=10000.0,
+        api_tokens_period=60.0
+    ) as executor:
+        # Create an iModel instance
+        config = {
+            "base_url": "https://api.openai.com/v1",
+            "endpoint": "completions",
+            "api_key": "your-api-key",
+            "model_name": "gpt-3.5-turbo-instruct"
+        }
+        
+        async with iModel(executor, config) as model:
+            # Make a completion request
+            event = await model.acompletion(
+                prompt="Write a short poem about programming",
+                max_tokens=150,
+                temperature=0.7,
+                num_tokens_to_consume=200  # Estimate of token usage
+            )
+            
+            # Wait for completion
+            while event.status not in [RequestStatus.COMPLETED, RequestStatus.FAILED]:
+                await asyncio.sleep(0.1)
+            
+            # Process the result
+            if event.status == RequestStatus.COMPLETED:
+                print(f"Completion: {event.response_body}")
+            else:
+                print(f"Error: {event.error_message}")
+
+asyncio.run(main())
+```
+
+For more detailed information on using these components, see the [Network Executor Usage Guide](network_executor_usage.md).
+
 ## Conclusion
 
 The `lionfuncs.network` module provides a robust set of tools for interacting
 with APIs and web services. By combining the `AsyncAPIClient` with resilience
-patterns, SDK adapters, and rate limiters, you can build robust and efficient
-network clients for your applications.
+patterns, SDK adapters, rate limiters, and the advanced API call management
+components (`Executor`, `NetworkRequestEvent`, and `iModel`), you can build
+robust and efficient network clients for your applications.
