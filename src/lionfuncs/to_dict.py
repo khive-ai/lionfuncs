@@ -43,21 +43,119 @@ def _convert_item_to_dict_element(
         return item
 
     if isinstance(item, BaseModel):
-        if use_model_dump and hasattr(item, "model_dump"):
+        # DEFAULT_JSON_PARSER is already ensured to be initialized at the function start
+
+        potential_result = PydanticUndefined  # Initialize potential_result
+
+        # Construct the ordered list of methods to attempt on the BaseModel instance.
+        ordered_methods = []
+        if use_model_dump:
+            if hasattr(item, "model_dump"):
+                ordered_methods.append(("model_dump", serializer_kwargs))
+            if hasattr(item, "dict") and (
+                not hasattr(item, "model_dump") or item.dict != item.model_dump
+            ):
+                ordered_methods.append(("dict", {}))
+        else:  # use_model_dump is False
+            if hasattr(item, "dict"):
+                ordered_methods.append(
+                    (
+                        "dict",
+                        serializer_kwargs if hasattr(item.dict, "__call__") else {},
+                    )
+                )
+            if hasattr(item, "model_dump") and (
+                not hasattr(item, "dict") or item.model_dump != item.dict
+            ):
+                ordered_methods.append(("model_dump", {}))
+
+        # Add other common serialization methods if not already covered, including general custom ones
+        common_fallbacks = [
+            "_asdict",
+            "asdict",
+            "to_dict",
+            "as_list",
+            "to_custom_dict",
+            "get_config",
+        ]  # Added more fallbacks
+        for m_name in common_fallbacks:
+            is_present_in_ordered = any(
+                om_name == m_name for om_name, _ in ordered_methods
+            )
+            if (
+                hasattr(item, m_name)
+                and callable(getattr(item, m_name))
+                and not is_present_in_ordered
+            ):
+                is_alias_of_present = False
+                for existing_method_name, _ in ordered_methods:
+                    if getattr(item, m_name) == getattr(item, existing_method_name):
+                        is_alias_of_present = True
+                        break
+                if not is_alias_of_present:
+                    # For these custom/general fallbacks, pass serializer_kwargs if they might accept them.
+                    # Heuristic: if 'dict' or 'dump' or 'config' is in the name, or it's a known one like 'to_dict'.
+                    # Otherwise, pass empty dict.
+                    pass_kwargs = (
+                        serializer_kwargs
+                        if m_name in ["to_dict", "to_custom_dict", "get_config"]
+                        or "dict" in m_name
+                        or "dump" in m_name
+                        else {}
+                    )
+                    ordered_methods.append((m_name, pass_kwargs))
+
+        # Attempt methods in the constructed order
+        for method_name, m_kwargs in ordered_methods:
             try:
-                return item.model_dump(**serializer_kwargs)
+                res = getattr(item, method_name)(**m_kwargs)
+
+                if isinstance(res, Mapping):
+                    if use_enum_values:
+                        processed_dict = {}
+                        for k, v_item in res.items():
+                            processed_dict[k] = (
+                                v_item.value if isinstance(v_item, Enum) else v_item
+                            )
+                        return processed_dict
+                    return res  # Found a dictionary, return it immediately
+
+                # If 'res' is not a dictionary, process it further
+                if isinstance(res, str):
+                    try:
+                        parsed_res = DEFAULT_JSON_PARSER(res)
+                        # Whether parsed_res is a dict or not, it's the outcome of this string method.
+                        # If it parsed to a dict, it would have been caught by the isinstance(res, Mapping)
+                        # check IF the method returned a dict-like string that DEFAULT_JSON_PARSER made a dict.
+                        # More likely, if res is string, we want to see if it parses to something.
+                        # If parsed_res is a Mapping, it should be returned above.
+                        # If parsed_res is NOT a Mapping (e.g. list, int from JSON string), store it.
+                        potential_result = parsed_res
+                        if item.__class__.__name__ == "ModelReturnsListAsListMethod":
+                            print(
+                                f"DEBUG: String parsed to non-Mapping. potential_result set to: {potential_result} (type: {type(potential_result)})"
+                            )
+                    except Exception:
+                        # Parsing failed. The original string 'res' is the outcome.
+                        potential_result = res
+                else:
+                    # 'res' is not a Mapping and not a string (e.g., list, int, None directly from method).
+                    potential_result = res
+
+                # Loop continues: a non-dict result is stored in potential_result,
+                # but we keep trying other methods in case a later one yields a direct dictionary.
             except Exception:
-                pass
-        methods_to_try = ("model_dump", "dict", "_asdict", "asdict")
-        for method_name in methods_to_try:
-            if hasattr(item, method_name):
-                try:
-                    res = getattr(item, method_name)()
-                    if isinstance(res, str):
-                        return DEFAULT_JSON_PARSER(res)
-                    return res if isinstance(res, Mapping) else vars(item)
-                except Exception:
-                    continue
+                continue  # Method call failed, try next
+
+        # After trying all methods:
+        if potential_result is not PydanticUndefined:
+            # A method was called and returned something that wasn't a direct dictionary
+            # (or was a string that didn't parse to a dictionary). Return that result.
+            return potential_result
+
+        # All methods failed to produce any result (potential_result is still PydanticUndefined)
+        # or all methods that produced results, produced dictionaries (which were returned earlier).
+        # This path means no successful non-dictionary result was stored and no dictionary was found.
         return vars(item) if hasattr(item, "__dict__") else item
 
     if isinstance(item, type) and issubclass(item, Enum):
@@ -258,6 +356,7 @@ def to_dict(
             stop_types=recursive_stop_types,
             conversion_params=conversion_params,
         )
+        # print(f"DEBUG: final_result type: {type(final_result)}, value: {str(final_result)[:200]}") # DEBUG PRINT
 
         if isinstance(final_result, Mapping):
             return dict(final_result)
@@ -274,12 +373,13 @@ def to_dict(
             error_message_detail
             or f"Top-level input of type '{type(input_).__name__}' processed to type '{type(final_result).__name__}', which is not a dictionary."
         )
-
+        # print(f"DEBUG: About to raise ValueError with message: {error_message_detail}") # DEBUG PRINT
         if suppress_errors:
             return default_on_error if default_on_error is not None else {}
         raise ValueError(error_message_detail)
 
     except Exception as e:
+        # print(f"DEBUG: Caught exception: {type(e).__name__}: {e}") # DEBUG PRINT
         if suppress_errors:
             return default_on_error if default_on_error is not None else {}
         final_err_message = f"Failed during to_dict conversion: {e}"
