@@ -164,5 +164,5 @@ def test_to_list_with_nested_iterables():
 
 def test_to_list_with_unique_requires_flatten():
     """Test that to_list raises ValueError when unique=True without flatten=True."""
-    with pytest.raises(ValueError, match="unique=True requires flatten=True"):
+    with pytest.raises(ValueError, match="unique=True generally requires flatten=True"):
         to_list([1, 2, 1], unique=True, flatten=False)

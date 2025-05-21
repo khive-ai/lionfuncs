@@ -137,16 +137,21 @@ def fuzzy_match_keys(
 
             rf_scorer: Callable[..., float]
             method_name_lower = default_method.lower()
+            current_score_cutoff = threshold  # Default for 0-1 range scorers
 
             if method_name_lower == "levenshtein":
                 rf_scorer = rapidfuzz.fuzz.ratio
+                current_score_cutoff = threshold * 100
             elif method_name_lower == "wratio":
                 rf_scorer = rapidfuzz.fuzz.WRatio
+                current_score_cutoff = threshold * 100
             elif method_name_lower == "jaro_winkler":
+                # JaroWinkler.similarity returns 0-1, so threshold is used directly
                 rf_scorer = partial(
                     rapidfuzz.distance.JaroWinkler.similarity,
                     prefix_weight=jaro_winkler_prefix_weight,
                 )
+                # current_score_cutoff remains threshold (0-1)
 
             # rapidfuzz's processor handles case transformation for query and choices
             processor_func = None if case_sensitive else str.lower
@@ -159,7 +164,7 @@ def fuzzy_match_keys(
                     query=input_key,  # Original input key
                     choices=available_expected_comp_forms,  # Comparison forms of available expected keys
                     scorer=rf_scorer,
-                    score_cutoff=threshold,
+                    score_cutoff=current_score_cutoff,  # Use scaled cutoff
                     processor=processor_func,  # Applies to query and choices before scoring
                 )
 

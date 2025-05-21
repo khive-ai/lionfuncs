@@ -185,9 +185,19 @@ def as_readable(
 
     # Convert data to a dict/list structure first for consistent formatting
     try:
-        processed_data = to_dict(data, exclude_none=True)
-    except TypeError:
-        # If to_dict fails for the root object, use original
+        # Attempt to convert to dict for structured formatting.
+        # Pass relevant kwargs if to_dict supports them, e.g., for recursion depth.
+        # For now, using exclude_none as it was there.
+        processed_data = to_dict(
+            data, exclude_none=True, suppress_errors=True, default_on_error=None
+        )
+        if (
+            processed_data is None and data is not None
+        ):  # if to_dict suppressed error and returned None, but original data was not None
+            processed_data = data  # Fallback to original data if to_dict effectively failed for this use case
+    except Exception:  # Catch any error from to_dict, not just TypeError
+        # If to_dict fails for any reason (e.g. ValueError for non-dict output, or other internal errors)
+        # fall back to using the original data for formatting.
         processed_data = data
 
     # Determine effective format

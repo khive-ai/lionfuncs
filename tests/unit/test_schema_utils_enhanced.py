@@ -120,7 +120,21 @@ class TestSchemaUtilsEnhanced:
             address: Optional[Address] = None
             metadata: dict[str, Any] = Field(default_factory=dict)
 
-        schema = pydantic_model_to_openai_schema(User)
+        raw_schema = pydantic_model_to_openai_schema(
+            User,
+            function_name="test_complex_user_func",
+            function_description="Test complex user function description",
+        )
+        # The actual schema for parameters is nested
+        assert raw_schema["type"] == "function"
+        assert "function" in raw_schema
+        assert raw_schema["function"]["name"] == "test_complex_user_func"
+        assert (
+            raw_schema["function"]["description"]
+            == "Test complex user function description"
+        )
+
+        schema = raw_schema["function"]["parameters"]
 
         # Check top-level structure
         assert schema["type"] == "object"

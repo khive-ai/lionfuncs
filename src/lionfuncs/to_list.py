@@ -200,7 +200,7 @@ def to_list(
                 if DICT_HASH_FUNC is None:
                     from lionfuncs.hash_utils import hash_dict
 
-                    DICT_HASH_FUNC = hash_dict()
+                    DICT_HASH_FUNC = hash_dict
 
                 # Fallback to the robust deterministic hasher for complex/unhashable types
                 try:

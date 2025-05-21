@@ -86,9 +86,18 @@ class TestSchemaUtils:
             age: int
             email: Optional[str] = None
 
-        schema = pydantic_model_to_openai_schema(
-            User
-        )  # This would fail as it's private
+        raw_schema = pydantic_model_to_openai_schema(
+            User,
+            function_name="test_user_func",
+            function_description="Test user function description",
+        )
+        # The actual schema for parameters is nested
+        assert raw_schema["type"] == "function"
+        assert "function" in raw_schema
+        assert raw_schema["function"]["name"] == "test_user_func"
+        assert raw_schema["function"]["description"] == "Test user function description"
+
+        schema = raw_schema["function"]["parameters"]
 
         assert schema["type"] == "object"
         assert "properties" in schema

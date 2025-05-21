@@ -74,13 +74,14 @@ class TestFuzzyParseJson:
         valid_json = '{"name": "John"}'
         assert fuzzy_parse_json(valid_json) == {"name": "John"}
 
-        # Invalid JSON should raise in strict mode
-        invalid_json = "{'name': 'John'}"
-        with pytest.raises(ValueError):
-            fuzzy_parse_json(invalid_json)
+        # Invalid JSON that fuzzy_parse_json can fix should parse
+        fixable_invalid_json = "{'name': 'John'}"
+        assert fuzzy_parse_json(fixable_invalid_json) == {"name": "John"}
 
-        # Invalid JSON should parse with attempt_fix=True even in strict mode
-        assert fuzzy_parse_json(invalid_json) == {"name": "John"}
+        # Unfixable JSON should raise ValueError
+        unfixable_invalid_json = "{'name': 'John', invalid_token}"
+        with pytest.raises(ValueError):
+            fuzzy_parse_json(unfixable_invalid_json)
 
     def test_fuzzy_parse_json_empty_input(self):
         """Test fuzzy_parse_json with empty input."""

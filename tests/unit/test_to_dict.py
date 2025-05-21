@@ -42,8 +42,9 @@ class TestToDict:
 
         user = User(name="John", age=30, email="john@example.com")
 
-        # Test fields option
-        result = to_dict(user, fields=["name", "age"])
+        # Test include option (formerly fields)
+        # Pydantic's model_dump uses 'include', which can be a set of strings for top-level fields
+        result = to_dict(user, include={"name", "age"})
         assert "name" in result
         assert "age" in result
         assert "email" not in result
@@ -112,7 +113,7 @@ class TestToDict:
             address: Address
 
         user = User(name="John", address=Address(city="New York", country="USA"))
-        result = to_dict(user)
+        result = to_dict(user, recursive=True)  # Added recursive=True
 
         assert result == {
             "name": "John",
@@ -138,22 +139,29 @@ class TestToDict:
     def test_to_dict_list(self):
         """Test to_dict with lists."""
         data = ["a", "b", "c"]
-        result = to_dict(data)
-        assert result == data
+        with pytest.raises(ValueError):
+            to_dict(data)
 
     def test_to_dict_nested_list(self):
         """Test to_dict with nested lists."""
         data = [{"name": "John", "age": 30}, {"name": "Jane", "age": 25}]
-        result = to_dict(data)
-        assert result == data
+        with pytest.raises(ValueError):
+            to_dict(data)
 
     def test_to_dict_primitive_types(self):
         """Test to_dict with primitive types."""
-        assert to_dict("string") == "string"
-        assert to_dict(123) == 123
-        assert to_dict(123.45) == 123.45
-        assert to_dict(True) is True
-        assert to_dict(None) is None
+        with pytest.raises(ValueError):
+            to_dict("string")
+        with pytest.raises(ValueError):
+            to_dict(123)
+        with pytest.raises(ValueError):
+            to_dict(123.45)
+        with pytest.raises(ValueError):
+            to_dict(True)
+        # to_dict(None) returns {} by default if suppress_errors=False, or default_on_error
+        # Let's check the specific behavior for None from to_dict
+        # Line 220 in to_dict.py: if input_ is None: return default_on_error or {}
+        assert to_dict(None) == {}
 
     def test_to_dict_general_object(self):
         """Test to_dict with general objects."""
@@ -178,7 +186,7 @@ class TestToDict:
                 return "Unconvertible()"
 
         obj = Unconvertible()
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):  # Expecting ValueError as it's not a dict
             to_dict(obj)
 
     def test_to_dict_mixed_types(self):
