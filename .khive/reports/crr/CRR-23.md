@@ -1,14 +1,14 @@
 ---
 title: Final Review and Approval for PR #24
-by: @khive-reviewer
+by: "@khive-reviewer"
 created: 2025-05-21
 updated: 2025-05-21
 version: 1.2 # Incrementing version due to re-review
 doc_type: CRR
 output_subdir: crr
-description: Final review confirming pre-commit fixes for PR #24, Issue #23.
+description: "Final review confirming pre-commit fixes for PR #24, Issue #23."
 date: 2025-05-21
-reviewer_name: @khive-reviewer
+reviewer_name: "@khive-reviewer"
 pr_number: 24
 issue_number: 23
 ---
