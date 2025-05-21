@@ -4,7 +4,9 @@ title: "lionfuncs.to_list"
 
 # lionfuncs.to_list
 
-The `to_list` module provides utilities for converting various Python objects to lists, with options for flattening nested structures, removing None values, ensuring uniqueness, and more.
+The `to_list` module provides utilities for converting various Python objects to
+lists, with options for flattening nested structures, removing None values,
+ensuring uniqueness, and more.
 
 ## Functions
 
@@ -25,16 +27,30 @@ def to_list(
 
 Converts various input types into a list with optional transformations.
 
-This function handles a wide range of input types, including iterables, mappings, Pydantic models, and Enums. It provides options for flattening nested structures, removing None/undefined values, ensuring uniqueness, and extracting values from Enums/Mappings.
+This function handles a wide range of input types, including iterables,
+mappings, Pydantic models, and Enums. It provides options for flattening nested
+structures, removing None/undefined values, ensuring uniqueness, and extracting
+values from Enums/Mappings.
 
 #### Parameters
 
 - **input_** (`Any`): The value to convert to a list.
-- **flatten** (`bool`, optional): If True, recursively flattens nested iterables, respecting types that should not be flattened (e.g., strings, dicts). Defaults to `False`.
-- **dropna** (`bool`, optional): If True, removes items that are None or PydanticUndefined. Defaults to `False`.
-- **unique** (`bool`, optional): If True, removes duplicate items from the list. For this to work predictably on nested structures, the list is effectively flattened before uniqueness is determined. Requires `flatten=True` if you want the initial structure to be flat before uniqueness, otherwise an internal flattening pass occurs for the unique logic. Defaults to `False`.
-- **use_values** (`bool`, optional): If True, for Enum types, their member values are used. For Mapping types, their values are used. Otherwise, the Enum members or the Mapping itself is used. Defaults to `False`.
-- **flatten_tuple_set** (`bool`, optional): If True and `flatten` is also True, tuples, sets, and frozensets will also be flattened. Otherwise, they are treated as atomic items during flattening. Defaults to `False`.
+- **flatten** (`bool`, optional): If True, recursively flattens nested
+  iterables, respecting types that should not be flattened (e.g., strings,
+  dicts). Defaults to `False`.
+- **dropna** (`bool`, optional): If True, removes items that are None or
+  PydanticUndefined. Defaults to `False`.
+- **unique** (`bool`, optional): If True, removes duplicate items from the list.
+  For this to work predictably on nested structures, the list is effectively
+  flattened before uniqueness is determined. Requires `flatten=True` if you want
+  the initial structure to be flat before uniqueness, otherwise an internal
+  flattening pass occurs for the unique logic. Defaults to `False`.
+- **use_values** (`bool`, optional): If True, for Enum types, their member
+  values are used. For Mapping types, their values are used. Otherwise, the Enum
+  members or the Mapping itself is used. Defaults to `False`.
+- **flatten_tuple_set** (`bool`, optional): If True and `flatten` is also True,
+  tuples, sets, and frozensets will also be flattened. Otherwise, they are
+  treated as atomic items during flattening. Defaults to `False`.
 
 #### Returns
 
@@ -42,7 +58,8 @@ This function handles a wide range of input types, including iterables, mappings
 
 #### Raises
 
-- `ValueError`: If `unique=True` is specified with `flatten=False` by the caller, as per original design for predictable uniqueness on nested items.
+- `ValueError`: If `unique=True` is specified with `flatten=False` by the
+  caller, as per original design for predictable uniqueness on nested items.
 
 #### Example
 
@@ -89,15 +106,15 @@ print(to_list(user))  # [User(name='John', age=30)]
 
 # Complex example with multiple options
 complex_data = [
-    1, 
-    [2, 2, None], 
-    [3, [4, None, 4]], 
+    1,
+    [2, 2, None],
+    [3, [4, None, 4]],
     None
 ]
 result = to_list(
-    complex_data, 
-    flatten=True, 
-    dropna=True, 
+    complex_data,
+    flatten=True,
+    dropna=True,
     unique=True
 )
 print(result)  # [1, 2, 3, 4]
@@ -105,7 +122,10 @@ print(result)  # [1, 2, 3, 4]
 
 ## Internal Functions
 
-The following functions are used internally by the module and are not part of the public API:
+The following functions are used internally by the module and are not part of
+the public API:
 
-- `_initial_conversion_to_list(current_input: Any, use_values_flag: bool) -> list[Any]`: Converts various input types to an initial list format.
-- `_recursive_process_list(input_list: list[Any], flatten_flag: bool, dropna_flag: bool, skip_flatten_types: tuple[type[Any], ...]) -> list[Any]`: Recursively processes list for flattening and dropping None/Undefined values.
+- `_initial_conversion_to_list(current_input: Any, use_values_flag: bool) -> list[Any]`:
+  Converts various input types to an initial list format.
+- `_recursive_process_list(input_list: list[Any], flatten_flag: bool, dropna_flag: bool, skip_flatten_types: tuple[type[Any], ...]) -> list[Any]`:
+  Recursively processes list for flattening and dropping None/Undefined values.

@@ -4,7 +4,8 @@ title: "lionfuncs.parsers"
 
 # lionfuncs.parsers
 
-The `parsers` module provides robust parsing utilities for various data formats, with a focus on handling malformed or non-standard input.
+The `parsers` module provides robust parsing utilities for various data formats,
+with a focus on handling malformed or non-standard input.
 
 ## Functions
 
@@ -14,14 +15,17 @@ The `parsers` module provides robust parsing utilities for various data formats,
 def fuzzy_parse_json(str_to_parse: str, /) -> JSONOutputType
 ```
 
-Attempts to parse a JSON-like string into a Python object, trying several common fixes for non-standard JSON syntax.
+Attempts to parse a JSON-like string into a Python object, trying several common
+fixes for non-standard JSON syntax.
 
 The parsing strategy is tiered:
+
 1. Direct parse with `orjson.loads()` (fastest, for valid JSON).
 2. Preprocess (comments, Python constants) then `orjson.loads()`.
 3. Further clean (quotes, keys, spaces, trailing commas) then `orjson.loads()`.
 4. Fix brackets on the cleaned string, then `orjson.loads()`.
-5. If `dirtyjson` is available, fallback to it using the preprocessed string, as it can handle more complex JavaScript-like "dirtiness".
+5. If `dirtyjson` is available, fallback to it using the preprocessed string, as
+   it can handle more complex JavaScript-like "dirtiness".
 6. As a last resort, try `dirtyjson` on the absolute original string.
 
 #### Parameters
@@ -30,12 +34,14 @@ The parsing strategy is tiered:
 
 #### Returns
 
-- `JSONOutputType`: The parsed Python object (dict, list, str, int, float, bool, or None).
+- `JSONOutputType`: The parsed Python object (dict, list, str, int, float, bool,
+  or None).
 
 #### Raises
 
 - `TypeError`: If the input `str_to_parse` is not a string.
-- `ValueError`: If the input string is empty or contains only whitespace, or if all parsing and fixing attempts fail.
+- `ValueError`: If the input string is empty or contains only whitespace, or if
+  all parsing and fixing attempts fail.
 
 #### Example
 
@@ -91,19 +97,27 @@ except ValueError as e:
 
 ## Internal Functions
 
-The following functions are used internally by the module and are not part of the public API:
+The following functions are used internally by the module and are not part of
+the public API:
 
-- `_check_valid_input_str(str_to_parse: str, /) -> None`: Validates that the input is a non-empty string.
-- `_preprocess_json_string(s: str) -> str`: Initial preprocessing pass that removes comments and converts Python constants.
-- `_clean_further_json_string(s: str) -> str`: Second cleaning pass that handles quotes, keys, spaces, and trailing commas.
-- `_fix_json_brackets(str_to_parse: str) -> Union[str, None]`: Attempts to fix unmatched brackets/braces in a JSON-like string.
+- `_check_valid_input_str(str_to_parse: str, /) -> None`: Validates that the
+  input is a non-empty string.
+- `_preprocess_json_string(s: str) -> str`: Initial preprocessing pass that
+  removes comments and converts Python constants.
+- `_clean_further_json_string(s: str) -> str`: Second cleaning pass that handles
+  quotes, keys, spaces, and trailing commas.
+- `_fix_json_brackets(str_to_parse: str) -> Union[str, None]`: Attempts to fix
+  unmatched brackets/braces in a JSON-like string.
 
 ## Type Aliases
 
-- `JSONOutputType = Union[dict[str, Any], list[Any], str, int, float, bool, None]`: Type alias for possible JSON parsing output types.
+- `JSONOutputType = Union[dict[str, Any], list[Any], str, int, float, bool, None]`:
+  Type alias for possible JSON parsing output types.
 
 ## Dependencies
 
 The module uses the following dependencies:
+
 - `orjson`: Required for fast JSON parsing.
-- `dirtyjson`: Optional, used as a fallback for handling severely malformed JSON.
+- `dirtyjson`: Optional, used as a fallback for handling severely malformed
+  JSON.
