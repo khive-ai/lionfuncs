@@ -228,7 +228,9 @@ def fuzzy_parse_json(str_to_parse: str, /) -> JSONOutputType:
     last_attempted_custom_fix = (
         s_brackets_fixed_on_cleaned
         if s_brackets_fixed_on_cleaned is not None
-        else s_cleaned if s_cleaned != s_preprocessed else s_preprocessed
+        else s_cleaned
+        if s_cleaned != s_preprocessed
+        else s_preprocessed
     )
     raise ValueError(
         f"Input string could not be parsed as JSON after multiple fuzzy fixing attempts. "

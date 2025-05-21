@@ -770,9 +770,10 @@ class TestToDict:
                     "val_asdict": self.val
                 }  # Pydantic doesn't use _asdict typically
 
-        inst2 = ModelWithAsDict(
-            val=2
-        )  # _asdict is not a standard Pydantic method for dict conversion
+        # inst2 was unused
+        # inst2 = ModelWithAsDict(
+        #     val=2
+        # )  # _asdict is not a standard Pydantic method for dict conversion
 
         # It will likely fall to vars() or item if no __dict__
         # The `_asdict` in `methods_to_attempt` is more for general objects.
@@ -1092,173 +1093,13 @@ class TestToDict:
         # This is hard to hit as explained in test_convert_top_level_set_of_unhashable
         # For now, we assume other tests cover the ValueError for top-level non-dict results.
 
-    def test_convert_top_level_set_of_unhashable(self):
-        """Test convert_top_level_iterable_to_dict for a set that results in unhashable items."""
-        # This test is tricky because a set cannot directly contain unhashable items like lists.
-        # The scenario this aims for is if _convert_item_to_dict_element receives a set,
-        # and its attempt to create {v:v} fails (e.g. items are custom unhashable objects),
-        # so it returns the original set. Then to_dict gets this set.
-        # If convert_top_level_iterable_to_dict is True, it should then try to convert this set.
-        # The error "Top-level set items unhashable or did not form dict" is specific.
-
-        # Let's use a custom object that is hashable for set inclusion, but perhaps problematic for {v:v}
-        # if its __hash__ and __eq__ are complex or if it's just to see the path.
-        # However, the {v:v} will use the object itself as key and value.
-        # The most direct way to hit the "did not form dict" part is if _convert_item_to_dict_element
-        # returns the set as-is, and convert_top_level_iterable_to_dict is true.
-
-        # If input is a set of lists (which is impossible to create directly):
-        # The code path `error_message_detail = f"Top-level set items unhashable or did not form dict..."`
-        # is hit if `final_result` is a set AND `convert_top_level_iterable_to_dict` is true.
-        # This implies `_convert_item_to_dict_element` returned a set.
-        # This happens if `isinstance(item, (set, frozenset))` is true, and the `try {v:v}` fails.
-        # For the `try {v:v}` to fail, an item in the set must be unhashable (e.g. a list).
-        # But a set cannot contain an unhashable item like a list.
-        # This specific error message might be for a very edge case or potentially dead code path
-        # if sets always successfully convert to {v:v} or are caught by other errors earlier.
-        # For now, will skip testing this exact error string directly as it's hard to construct.
-        pass
-
-    def test_base_model_use_model_dump_false(self):
-        """Test BaseModel conversion with use_model_dump=False."""
-
-        class MyModelWithDict(BaseModel):
-            a: int
-            b: str
-
-            def model_dump(self, **kwargs):
-                return {"a_dump": self.a, "b_dump": self.b}
-
-            def dict(self, **kwargs):
-                return {"a_dict": self.a, "b_dict": self.b}
-
-        instance = MyModelWithDict(a=1, b="test")
-        # Should use .dict() method
-        assert to_dict(instance, use_model_dump=False) == {
-            "a_dict": 1,
-            "b_dict": "test",
-        }
-
-    def test_base_model_all_methods_fail(self):
-        """Test BaseModel where all conversion methods fail or return non-dict."""
-
-        class BrokenModel(BaseModel):
-            x: int
-
-            def model_dump(self, **kwargs):
-                raise TypeError("fail dump")
-
-            def dict(self, **kwargs):
-                raise TypeError("fail dict")
-
-            # No other methods like _asdict, asdict
-
-        instance = BrokenModel(x=10)
-        # Should fall back to vars(instance) or the instance itself.
-        # The current _convert_item_to_dict_element for BaseModel returns vars(item) or item.
-        # vars(PydanticModel) includes its fields.
-        res = to_dict(instance)
-        assert res == {"x": 10}  # vars() on Pydantic model includes fields.
-
-        class BrokenModelNonDictReturn(BaseModel):
-            x: int
-
-            def model_dump(self, **kwargs):
-                return [1, 2, 3]  # Returns a list
-
-        instance2 = BrokenModelNonDictReturn(x=20)
-        # The method returns a list. The BaseModel handler in _convert_item_to_dict_element
-        # should then try other methods or fall back. If all fallbacks result in non-Mappings,
-        # it eventually returns vars(item) or item.
-        # If it returns the list [1,2,3], then to_dict will raise ValueError.
-        with pytest.raises(
-            ValueError,
-            match="Top-level input of type 'BrokenModelNonDictReturn' processed to type 'list'",
-        ):
-            to_dict(instance2)
-
-    def test_set_item_unhashable_for_dict_key(self):
-        """Test set conversion where items are unhashable for dict keys in {v:v}."""
-        # This tests line 116: except TypeError: return item
-        # We need a custom object that is hashable (so it can be in a set)
-        # but causes a TypeError if used as a key in the {v:v} comprehension.
-        # This is hard because if it's hashable, it can usually be a dict key.
-        # The TypeError in {v:v} is typically if v itself is unhashable (e.g. a list).
-        # But a set cannot contain an unhashable list.
-        # This line 116 might be for a very specific scenario or defensive coding.
-        # For now, it's difficult to construct a simple, valid test case for this specific line
-        # without complex mocking or a very specific kind of object.
-        # The existing set tests cover cases where sets of hashable items (including Pydantic models)
-        # are converted to dicts.
-        pass
-
-    def test_fuzzy_json_parser_path(self):
-        """Test that fuzzy_parse_json is used when specified."""
-        # fuzzy_json_string = "{'id': 2, name: \"Fuzzy\", \"data\": null, \"list_val\": [1,true,'item'] // comment}"
-        # This string is parsed by fuzzy_parse_json successfully.
-        # If not fuzzy, orjson.loads would fail.
-        with pytest.raises(Exception):  # orjson.JSONDecodeError or similar
-            to_dict(
-                fuzzy_json_string,
-                parse_strings=True,
-                str_type_for_parsing="json",
-                fuzzy_parse_strings=False,
-            )
-
-        result_fuzzy = to_dict(
-            fuzzy_json_string,
-            parse_strings=True,
-            str_type_for_parsing="json",
-            fuzzy_parse_strings=True,
-        )
-        assert result_fuzzy == {
-            "id": 2,
-            "name": "Fuzzy",
-            "data": None,
-            "list_val": [1, True, "item"],
-        }
-
-    def test_recursion_max_depth_hit(self):
-        """Test recursion stopping at max_recursive_depth."""
-        data = {"l1": {"l2": {"l3": {"l4": "l5"}}}}
-        # Max depth 0: only top level processed by _convert_item_to_dict_element, no recursion into values
-        res_d0 = to_dict(data, recursive=True, max_recursive_depth=0)
-        assert isinstance(res_d0["l1"], dict)  # l1 is processed
-        assert res_d0["l1"] == {
-            "l2": {"l3": {"l4": "l5"}}
-        }  # but its value (a dict) is not further recursed
-
-        # Max depth 1: l1's value is recursed once.
-        res_d1 = to_dict(data, recursive=True, max_recursive_depth=1)
-        assert isinstance(res_d1["l1"]["l2"], dict)
-        assert res_d1["l1"]["l2"] == {
-            "l3": {"l4": "l5"}
-        }  # l2's value (a dict) is not further recursed
-
-        res_d2 = to_dict(data, recursive=True, max_recursive_depth=2)
-        assert isinstance(res_d2["l1"]["l2"]["l3"], dict)
-        assert res_d2["l1"]["l2"]["l3"] == {"l4": "l5"}
-
-        res_d3 = to_dict(data, recursive=True, max_recursive_depth=3)
-        assert res_d3["l1"]["l2"]["l3"]["l4"] == "l5"
-
-    def test_error_message_construction_non_dict_result(self):
-        """Test specific error message for non-dict results."""
-
-        class NonDictConvert:
-            def to_dict(self):
-                return [1, 2, 3]  # Intentionally returns a list
-
-        inst = NonDictConvert()
-        with pytest.raises(
-            ValueError,
-            match="Top-level input of type 'NonDictConvert' processed to type 'list', which is not a dictionary.",
-        ):
-            to_dict(inst)
-
-        # Test the error_message_detail from convert_top_level_iterable_to_dict for sets
-        # This is hard to hit as explained in test_convert_top_level_set_of_unhashable
-        # For now, we assume other tests cover the ValueError for top-level non-dict results.
+    # Removed duplicated test_convert_top_level_set_of_unhashable (original at L927)
+    # Removed duplicated test_base_model_use_model_dump_false (original at L954)
+    # Removed duplicated test_base_model_all_methods_fail (original at L974)
+    # Removed duplicated test_set_item_unhashable_for_dict_key (original at L1012)
+    # Removed duplicated test_fuzzy_json_parser_path (original at L1027)
+    # Removed duplicated test_recursion_max_depth_hit (original at L1053)
+    # Removed duplicated test_error_message_construction_non_dict_result (original at L1077)
 
     def test_base_model_method_returns_unparsable_string(self):
         """Test BaseModel method returns a string that is not valid JSON."""
@@ -1349,7 +1190,7 @@ class TestToDict:
         def custom_parser_with_kwargs(s, **kwargs):
             return {"original": s, "kwargs_received": kwargs}
 
-        xml_str = "<data>test</data>"
+        _ = "<data>test</data>"
         # For custom parser
         res_custom = to_dict(
             "test_custom",
@@ -1358,6 +1199,7 @@ class TestToDict:
             custom_arg1="val1",
             custom_arg2="val2",
         )
+        # Corrected assertion: was assert res_custom == "test_custom"
         assert res_custom["original"] == "test_custom"
         assert res_custom["kwargs_received"] == {
             "custom_arg1": "val1",
@@ -1370,12 +1212,13 @@ class TestToDict:
         # We also have remove_root which is handled separately.
         # Let's test a common xmltodict kwarg like `dict_constructor=dict` (which is default)
         # or `attr_prefix`
-        res_xml_kwargs = to_dict(
-            xml_str,
-            parse_strings=True,
-            str_type_for_parsing="xml",
-            attr_prefix="@custom_",
-        )
+        # res_xml_kwargs was unused
+        # res_xml_kwargs = to_dict(
+        #     xml_str,
+        #     parse_strings=True,
+        #     str_type_for_parsing="xml",
+        #     attr_prefix="@custom_",
+        # )
         # Default xmltodict behavior might not show attr_prefix if no attributes.
         # Let's use an XML with attributes.
         xml_with_attrs_for_kwargs = '<item id="1">content</item>'
@@ -1562,7 +1405,7 @@ class TestToDict:
 
         # Initial input is a dictionary containing a set of these custom objects
         # _convert_item_to_dict_element will process ElementBecomesList instances using their to_dict.
-        data = {"my_set_of_objects": {ElementBecomesList("a"), ElementBecomesList("b")}}
+        # data = {"my_set_of_objects": {ElementBecomesList("a"), ElementBecomesList("b")}} # data was unused
 
         # When to_dict processes this with recursive=True:
         # 1. It encounters the set {ElementBecomesList("a"), ElementBecomesList("b")}.
@@ -1605,6 +1448,75 @@ class TestToDict:
         # expected_item1 = ["x", "xx"]
         # expected_item2 = ["y", "yy"]
         # assert (expected_item1 in internal_list_result and expected_item2 in internal_list_result)
+
+    def test_recursive_false_max_depth_zero(self):
+        """Test that recursive=False sets max_recursive_depth to 0 effectively."""
+
+        class InnerModelRecursiveTest(BaseModel):
+            c: int
+            d: str
+
+        class OuterModelRecursiveTest(BaseModel):
+            a: int
+            b: InnerModelRecursiveTest
+            e: list[InnerModelRecursiveTest]
+
+        inner_inst1 = InnerModelRecursiveTest(c=1, d="d1")
+        inner_inst2 = InnerModelRecursiveTest(c=2, d="d2")
+        outer_inst = OuterModelRecursiveTest(a=10, b=inner_inst1, e=[inner_inst2])
+
+        # With recursive=False (default), effective_max_depth is 0.
+        # _convert_item_to_dict_element is called for outer_inst.
+        # This will convert outer_inst to a dict, where 'b' becomes inner_inst1.model_dump()
+        # and 'e' becomes [inner_inst2.model_dump()].
+        # So processed_node = {"a": 10, "b": {"c":1, "d":"d1"}, "e": [{"c":2, "d":"d2"}]}
+        # Then, in _recursive_apply_to_dict(processed_node, current_depth=0, max_depth=0, ...):
+        # The condition `current_depth >= max_depth` (0 >= 0) is TRUE.
+        # So, it returns processed_node immediately without iterating through its items for further recursion.
+        # This means the `else 0` part of `effective_max_depth` is used and correctly limits recursion.
+
+        result = to_dict(outer_inst)  # recursive=False by default
+        expected = {"a": 10, "b": {"c": 1, "d": "d1"}, "e": [{"c": 2, "d": "d2"}]}
+        assert result == expected
+
+        # Test with a plain dict containing a model, and recursive=False
+        # This ensures the `else 0` for effective_max_depth is hit.
+        plain_dict_with_model = {
+            "key": OuterModelRecursiveTest(
+                a=1, b=InnerModelRecursiveTest(c=2, d="d2"), e=[]
+            )
+        }
+        result_plain = to_dict(plain_dict_with_model)  # recursive=False by default
+
+        # In _recursive_apply_to_dict(plain_dict_with_model, current_depth=0, max_depth=0, ...)
+        #   processed_node = _convert_item_to_dict_element(plain_dict_with_model) -> returns itself (it's a dict)
+        #   The loop `for key, value in processed_node.items()` will run.
+        #   For value OuterModelRecursiveTest(...):
+        #     _recursive_apply_to_dict(OuterModelRecursiveTest(...), current_depth=1, max_depth=0, ...)
+        #       processed_node_inner = _convert_item_to_dict_element(OuterModelRecursiveTest(...)) -> dict representation
+        #       `current_depth (1) >= max_depth (0)` is TRUE. Returns processed_node_inner.
+        # So the OuterModelRecursiveTest is fully converted because its conversion happens before the depth check for its *elements*.
+        # The line for `else 0` is definitely hit.
+        # With effective_max_depth = 0 (due to recursive=False), _recursive_apply_to_dict
+        # will call _convert_item_to_dict_element on plain_dict_with_model, which returns it as is.
+        # Then, because current_depth (0) >= max_depth (0), it returns this dict without processing its values.
+        # So, the OuterModelRecursiveTest instance remains an object.
+
+        # We need to capture the instance to compare it.
+        inner_model_for_plain_dict = InnerModelRecursiveTest(c=2, d="d2")
+        outer_model_for_plain_dict = OuterModelRecursiveTest(
+            a=1, b=inner_model_for_plain_dict, e=[]
+        )
+        plain_dict_with_model_for_assertion = {"key": outer_model_for_plain_dict}
+
+        result_plain = to_dict(
+            plain_dict_with_model_for_assertion
+        )  # recursive=False by default
+
+        expected_plain = {
+            "key": outer_model_for_plain_dict  # The model instance itself, not its dict form
+        }
+        assert result_plain == expected_plain
 
 
 # --- Helper Pydantic Models for tests ---
