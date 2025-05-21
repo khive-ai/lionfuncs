@@ -7,6 +7,7 @@ from lionfuncs import hash_utils
 # TODO: Add tests for hash_utils.py to achieve >= 80% coverage.
 # Missing lines from initial report: 45, 51, 58-62, 70-71, 78-81, 110, 116-117
 
+
 class TestGenerateHashableRepresentation:
     """Tests for _generate_hashable_representation."""
 
@@ -24,9 +25,11 @@ class TestGenerateHashableRepresentation:
         rep_empty = hash_utils._generate_hashable_representation([])
         assert rep_empty == (hash_utils._TYPE_MARKER_LIST, tuple())
         rep_nested = hash_utils._generate_hashable_representation([1, [2, 3]])
-        expected_nested_list_rep = (hash_utils._TYPE_MARKER_LIST, (2,3))
-        assert rep_nested == (hash_utils._TYPE_MARKER_LIST, (1, expected_nested_list_rep))
-
+        expected_nested_list_rep = (hash_utils._TYPE_MARKER_LIST, (2, 3))
+        assert rep_nested == (
+            hash_utils._TYPE_MARKER_LIST,
+            (1, expected_nested_list_rep),
+        )
 
     def test_tuple(self):
         # Covers L51
@@ -38,14 +41,10 @@ class TestGenerateHashableRepresentation:
     def test_dict(self):
         rep = hash_utils._generate_hashable_representation({"b": 2, "a": 1})
         # Keys are stringified and sorted: ("a",1), ("b",2)
-        expected_dict_rep = (
-            hash_utils._TYPE_MARKER_DICT,
-            ( ("a", 1), ("b", 2) )
-        )
+        expected_dict_rep = (hash_utils._TYPE_MARKER_DICT, (("a", 1), ("b", 2)))
         assert rep == expected_dict_rep
         rep_empty = hash_utils._generate_hashable_representation({})
         assert rep_empty == (hash_utils._TYPE_MARKER_DICT, tuple())
-
 
     def test_set_comparable_elements(self):
         rep = hash_utils._generate_hashable_representation({3, 1, 2})
@@ -64,11 +63,10 @@ class TestGenerateHashableRepresentation:
         # Expected order: 1 (as int), then "a" (as str)
         assert rep == (hash_utils._TYPE_MARKER_SET, (1, "a"))
 
-        mixed_set_2 = {"b", 2, True} # True will be 1 for sorting purposes with int
+        mixed_set_2 = {"b", 2, True}  # True will be 1 for sorting purposes with int
         # Order: True (bool, treated like int 1), 2 (int), "b" (str)
         rep2 = hash_utils._generate_hashable_representation(mixed_set_2)
         assert rep2 == (hash_utils._TYPE_MARKER_SET, (True, 2, "b"))
-
 
     def test_frozenset_comparable_elements(self):
         # Covers L59
@@ -84,14 +82,17 @@ class TestGenerateHashableRepresentation:
     class CustomObjectStr:
         def __init__(self, value):
             self.value = value
+
         def __str__(self):
             return f"CustomStr({self.value})"
 
     class CustomObjectRepr:
         def __init__(self, value):
             self.value = value
-        def __str__(self): # Make str fail
+
+        def __str__(self):  # Make str fail
             raise TypeError("str failed")
+
         def __repr__(self):
             return f"CustomRepr({self.value})"
 
@@ -115,14 +116,16 @@ class TestGenerateHashableRepresentation:
         # _generate_hashable_representation of this dict:
         # (_TYPE_MARKER_DICT, (("x",1), ("y","test")))
         # Final result: (_TYPE_MARKER_PYDANTIC, above_dict_rep)
-        
+
         expected_inner_dict_rep = (
             hash_utils._TYPE_MARKER_DICT,
-            ( ("x", 1), ("y", "test") ) # Keys sorted
+            (("x", 1), ("y", "test")),  # Keys sorted
         )
         expected_rep = (hash_utils._TYPE_MARKER_PYDANTIC, expected_inner_dict_rep)
-        
-        assert hash_utils._generate_hashable_representation(model_instance) == expected_rep
+
+        assert (
+            hash_utils._generate_hashable_representation(model_instance) == expected_rep
+        )
 
 
 class TestHashDict:
@@ -136,24 +139,26 @@ class TestHashDict:
 
     def test_hash_dict_deterministic(self):
         d1 = {"a": 1, "b": 2}
-        d2 = {"b": 2, "a": 1} # Same content, different order
+        d2 = {"b": 2, "a": 1}  # Same content, different order
         d3 = {"a": 1, "c": 3}
         assert hash_utils.hash_dict(d1) == hash_utils.hash_dict(d2)
         assert hash_utils.hash_dict(d1) != hash_utils.hash_dict(d3)
 
     def test_hash_list_tuple_deterministic(self):
         l1 = [1, {"a": 10, "b": 20}, 3]
-        l2 = [1, {"b": 20, "a": 10}, 3] # Inner dict order changed
+        l2 = [1, {"b": 20, "a": 10}, 3]  # Inner dict order changed
         t1 = (1, {"a": 10, "b": 20}, 3)
         t2 = (1, {"b": 20, "a": 10}, 3)
-        
+
         assert hash_utils.hash_dict(l1) == hash_utils.hash_dict(l2)
         assert hash_utils.hash_dict(t1) == hash_utils.hash_dict(t2)
-        assert hash_utils.hash_dict(l1) != hash_utils.hash_dict(t1) # List and tuple should have different hashes
+        assert hash_utils.hash_dict(l1) != hash_utils.hash_dict(
+            t1
+        )  # List and tuple should have different hashes
 
     def test_hash_set_frozenset_deterministic(self):
         s1 = {1, "a", (True, None)}
-        s2 = {"a", (True, None), 1} # Different order
+        s2 = {"a", (True, None), 1}  # Different order
         fs1 = frozenset(s1)
         fs2 = frozenset(s2)
 
@@ -164,14 +169,13 @@ class TestHashDict:
         # The _generate_hashable_representation adds type markers, so they will be different.
         assert hash_utils.hash_dict(s1) != hash_utils.hash_dict(fs1)
 
-
     def test_hash_pydantic_model_deterministic(self):
         class Model(hash_utils.PydanticBaseModel):
             name: str
             value: int
-        
+
         m1 = Model(name="test", value=1)
-        m2 = Model(value=1, name="test") # Different field order in instantiation
+        m2 = Model(value=1, name="test")  # Different field order in instantiation
         m3 = Model(name="test", value=2)
 
         assert hash_utils.hash_dict(m1) == hash_utils.hash_dict(m2)
@@ -180,59 +184,76 @@ class TestHashDict:
     def test_hash_dict_strict_mode(self):
         # Covers L110
         # Create a mutable object (list) inside a dict
-        original_data = {"a": [1, 2]}
-        data_copy_for_hash = {"a": [1, 2]} # Ensure we hash a copy for comparison
-        
+        data_copy_for_hash = {"a": [1, 2]}  # Ensure we hash a copy for comparison
+
         # Hash with strict=True
-        hash_val_strict = hash_utils.hash_dict(data_copy_for_hash, strict=True)
-        
+        # The variable hash_val_strict was previously assigned but not used.
+        # It's removed to satisfy ruff F841.
+        # The purpose of this test is to ensure that hash_dict with strict=True
+        # can handle mutable objects by creating a deep copy.
+        # We don't need to assert the value of the hash itself for this specific coverage.
+        hash_utils.hash_dict(data_copy_for_hash, strict=True)
+
         # Modify the original_data AFTER the copy used for hashing would have been made by strict=True
         # This change should not affect hash_val_strict if deepcopy worked.
         # If strict=False, and original_data was passed, this modification *before* hashing would change the hash.
         # The test here is that strict=True isolates the hashing process from original object mutations.
-        
+
         # To test it properly, we need to see if the hash of the original, modified object is different.
-        original_data_mutated = {"a": [1, 2]} # Start fresh for this
-        hash_before_mutation_strict = hash_utils.hash_dict(original_data_mutated, strict=True)
-        original_data_mutated["a"].append(3) # Mutate it
-        hash_after_mutation_strict = hash_utils.hash_dict(original_data_mutated, strict=True)
+        original_data_mutated = {"a": [1, 2]}  # Start fresh for this
+        hash_before_mutation_strict = hash_utils.hash_dict(
+            original_data_mutated, strict=True
+        )
+        original_data_mutated["a"].append(3)  # Mutate it
+        hash_after_mutation_strict = hash_utils.hash_dict(
+            original_data_mutated, strict=True
+        )
 
         assert hash_before_mutation_strict != hash_after_mutation_strict
 
         # And confirm that if strict was False, the hash would be based on the current state
         original_data_mutated_nostrict = {"a": [1, 2]}
         # hash_utils._generate_hashable_representation will process current state
-        hash_nostrict_before = hash_utils.hash_dict(original_data_mutated_nostrict, strict=False)
+        hash_nostrict_before = hash_utils.hash_dict(
+            original_data_mutated_nostrict, strict=False
+        )
         original_data_mutated_nostrict["a"].append(3)
-        hash_nostrict_after = hash_utils.hash_dict(original_data_mutated_nostrict, strict=False)
+        hash_nostrict_after = hash_utils.hash_dict(
+            original_data_mutated_nostrict, strict=False
+        )
         assert hash_nostrict_before != hash_nostrict_after
-        
-        # Check that the initial strict hash is repeatable
-        data_for_repeat = {"a": [1,2]}
-        assert hash_utils.hash_dict(data_for_repeat, strict=True) == hash_utils.hash_dict({"a":[1,2]}, strict=True)
 
+        # Check that the initial strict hash is repeatable
+        data_for_repeat = {"a": [1, 2]}
+        assert hash_utils.hash_dict(
+            data_for_repeat, strict=True
+        ) == hash_utils.hash_dict({"a": [1, 2]}, strict=True)
 
     def test_unhashable_representation_raises_typeerror(self):
         # Covers L116-L117
         # This requires _generate_hashable_representation to return something unhashable.
         # The current _generate_hashable_representation is designed to always return hashable tuples/primitives.
         # To test this, we would need to mock _generate_hashable_representation or make it return an unhashable type.
-        
+
         original_generator = hash_utils._generate_hashable_representation
         try:
             # Mock _generate_hashable_representation to return a list (which is unhashable)
             def mock_unhashable_generator(item):
                 if item == "trigger_unhashable":
-                    return ["this", "is", "a", "list"] # Lists are not hashable
-                return original_generator(item) # Fallback for other calls
+                    return ["this", "is", "a", "list"]  # Lists are not hashable
+                return original_generator(item)  # Fallback for other calls
 
             hash_utils._generate_hashable_representation = mock_unhashable_generator
-            
-            with pytest.raises(TypeError, match="The generated representation for the input data was not hashable"):
+
+            with pytest.raises(
+                TypeError,
+                match="The generated representation for the input data was not hashable",
+            ):
                 hash_utils.hash_dict("trigger_unhashable")
 
         finally:
             # Restore original function
             hash_utils._generate_hashable_representation = original_generator
+
 
 # Add more specific test classes or functions below as needed.
