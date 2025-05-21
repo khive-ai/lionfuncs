@@ -19,7 +19,8 @@ from pydantic import BaseModel, Field
 from pydantic_core import PydanticUndefined
 
 from lionfuncs.concurrency import CapacityLimiter, Semaphore
-from lionfuncs.utils import force_async, is_coro_func, to_list
+from lionfuncs.to_list import to_list
+from lionfuncs.utils import force_async, is_coro_func
 
 T = TypeVar("T")
 R = TypeVar("R")

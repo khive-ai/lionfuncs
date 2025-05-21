@@ -5,7 +5,6 @@ from typing import Any
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic_core import PydanticUndefined
 
-
 __all__ = ("to_list",)
 
 DICT_HASH_FUNC = None
@@ -106,6 +105,7 @@ def to_list(
     use_values: bool = False,
     flatten_tuple_set: bool = False,
 ) -> list[Any]:
+    global DICT_HASH_FUNC
     """
     Converts various input types into a list with optional transformations like
     flattening, removing None/undefined values, ensuring uniqueness, extracting

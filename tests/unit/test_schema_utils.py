@@ -4,7 +4,7 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from lionfuncs.schema_utils import (
+from lionfuncs.oai_schema_utils import (
     _extract_docstring_parts,
     _get_type_name,
     function_to_openai_schema,

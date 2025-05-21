@@ -1,12 +1,11 @@
 import copy
 import timeit
+from collections.abc import Callable, Mapping
 from enum import Enum
 from typing import Any, Literal
-from collections.abc import Mapping, Callable
 
 from pydantic import BaseModel
 from pydantic_core import PydanticUndefined
-
 
 DEFAULT_JSON_PARSER = None
 
@@ -84,23 +83,35 @@ def _convert_item_to_dict_element(
         final_parsed_result = item
 
         if custom_str_parser:
-            parser_to_use = lambda s: custom_str_parser(s, **parser_args)
+
+            def custom_parser_wrapper(s):
+                return custom_str_parser(s, **parser_args)
+
+            parser_to_use = custom_parser_wrapper
         elif str_type_for_parsing == "json":
             from lionfuncs.parsers import fuzzy_parse_json
 
             json_parser_func = (
                 fuzzy_parse_json if fuzzy_parse_strings else DEFAULT_JSON_PARSER
             )
-            parser_to_use = lambda s: json_parser_func(s, **parser_args)
+
+            def json_parser_wrapper(s):
+                return json_parser_func(s, **parser_args)
+
+            parser_to_use = json_parser_wrapper
         elif str_type_for_parsing == "xml":
             xml_args_local = {
                 k: parser_args.pop(k)
                 for k in ["remove_root", "root_tag"]
                 if k in parser_args
             }
-            parser_to_use = lambda s_xml: _internal_xml_to_dict_parser(
-                s_xml, **xml_args_local, **parser_args
-            )
+
+            def xml_parser_wrapper(s_xml):
+                return _internal_xml_to_dict_parser(
+                    s_xml, **xml_args_local, **parser_args
+                )
+
+            parser_to_use = xml_parser_wrapper
 
         if parser_to_use:
             try:
@@ -138,7 +149,7 @@ def _convert_item_to_dict_element(
         if hasattr(item, "dict") and callable(item.dict):
             try:
                 return item.dict(**serializer_kwargs)
-            except:
+            except Exception:
                 pass
         if hasattr(item, "__dict__"):
             return vars(item)
@@ -484,7 +495,7 @@ if __name__ == "__main__":
                 print(f"    ERROR: {type(e).__name__}: {str(e)[:110]}")
 
     # --- Benchmarking ---
-    print(f"\n--- Benchmarking to_dict_lionagi ---")
+    print("\n--- Benchmarking to_dict_lionagi ---")
     benchmark_scenarios = [
         ("Pydantic(NoRec)", to_dict_test_data[1][1], {}),
         (
