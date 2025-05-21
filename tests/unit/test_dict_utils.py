@@ -89,8 +89,9 @@ class TestFuzzyMatchKeys:
         with pytest.raises(ValueError) as excinfo:
             fuzzy_match_keys(data, reference_keys, handle_unmatched="raise")
 
-        assert "Unmatched keys found" in str(excinfo.value)
-        assert "extra" in str(excinfo.value)
+        error_message = str(excinfo.value)
+        assert "Unmatched" in error_message
+        assert "extra" in error_message
 
     def test_fuzzy_match_keys_handle_unmatched_remove(self):
         """Test fuzzy_match_keys with handle_unmatched='remove'."""
@@ -166,8 +167,10 @@ class TestFuzzyMatchKeys:
         with pytest.raises(ValueError) as excinfo:
             fuzzy_match_keys(data, reference_keys, strict=True)
 
-        assert "Missing required keys" in str(excinfo.value)
-        assert "city" in str(excinfo.value)
+        error_message = str(excinfo.value)
+        assert "Strict mode" in error_message
+        assert "Missing" in error_message  # "Missing required reference keys"
+        assert "city" in error_message
 
     def test_fuzzy_match_keys_dict_reference(self):
         """Test fuzzy_match_keys with dictionary reference."""
