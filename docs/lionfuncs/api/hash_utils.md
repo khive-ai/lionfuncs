@@ -4,7 +4,9 @@ title: "lionfuncs.hash_utils"
 
 # lionfuncs.hash_utils
 
-The `hash_utils` module provides utilities for creating deterministic hashes for complex Python data structures, including dictionaries, lists, sets, and Pydantic models.
+The `hash_utils` module provides utilities for creating deterministic hashes for
+complex Python data structures, including dictionaries, lists, sets, and
+Pydantic models.
 
 ## Functions
 
@@ -16,14 +18,21 @@ def hash_dict(data: any, strict: bool = False) -> int
 
 Computes a deterministic hash for various Python data structures.
 
-This function creates a stable, deterministic hash for complex data structures including dictionaries, Pydantic BaseModels, lists, tuples, sets, frozensets, and primitives. It's particularly useful for finding unique objects within a collection or implementing caching mechanisms.
+This function creates a stable, deterministic hash for complex data structures
+including dictionaries, Pydantic BaseModels, lists, tuples, sets, frozensets,
+and primitives. It's particularly useful for finding unique objects within a
+collection or implementing caching mechanisms.
 
-The hash is deterministic within the same Python process run (respecting PYTHONHASHSEED for built-in hash behavior on strings, bytes, etc.). It's suitable for tasks like finding unique objects within a collection during a single program execution.
+The hash is deterministic within the same Python process run (respecting
+PYTHONHASHSEED for built-in hash behavior on strings, bytes, etc.). It's
+suitable for tasks like finding unique objects within a collection during a
+single program execution.
 
 #### Parameters
 
 - **data** (`any`): The Python object to hash.
-- **strict** (`bool`, optional): If True, will make a deep copy of the input data to ensure immutability. Defaults to `False`.
+- **strict** (`bool`, optional): If True, will make a deep copy of the input
+  data to ensure immutability. Defaults to `False`.
 
 #### Returns
 
@@ -31,7 +40,8 @@ The hash is deterministic within the same Python process run (respecting PYTHONH
 
 #### Raises
 
-- `TypeError`: If the generated internal representation of the data is not hashable, though this is unlikely with the current implementation.
+- `TypeError`: If the generated internal representation of the data is not
+  hashable, though this is unlikely with the current implementation.
 
 #### Example
 
@@ -79,6 +89,10 @@ mutable_data["list"].append(4)
 
 ## Internal Functions
 
-The following functions are used internally by the module and are not part of the public API:
+The following functions are used internally by the module and are not part of
+the public API:
 
-- `_generate_hashable_representation(item: any) -> any`: Recursively converts a Python object into a stable, hashable representation. This ensures that logically identical but structurally different inputs (e.g., dicts with different key orders) produce the same representation.
+- `_generate_hashable_representation(item: any) -> any`: Recursively converts a
+  Python object into a stable, hashable representation. This ensures that
+  logically identical but structurally different inputs (e.g., dicts with
+  different key orders) produce the same representation.

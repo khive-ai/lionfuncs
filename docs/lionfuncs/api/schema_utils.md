@@ -4,7 +4,9 @@ title: "lionfuncs.oai_schema_utils"
 
 # lionfuncs.oai_schema_utils
 
-The `oai_schema_utils` module provides utilities for generating and manipulating schemas, with a focus on creating OpenAI-compatible function schemas from Python functions and Pydantic models.
+The `oai_schema_utils` module provides utilities for generating and manipulating
+schemas, with a focus on creating OpenAI-compatible function schemas from Python
+functions and Pydantic models.
 
 ## Functions
 
@@ -16,7 +18,9 @@ def function_to_openai_schema(func: Callable) -> dict[str, Any]
 
 Generate an OpenAI function schema from a Python function.
 
-Analyzes a function's signature, type hints, and docstring to generate a schema compatible with OpenAI's function calling API. This is particularly useful for creating function descriptions for OpenAI's function calling features.
+Analyzes a function's signature, type hints, and docstring to generate a schema
+compatible with OpenAI's function calling API. This is particularly useful for
+creating function descriptions for OpenAI's function calling features.
 
 #### Parameters
 
@@ -24,7 +28,8 @@ Analyzes a function's signature, type hints, and docstring to generate a schema 
 
 #### Returns
 
-- `dict[str, Any]`: A schema describing the function, including its name, description, and parameter details
+- `dict[str, Any]`: A schema describing the function, including its name,
+  description, and parameter details
 
 #### Example
 
@@ -100,7 +105,9 @@ def pydantic_model_to_openai_schema(
 
 Convert a Pydantic model to an OpenAI parameter schema.
 
-This function takes a Pydantic model class and converts it to a schema format compatible with OpenAI's function calling API. It now requires a function name and description to create a complete function schema.
+This function takes a Pydantic model class and converts it to a schema format
+compatible with OpenAI's function calling API. It now requires a function name
+and description to create a complete function schema.
 
 #### Parameters
 
@@ -110,7 +117,8 @@ This function takes a Pydantic model class and converts it to a schema format co
 
 #### Returns
 
-- `dict[str, Any]`: A complete function schema for use with OpenAI's function calling API
+- `dict[str, Any]`: A complete function schema for use with OpenAI's function
+  calling API
 
 #### Example
 
@@ -174,12 +182,17 @@ Output:
 
 ## Internal Functions
 
-The following functions are used internally by the module and are not part of the public API:
+The following functions are used internally by the module and are not part of
+the public API:
 
-- `_get_type_name(annotation: Any) -> str`: Get a string representation of a type annotation.
-- `_extract_docstring_parts(docstring: str | None) -> tuple[str, dict[str, str]]`: Extract function description and parameter descriptions from docstring.
-- `_PY_TO_JSON_TYPE_MAP`: Dictionary mapping Python type names to JSON schema type names.
+- `_get_type_name(annotation: Any) -> str`: Get a string representation of a
+  type annotation.
+- `_extract_docstring_parts(docstring: str | None) -> tuple[str, dict[str, str]]`:
+  Extract function description and parameter descriptions from docstring.
+- `_PY_TO_JSON_TYPE_MAP`: Dictionary mapping Python type names to JSON schema
+  type names.
 
 ## Notes
 
-This module was previously named `schema_utils.py` but has been renamed to `oai_schema_utils.py` to better reflect its focus on OpenAI schema generation.
+This module was previously named `schema_utils.py` but has been renamed to
+`oai_schema_utils.py` to better reflect its focus on OpenAI schema generation.

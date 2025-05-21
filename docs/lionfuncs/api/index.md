@@ -14,12 +14,16 @@ functions, and decorators in the `lionfuncs` package.
 - [**utils**](utils.md): General utility functions.
 - [**errors**](errors.md): Custom exception classes.
 - [**parsers**](parsers.md): Robust parsing utilities for various data formats.
-- [**dict_utils**](dict_utils.md): Utilities for advanced dictionary manipulation.
+- [**dict_utils**](dict_utils.md): Utilities for advanced dictionary
+  manipulation.
 - [**format_utils**](format_utils.md): Utilities for formatting data into
   human-readable strings.
-- [**to_dict**](to_dict.md): Utilities for converting various Python objects to dictionaries.
-- [**to_list**](to_list.md): Utilities for converting various Python objects to lists.
-- [**hash_utils**](hash_utils.md): Utilities for creating deterministic hashes for complex data structures.
+- [**to_dict**](to_dict.md): Utilities for converting various Python objects to
+  dictionaries.
+- [**to_list**](to_list.md): Utilities for converting various Python objects to
+  lists.
+- [**hash_utils**](hash_utils.md): Utilities for creating deterministic hashes
+  for complex data structures.
 - [**schema_utils**](schema_utils.md): Utilities for generating and manipulating
   schemas (renamed to oai_schema_utils.py).
 
@@ -139,12 +143,14 @@ The `lionfuncs` package exposes the following public APIs:
 
 ### lionfuncs.parsers
 
-- `fuzzy_parse_json(str_to_parse)`: Attempts to parse a JSON-like string into a Python object, trying several common fixes for non-standard JSON syntax.
+- `fuzzy_parse_json(str_to_parse)`: Attempts to parse a JSON-like string into a
+  Python object, trying several common fixes for non-standard JSON syntax.
 
 ### lionfuncs.dict_utils
 
 - `fuzzy_match_keys(data_dict, reference_keys, threshold=0.8, default_method="wratio", jaro_winkler_prefix_weight=0.1, case_sensitive=False, handle_unmatched="ignore", fill_value=PydanticUndefined, fill_mapping=None, strict=False)`:
-  Match dictionary keys fuzzily against reference keys, returning a new dictionary.
+  Match dictionary keys fuzzily against reference keys, returning a new
+  dictionary.
 
 ### lionfuncs.format_utils
 
@@ -163,11 +169,12 @@ The `lionfuncs` package exposes the following public APIs:
 
 ### lionfuncs.hash_utils
 
-- `hash_dict(data, strict=False)`:
-  Computes a deterministic hash for various Python data structures.
+- `hash_dict(data, strict=False)`: Computes a deterministic hash for various
+  Python data structures.
 
 ### lionfuncs.oai_schema_utils (formerly schema_utils)
 
 - `function_to_openai_schema(func)`: Generate an OpenAI function schema from a
   Python function.
-- `pydantic_model_to_openai_schema(model_class, function_name, function_description)`: Convert a Pydantic model to an OpenAI function schema.
+- `pydantic_model_to_openai_schema(model_class, function_name, function_description)`:
+  Convert a Pydantic model to an OpenAI function schema.

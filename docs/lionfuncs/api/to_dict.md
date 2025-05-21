@@ -4,7 +4,9 @@ title: "lionfuncs.to_dict"
 
 # lionfuncs.to_dict
 
-The `to_dict` module provides robust utilities for converting various Python objects to dictionaries, with extensive support for different types and conversion options.
+The `to_dict` module provides robust utilities for converting various Python
+objects to dictionaries, with extensive support for different types and
+conversion options.
 
 ## Functions
 
@@ -41,23 +43,37 @@ def to_dict(
 
 Convert various Python objects to a dictionary representation.
 
-This function handles a wide range of input types, including Pydantic models, dataclasses, enums, mappings, and more. It provides extensive options for customizing the conversion process.
+This function handles a wide range of input types, including Pydantic models,
+dataclasses, enums, mappings, and more. It provides extensive options for
+customizing the conversion process.
 
 #### Parameters
 
 - **input_** (`Any`): The object to convert to a dictionary
-- **use_model_dump** (`bool`, optional): Whether to prefer `model_dump()` over `dict()` for Pydantic models. Defaults to `True`.
-- **use_enum_values** (`bool`, optional): If True, enum members are converted to their values. Defaults to `False`.
-- **parse_strings** (`bool`, optional): If True, attempts to parse string values as JSON or XML. Defaults to `False`.
-- **str_type_for_parsing** (`Literal["json", "xml"] | None`, optional): The format to use when parsing strings. Defaults to `"json"`.
-- **fuzzy_parse_strings** (`bool`, optional): If True, uses fuzzy parsing for strings. Defaults to `False`.
-- **custom_str_parser** (`Callable[[str], Any] | None`, optional): Custom function for parsing strings. Defaults to `None`.
-- **recursive** (`bool`, optional): If True, recursively converts nested objects. Defaults to `False`.
-- **max_recursive_depth** (`int`, optional): Maximum depth for recursive conversion. Defaults to `5`.
-- **recursive_stop_types** (`tuple[type[Any], ...]`, optional): Types that stop recursive conversion. Defaults to primitive types.
-- **suppress_errors** (`bool`, optional): If True, returns default_on_error when errors occur. Defaults to `False`.
-- **default_on_error** (`dict[str, Any] | None`, optional): Default value to return on error. Defaults to `None`.
-- **convert_top_level_iterable_to_dict** (`bool`, optional): If True, converts top-level iterables to dictionaries. Defaults to `False`.
+- **use_model_dump** (`bool`, optional): Whether to prefer `model_dump()` over
+  `dict()` for Pydantic models. Defaults to `True`.
+- **use_enum_values** (`bool`, optional): If True, enum members are converted to
+  their values. Defaults to `False`.
+- **parse_strings** (`bool`, optional): If True, attempts to parse string values
+  as JSON or XML. Defaults to `False`.
+- **str_type_for_parsing** (`Literal["json", "xml"] | None`, optional): The
+  format to use when parsing strings. Defaults to `"json"`.
+- **fuzzy_parse_strings** (`bool`, optional): If True, uses fuzzy parsing for
+  strings. Defaults to `False`.
+- **custom_str_parser** (`Callable[[str], Any] | None`, optional): Custom
+  function for parsing strings. Defaults to `None`.
+- **recursive** (`bool`, optional): If True, recursively converts nested
+  objects. Defaults to `False`.
+- **max_recursive_depth** (`int`, optional): Maximum depth for recursive
+  conversion. Defaults to `5`.
+- **recursive_stop_types** (`tuple[type[Any], ...]`, optional): Types that stop
+  recursive conversion. Defaults to primitive types.
+- **suppress_errors** (`bool`, optional): If True, returns default_on_error when
+  errors occur. Defaults to `False`.
+- **default_on_error** (`dict[str, Any] | None`, optional): Default value to
+  return on error. Defaults to `None`.
+- **convert_top_level_iterable_to_dict** (`bool`, optional): If True, converts
+  top-level iterables to dictionaries. Defaults to `False`.
 - **kwargs** (`Any`): Additional arguments passed to serialization methods.
 
 #### Returns
@@ -125,8 +141,12 @@ print(result)  # {'error': 'Conversion failed'}
 
 ## Internal Functions
 
-The following functions are used internally by the module and are not part of the public API:
+The following functions are used internally by the module and are not part of
+the public API:
 
-- `_internal_xml_to_dict_parser(xml_string: str, remove_root: bool = True, **kwargs: Any) -> dict[str, Any]`: Parse XML strings to dictionaries.
-- `_convert_item_to_dict_element(item: Any, use_model_dump: bool, use_enum_values: bool, parse_strings: bool, str_type_for_parsing: Literal["json", "xml"] | None, fuzzy_parse_strings: bool, custom_str_parser: Callable[[str], Any] | None, **serializer_kwargs: Any) -> Any`: Convert a single item to a dictionary element.
-- `_recursive_apply_to_dict(current_data: Any, current_depth: int, max_depth: int, stop_types: tuple[type[Any], ...], conversion_params: dict[str, Any]) -> Any`: Recursively apply dictionary conversion to nested structures.
+- `_internal_xml_to_dict_parser(xml_string: str, remove_root: bool = True, **kwargs: Any) -> dict[str, Any]`:
+  Parse XML strings to dictionaries.
+- `_convert_item_to_dict_element(item: Any, use_model_dump: bool, use_enum_values: bool, parse_strings: bool, str_type_for_parsing: Literal["json", "xml"] | None, fuzzy_parse_strings: bool, custom_str_parser: Callable[[str], Any] | None, **serializer_kwargs: Any) -> Any`:
+  Convert a single item to a dictionary element.
+- `_recursive_apply_to_dict(current_data: Any, current_depth: int, max_depth: int, stop_types: tuple[type[Any], ...], conversion_params: dict[str, Any]) -> Any`:
+  Recursively apply dictionary conversion to nested structures.
