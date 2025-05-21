@@ -4,9 +4,7 @@ title: "lionfuncs.format_utils"
 
 # lionfuncs.format_utils
 
-The `format_utils` module provides utilities for formatting data into
-human-readable strings, with support for various output formats and special
-handling for Jupyter notebooks.
+The `format_utils` module provides utilities for formatting data into human-readable strings, with support for various output formats and special handling for Jupyter notebooks.
 
 ## Functions
 
@@ -32,21 +30,15 @@ Formats data in a human-readable way, with options for different formats:
 - "repr": Python's repr() format
 - "auto": Defaults to "yaml_like"
 
-The function automatically detects if it's running in a Jupyter notebook
-environment and can adjust the output format accordingly (adding markdown code
-blocks).
+The function automatically detects if it's running in a Jupyter notebook environment and can adjust the output format accordingly (adding markdown code blocks).
 
 #### Parameters
 
 - **data** (`Any`): The data to format (can be any type)
-- **format_type** (`str`, optional): The format to use ("auto", "yaml_like",
-  "json", or "repr"). Defaults to `"auto"`.
-- **indent** (`int`, optional): Number of spaces per indentation level. Defaults
-  to `2`.
-- **max_depth** (`int | None`, optional): Maximum recursion depth for nested
-  structures. Defaults to `None`.
-- **in_notebook_override** (`bool | None`, optional): Override notebook
-  detection (for testing). Defaults to `None`.
+- **format_type** (`str`, optional): The format to use ("auto", "yaml_like", "json", or "repr"). Defaults to `"auto"`.
+- **indent** (`int`, optional): Number of spaces per indentation level. Defaults to `2`.
+- **max_depth** (`int | None`, optional): Maximum recursion depth for nested structures. Defaults to `None`.
+- **in_notebook_override** (`bool | None`, optional): Override notebook detection (for testing). Defaults to `None`.
 
 #### Returns
 
@@ -143,10 +135,11 @@ print(as_readable(data_with_multiline))
 
 ## Internal Functions
 
-The following functions are used internally by the module and are not part of
-the public API:
+The following functions are used internally by the module and are not part of the public API:
 
-- `_is_in_notebook() -> bool`: Check if code is running in a Jupyter notebook
-  environment.
-- `_format_dict_yaml_like(data_dict: dict, indent_level: int = 0, base_indent: int = 2, max_depth: int | None = None, current_depth: int = 0) -> str`:
-  Format a dictionary in a YAML-like readable format.
+- `_is_in_notebook() -> bool`: Check if code is running in a Jupyter notebook environment.
+- `_format_dict_yaml_like(data_dict: dict, indent_level: int = 0, base_indent: int = 2, max_depth: int | None = None, current_depth: int = 0) -> str`: Format a dictionary in a YAML-like readable format.
+
+## Dependencies
+
+The module now uses the [`to_dict`](./to_dict.md) module for converting complex objects to dictionaries before formatting.

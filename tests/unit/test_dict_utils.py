@@ -22,10 +22,14 @@ class TestFuzzyMatchKeys:
         data = {"Name": "John", "Age": 30, "City": "New York"}
         reference_keys = ["name", "age", "city"]
 
-        # With case sensitivity, should not match
-        result = fuzzy_match_keys(data, reference_keys, case_sensitive=True)
-        assert "Name" in result  # Original keys preserved
-        assert "name" not in result
+        # With case sensitivity, should not match (using a high threshold to prevent fuzzy match of "Name" to "name")
+        result = fuzzy_match_keys(
+            data, reference_keys, case_sensitive=True, threshold=0.99
+        )
+        assert (
+            "Name" in result
+        )  # Original keys preserved because "Name" didn't exactly or fuzzily match "name"
+        assert "name" not in result  # "name" (lowercase) should not be a key
 
         # Without case sensitivity, should match
         result = fuzzy_match_keys(data, reference_keys, case_sensitive=False)
@@ -50,7 +54,8 @@ class TestFuzzyMatchKeys:
         assert any(key in result for key in reference_keys)
 
     @pytest.mark.parametrize(
-        "algorithm", ["levenshtein", "jaro_winkler", "sequence_matcher"]
+        "algorithm",
+        ["levenshtein", "jaro_winkler", "wratio"],  # Changed sequence_matcher to wratio
     )
     def test_fuzzy_match_keys_algorithms(self, algorithm):
         """Test fuzzy_match_keys with different similarity algorithms."""
@@ -84,8 +89,9 @@ class TestFuzzyMatchKeys:
         with pytest.raises(ValueError) as excinfo:
             fuzzy_match_keys(data, reference_keys, handle_unmatched="raise")
 
-        assert "Unmatched keys found" in str(excinfo.value)
-        assert "extra" in str(excinfo.value)
+        error_message = str(excinfo.value)
+        assert "Unmatched" in error_message
+        assert "extra" in error_message
 
     def test_fuzzy_match_keys_handle_unmatched_remove(self):
         """Test fuzzy_match_keys with handle_unmatched='remove'."""
@@ -161,8 +167,10 @@ class TestFuzzyMatchKeys:
         with pytest.raises(ValueError) as excinfo:
             fuzzy_match_keys(data, reference_keys, strict=True)
 
-        assert "Missing required keys" in str(excinfo.value)
-        assert "city" in str(excinfo.value)
+        error_message = str(excinfo.value)
+        assert "Strict mode" in error_message
+        assert "Missing" in error_message  # "Missing required reference keys"
+        assert "city" in error_message
 
     def test_fuzzy_match_keys_dict_reference(self):
         """Test fuzzy_match_keys with dictionary reference."""

@@ -1,6 +1,6 @@
 [project]
 name            = "lionfuncs"
-version         = "3.1.2"
+version         = "3.1.3"
 description     = "Hnady python functions"
 readme          = "README.md"
 requires-python = ">=3.10"
@@ -10,6 +10,8 @@ dependencies = [
     "httpx>=0.27",
     "aiofiles>=23.0.0",
     "pydantic>=2.0",
+    "xmltodict>=0.14.2",
+    "rapidfuzz>=3.13.0",
 ]
 
 [project.optional-dependencies]
@@ -17,15 +19,19 @@ media = [
     "pdf2image>=1.17",
 ]
 openai = [
-    "openai>=1.0.0",
+    "openai>=1.70.0",
 ]
 anthropic = [
     "anthropic>=0.5.0",
+]
+dirtyjson = [
+    "dirtyjson>=1.0.8",
 ]
 all = [
     "pdf2image>=1.17",
     "openai>=1.0.0",
     "anthropic>=0.5.0",
+    "dirtyjson>=1.0.8",
 ]
 
 [dependency-groups]

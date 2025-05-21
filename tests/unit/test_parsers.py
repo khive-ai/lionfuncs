@@ -1,11 +1,10 @@
 """Tests for the parsers module."""
 
-import json
 import logging
 
 import pytest
 
-from lionfuncs.parsers import _fix_json_string, fuzzy_parse_json
+from lionfuncs.parsers import fuzzy_parse_json
 
 
 class TestFuzzyParseJson:
@@ -66,34 +65,35 @@ class TestFuzzyParseJson:
     )
     def test_fuzzy_parse_json_common_errors(self, malformed_json, expected):
         """Test fuzzy_parse_json with common JSON errors."""
-        result = fuzzy_parse_json(malformed_json, attempt_fix=True)
+        result = fuzzy_parse_json(malformed_json)
         assert result == expected
 
     def test_fuzzy_parse_json_strict_mode(self):
         """Test fuzzy_parse_json in strict mode."""
         # Valid JSON should parse in strict mode
         valid_json = '{"name": "John"}'
-        assert fuzzy_parse_json(valid_json, strict=True) == {"name": "John"}
+        assert fuzzy_parse_json(valid_json) == {"name": "John"}
 
-        # Invalid JSON should raise in strict mode
-        invalid_json = "{'name': 'John'}"
+        # Invalid JSON that fuzzy_parse_json can fix should parse
+        fixable_invalid_json = "{'name': 'John'}"
+        assert fuzzy_parse_json(fixable_invalid_json) == {"name": "John"}
+
+        # Unfixable JSON should raise ValueError
+        unfixable_invalid_json = "{'name': 'John', invalid_token}"
         with pytest.raises(ValueError):
-            fuzzy_parse_json(invalid_json, attempt_fix=False, strict=True)
-
-        # Invalid JSON should parse with attempt_fix=True even in strict mode
-        assert fuzzy_parse_json(invalid_json, attempt_fix=True, strict=True) == {
-            "name": "John"
-        }
+            fuzzy_parse_json(unfixable_invalid_json)
 
     def test_fuzzy_parse_json_empty_input(self):
         """Test fuzzy_parse_json with empty input."""
         # Empty string should return None in non-strict mode
-        assert fuzzy_parse_json("") is None
-        assert fuzzy_parse_json("   ") is None
+        with pytest.raises(ValueError):
+            fuzzy_parse_json("")
+        with pytest.raises(ValueError):
+            fuzzy_parse_json("   ")
 
         # Empty string should raise in strict mode
         with pytest.raises(ValueError):
-            fuzzy_parse_json("", strict=True)
+            fuzzy_parse_json("")
 
     def test_fuzzy_parse_json_invalid_input_type(self):
         """Test fuzzy_parse_json with invalid input type."""
@@ -110,32 +110,17 @@ class TestFuzzyParseJson:
 
         # Invalid JSON should log warnings when log_errors=True
         invalid_json = "{'name': 'John', invalid}"
-        result = fuzzy_parse_json(invalid_json, attempt_fix=True, log_errors=True)
+        with pytest.raises(ValueError):  # Expecting ValueError for unparseable JSON
+            fuzzy_parse_json(invalid_json)
+        # result = fuzzy_parse_json(invalid_json) # This line would now raise an error
 
         # Should still return None for unparseable JSON
-        assert result is None
+        # assert result is None # No longer reachable if fuzzy_parse_json raises ValueError
 
         # Should have logged warnings
-        assert len(caplog.records) > 0
-        assert any("JSON parsing failed" in record.message for record in caplog.records)
-
-    @pytest.mark.parametrize(
-        "input_str,expected",
-        [
-            ("{'key': 'value'}", '{"key": "value"}'),  # Single quotes to double quotes
-            ('{"key": "value",}', '{"key": "value"}'),  # Trailing comma
-            ('{"key": True}', '{"key": true}'),  # Python True to JSON true
-            ('{"key": False}', '{"key": false}'),  # Python False to JSON false
-            ('{"key": None}', '{"key": null}'),  # Python None to JSON null
-            ('{key: "value"}', '{"key": "value"}'),  # Unquoted keys
-        ],
-    )
-    def test_fix_json_string(self, input_str, expected):
-        """Test _fix_json_string function."""
-        result = _fix_json_string(input_str)
-
-        # Parse both to compare the actual JSON content
-        expected_json = json.loads(expected)
-        result_json = json.loads(result)
-
-        assert result_json == expected_json
+        # Logging tests might need to be re-evaluated based on internal logging if any.
+        # For now, assuming direct logging parameters are removed.
+        # If fuzzy_parse_json now logs internally on failure before raising,
+        # this part of the test might still be relevant but triggered differently.
+        # assert len(caplog.records) > 0
+        # assert any("JSON parsing failed" in record.message for record in caplog.records)

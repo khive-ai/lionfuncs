@@ -732,6 +732,4 @@ class ServiceEndpointConfig(BaseModel):
         if self.transport_type == "http" and not self.base_url:
             raise ValueError("base_url must be provided for HTTP transport type.")
 
-    model_config = {
-        "extra": "forbid"  # Disallow extra fields not defined in the model
-    }
+    model_config = {"extra": "forbid"}  # Disallow extra fields not defined in the model

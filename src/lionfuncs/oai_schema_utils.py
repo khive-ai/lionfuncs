@@ -180,7 +180,11 @@ def function_to_openai_schema(func: Callable) -> dict[str, Any]:
     return schema
 
 
-def pydantic_model_to_openai_schema(model_class: type[BaseModel]) -> dict[str, Any]:
+def pydantic_model_to_openai_schema(
+    model_class: type[BaseModel],
+    function_name: str,
+    function_description: str,
+) -> dict[str, Any]:
     """Convert a Pydantic model to an OpenAI parameter schema.
 
     Args:
@@ -191,7 +195,6 @@ def pydantic_model_to_openai_schema(model_class: type[BaseModel]) -> dict[str, A
     """
     schema = model_class.model_json_schema()
 
-    # Adjust schema to match OpenAI's expected format
     result = {
         "type": "object",
         "properties": schema.get("properties", {}),
@@ -200,4 +203,11 @@ def pydantic_model_to_openai_schema(model_class: type[BaseModel]) -> dict[str, A
     if "required" in schema:
         result["required"] = schema["required"]
 
-    return result
+    return {
+        "type": "function",
+        "function": {
+            "name": function_name,
+            "description": function_description,
+            "parameters": result,
+        },
+    }

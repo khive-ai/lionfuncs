@@ -1,9 +1,10 @@
 """Utilities for formatting data into human-readable strings."""
 
 import json
+from collections.abc import Mapping  # Added import
 from typing import Any
 
-from lionfuncs.utils import to_dict
+from lionfuncs.to_dict import to_dict
 
 __all__ = ["as_readable"]
 
@@ -184,11 +185,41 @@ def as_readable(
     )
 
     # Convert data to a dict/list structure first for consistent formatting
-    try:
-        processed_data = to_dict(data, exclude_none=True)
-    except TypeError:
-        # If to_dict fails for the root object, use original
+    # Handle primitives and None directly for simple string representation
+    if isinstance(data, (str, int, float, bool)) or data is None:
         processed_data = data
+    else:
+        # For complex types, attempt to convert to dict for structured formatting
+        try:
+            # Use a non-None default_on_error to distinguish from successful None conversion
+            # and to see if to_dict truly failed to produce a structure.
+            # Pydantic models are common, check for BaseModel too.
+            from pydantic import (
+                BaseModel as PydanticBaseModel,  # Local import to avoid circular if not already loaded
+            )
+
+            temp_processed_data = to_dict(
+                data, exclude_none=True, suppress_errors=True, default_on_error={}
+            )
+
+            # If to_dict returns the default_on_error value ({})
+            # AND original data was not actually an empty dict or a Pydantic model that could dump to empty,
+            # it implies conversion to a meaningful dict failed. Fallback to original data for str representation.
+            is_original_empty_mapping = isinstance(data, Mapping) and not data
+            is_original_pydantic_model = isinstance(data, PydanticBaseModel)
+
+            if temp_processed_data == {} and not is_original_empty_mapping:
+                # If it's a Pydantic model that results in {}, that might be valid (e.g. all fields excluded/None)
+                # So, only fallback for non-Pydantic, non-empty-mapping types that became {}
+                if not is_original_pydantic_model:
+                    processed_data = data
+                else:  # It was a Pydantic model that resulted in {}, treat that as the processed form
+                    processed_data = temp_processed_data
+            else:
+                processed_data = temp_processed_data
+        except Exception:
+            # If any other error occurs during to_dict, fall back to original data
+            processed_data = data
 
     # Determine effective format
     effective_format = format_type.lower()

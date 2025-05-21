@@ -8,7 +8,7 @@ from typing import Any, Callable, Literal, TypeVar, Union
 
 import aiofiles
 
-from ..errors import LionFileError
+from lionfuncs.errors import LionFileError
 
 R = TypeVar("R")
 
