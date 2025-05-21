@@ -5,20 +5,19 @@ This module provides utilities for making HTTP requests, handling resilience pat
 and adapting to different SDK interfaces.
 """
 
-from .adapters import (
+from lionfuncs.network.adapters import (
     AbstractSDKAdapter,
     AnthropicAdapter,
     OpenAIAdapter,
     create_sdk_adapter,
 )
-from .client import AsyncAPIClient
-from .endpoint import Endpoint
-from .events import NetworkRequestEvent, RequestStatus
-from .executor import Executor
-from .imodel import iModel
-from .primitives import AdaptiveRateLimiter
-from .primitives import Endpoint as OldEndpoint  # Renamed to avoid conflict
-from .primitives import (
+from lionfuncs.network.client import AsyncAPIClient
+from lionfuncs.network.endpoint import Endpoint
+from lionfuncs.network.events import NetworkRequestEvent, RequestStatus
+from lionfuncs.network.executor import Executor
+from lionfuncs.network.imodel import iModel
+from lionfuncs.network.primitives import (
+    AdaptiveRateLimiter,
     EndpointConfig,
     EndpointRateLimiter,
     HeaderFactory,
@@ -28,7 +27,12 @@ from .primitives import (
     TokenBucketRateLimiter,
     match_endpoint,
 )
-from .resilience import CircuitBreaker, RetryConfig, circuit_breaker, with_retry
+from lionfuncs.network.resilience import (
+    CircuitBreaker,
+    RetryConfig,
+    circuit_breaker,
+    with_retry,
+)
 
 __all__ = [
     # Client
@@ -40,7 +44,6 @@ __all__ = [
     "RetryConfig",
     # Primitives
     "EndpointConfig",
-    "OldEndpoint",  # Renamed to avoid conflict
     "Endpoint",  # New Endpoint class
     "ServiceEndpointConfig",  # New config model
     "HttpTransportConfig",  # New HTTP config model

@@ -3,7 +3,7 @@
 import json
 from typing import Any
 
-from lionfuncs.utils import to_dict
+from lionfuncs.to_dict import to_dict
 
 __all__ = ["as_readable"]
 

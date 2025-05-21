@@ -2,7 +2,7 @@
 File system utilities for lionfuncs.
 """
 
-from .core import (
+from lionfuncs.file_system.core import (
     chunk_content,
     concat_files,
     create_path,
@@ -11,7 +11,7 @@ from .core import (
     read_file,
     save_to_file,
 )
-from .media import pdf_to_images, read_image_to_base64
+from lionfuncs.file_system.media import pdf_to_images, read_image_to_base64
 
 __all__ = [
     "chunk_content",

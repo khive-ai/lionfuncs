@@ -9,7 +9,7 @@ from typing import Any, Union
 
 import aiofiles
 
-from ..errors import LionFileError
+from lionfuncs.errors import LionFileError
 
 try:
     from pdf2image import convert_from_path

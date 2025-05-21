@@ -6,7 +6,7 @@ from typing import Optional
 import pytest
 from pydantic import BaseModel, Field
 
-from lionfuncs.utils import to_dict
+from lionfuncs.to_dict import to_dict
 
 
 class TestToDict:
