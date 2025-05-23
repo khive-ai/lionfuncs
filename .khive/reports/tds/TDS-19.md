@@ -240,7 +240,7 @@ from pydantic import BaseModel, Field, model_validator
 
 class HttpTransportConfig(BaseModel):
     # method: str = "POST" # Default HTTP method if not overridden at call time
-    # Other AsyncAPIClient specific configs can go here if not covered by client_constructor_kwargs
+    # Other AsyncAPIClient specific configs can go here if not covered by client_kwargs
     pass
 
 class SdkTransportConfig(BaseModel):
@@ -264,7 +264,7 @@ class ServiceEndpointConfig(BaseModel):
     # Keyword arguments passed directly to the constructor of AsyncAPIClient or the specific SDK client.
     # For AsyncAPIClient, this can include 'auth', 'event_hooks', etc.
     # For SDKs, this includes any specific init params for that SDK (e.g., 'organization' for OpenAI).
-    client_constructor_kwargs: Dict[str, Any] = Field(default_factory=dict)
+    client_kwargs: Dict[str, Any] = Field(default_factory=dict)
 
     # Specific configuration block for HTTP transport
     http_config: Optional[HttpTransportConfig] = Field(None, description="Configuration specific to HTTP transport.")
@@ -343,7 +343,7 @@ class Endpoint:
                 # Pass resilience configs if they are part of ServiceEndpointConfig and AsyncAPIClient accepts them
                 # retry_config=self.config.retry_config,
                 # circuit_breaker=self.config.circuit_breaker_config.build() if self.config.circuit_breaker_config else None,
-                **self.config.client_constructor_kwargs
+                **self.config.client_kwargs
             )
         elif self.config.transport_type == "sdk":
             # sdk_config is guaranteed by validator
@@ -351,7 +351,7 @@ class Endpoint:
             return create_sdk_adapter(
                 provider=sdk_conf.sdk_provider_name,
                 api_key=self.config.api_key, # api_key is passed to adapter factory
-                **self.config.client_constructor_kwargs
+                **self.config.client_kwargs
             )
         else:
             # This case should ideally be caught by Pydantic validation of transport_type
@@ -753,7 +753,7 @@ This change simplifies what `iModel` needs to construct for
 
 - **Risk:** Increased complexity in `ServiceEndpointConfig` to cater to diverse
   client/SDK options.
-  - **Mitigation:** Strive for a balance. Use `client_constructor_kwargs` and
+  - **Mitigation:** Strive for a balance. Use `client_kwargs` and
     `default_request_kwargs` for flexibility. Provide clear documentation and
     examples for common providers. Pydantic validation will help catch
     misconfigurations.
@@ -786,7 +786,7 @@ This change simplifies what `iModel` needs to construct for
     level. `ServiceEndpointConfig` will have optional fields for `RetryConfig`
     and `CircuitBreakerConfig` (or parameters to construct them). `Endpoint`
     will pass these to `AsyncAPIClient`'s constructor. For SDKs, if the SDK
-    supports similar configuration, `client_constructor_kwargs` can be used. If
+    supports similar configuration, `client_kwargs` can be used. If
     an SDK lacks resilience, `Endpoint` _could_ be enhanced to wrap
     `SDKAdapter.call` with `lionfuncs.network.resilience` utilities, but this is
     a V2 consideration to keep V1 simpler. `Executor` will _not_ implement its

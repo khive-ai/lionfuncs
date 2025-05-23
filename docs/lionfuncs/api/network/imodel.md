@@ -240,7 +240,7 @@ be configured for either HTTP or SDK transport:
 
 - `transport_type`: Set to "sdk"
 - `sdk_config`: Configuration for SDK transport (provider name, default method)
-- `client_constructor_kwargs`: Parameters for SDK client initialization
+- `client_kwargs`: Parameters for SDK client initialization
 - `default_request_kwargs`: Default parameters for all SDK method calls
 
 ## Usage Example

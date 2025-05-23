@@ -31,7 +31,7 @@ class TestServiceEndpointConfig:
         assert config.sdk_config is None
         assert config.timeout == 60.0  # Default timeout
         assert config.default_headers == {}  # Default empty headers
-        assert config.client_constructor_kwargs == {}  # Default empty kwargs
+        assert config.client_kwargs == {}  # Default empty kwargs
         assert config.default_request_kwargs == {}  # Default empty request kwargs
 
     def test_http_transport_config_missing_base_url(self):
@@ -63,7 +63,7 @@ class TestServiceEndpointConfig:
         assert config.http_config is None
         assert config.timeout == 60.0  # Default timeout
         assert config.default_headers == {}  # Default empty headers
-        assert config.client_constructor_kwargs == {}  # Default empty kwargs
+        assert config.client_kwargs == {}  # Default empty kwargs
         assert config.default_request_kwargs == {}  # Default empty request kwargs
 
     def test_sdk_transport_config_missing_sdk_config(self):
@@ -112,17 +112,17 @@ class TestServiceEndpointConfig:
 
         assert config.default_headers == custom_headers
 
-    def test_with_client_constructor_kwargs(self):
-        """Test config with client_constructor_kwargs."""
+    def test_with_client_kwargs(self):
+        """Test config with client_kwargs."""
         constructor_kwargs = {"follow_redirects": True}
         config = ServiceEndpointConfig(
             name="test_http",
             transport_type="http",
             base_url="https://api.example.com",
-            client_constructor_kwargs=constructor_kwargs,
+            client_kwargs=constructor_kwargs,
         )
 
-        assert config.client_constructor_kwargs == constructor_kwargs
+        assert config.client_kwargs == constructor_kwargs
 
     def test_with_default_request_kwargs(self):
         """Test config with default_request_kwargs."""

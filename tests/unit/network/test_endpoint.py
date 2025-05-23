@@ -62,7 +62,7 @@ class TestEndpoint:
                 base_url="https://api.example.com",
                 timeout=60.0,
                 headers={},
-                **{},  # Empty client_constructor_kwargs
+                **{},  # Empty client_kwargs
             )
 
     @pytest.mark.asyncio
@@ -81,7 +81,7 @@ class TestEndpoint:
             mock_create_adapter.assert_called_once_with(
                 provider="openai",
                 api_key="test_api_key",
-                **{},  # Empty client_constructor_kwargs
+                **{},  # Empty client_kwargs
             )
 
     @pytest.mark.asyncio

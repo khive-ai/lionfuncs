@@ -60,7 +60,7 @@ class Endpoint:
                 base_url=self.config.base_url,  # Must be present due to validator
                 timeout=self.config.timeout,
                 headers=self.config.default_headers,
-                **self.config.client_constructor_kwargs,
+                **self.config.client_kwargs,
             )
         elif self.config.transport_type == "sdk":
             # sdk_config is guaranteed by validator
@@ -72,7 +72,7 @@ class Endpoint:
             return create_sdk_adapter(
                 provider=sdk_conf.sdk_provider_name,
                 api_key=self.config.api_key,  # api_key is passed to adapter factory
-                **self.config.client_constructor_kwargs,
+                **self.config.client_kwargs,
             )
         else:
             # This case should ideally be caught by Pydantic validation of transport_type

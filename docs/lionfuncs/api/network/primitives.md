@@ -756,7 +756,7 @@ types.
 - **timeout** (`float`): Default request timeout in seconds. Default: `60.0`.
 - **default_headers** (`dict[str, str]`): Default headers for HTTP requests.
   Default: `{}`.
-- **client_constructor_kwargs** (`dict[str, Any]`): Keyword arguments passed
+- **client_kwargs** (`dict[str, Any]`): Keyword arguments passed
   directly to the constructor of AsyncAPIClient or the specific SDK client.
   Default: `{}`.
 - **http_config** (`Optional[HttpTransportConfig]`): Configuration specific to
@@ -800,7 +800,7 @@ sdk_config = ServiceEndpointConfig(
         sdk_provider_name="openai",
         default_sdk_method_name="chat.completions.create"
     ),
-    client_constructor_kwargs={"organization": "your-org-id"},
+    client_kwargs={"organization": "your-org-id"},
     default_request_kwargs={"model": "gpt-4"}
 )
 ```

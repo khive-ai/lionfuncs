@@ -119,9 +119,10 @@ class EndpointConfig(BaseModel):
     api_key: str | None = None
     timeout: int = 300
     max_retries: int = 3
-    kwargs: dict[str, Any] = Field(default_factory=dict)
+    default_request_kwargs: dict[str, Any] = Field(default_factory=dict)
     client_kwargs: dict[str, Any] = Field(default_factory=dict)
     oai_compatible: bool = False
+
 
     @property
     def full_url(self) -> str:
@@ -147,7 +148,7 @@ class EndpointConfig(BaseModel):
                 setattr(self, key, value)
             else:
                 # Add to kwargs dict if not a direct attribute
-                self.kwargs[key] = value
+                self.default_request_kwargs[key] = value
 
 
 class Endpoint:
@@ -214,7 +215,7 @@ class Endpoint:
             if isinstance(request, dict)
             else request.model_dump(exclude_none=True)
         )
-        params = self.config.kwargs.copy()
+        params = self.config.default_request_kwargs.copy()
 
         # First update params with the request data
         params.update(request_dict)
@@ -702,7 +703,7 @@ class ServiceEndpointConfig(BaseModel):
     # Keyword arguments passed directly to the constructor of AsyncAPIClient or the specific SDK client.
     # For AsyncAPIClient, this can include 'auth', 'event_hooks', etc.
     # For SDKs, this includes any specific init params for that SDK (e.g., 'organization' for OpenAI).
-    client_constructor_kwargs: dict[str, Any] = Field(default_factory=dict)
+    client_kwargs: dict[str, Any] = Field(default_factory=dict)
 
     # Specific configuration block for HTTP transport
     http_config: Optional[HttpTransportConfig] = Field(

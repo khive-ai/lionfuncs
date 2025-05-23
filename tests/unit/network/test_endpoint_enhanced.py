@@ -73,7 +73,7 @@ class TestEndpointEnhanced:
             base_url="https://api.example.com",
             http_config=HttpTransportConfig(),
             # Don't include timeout in constructor_kwargs since it's already a parameter
-            client_constructor_kwargs={"follow_redirects": True},
+            client_kwargs={"follow_redirects": True},
         )
 
         with patch("lionfuncs.network.endpoint.AsyncAPIClient") as mock_client_class:
@@ -97,7 +97,7 @@ class TestEndpointEnhanced:
             transport_type="sdk",
             api_key="test_api_key",
             sdk_config=SdkTransportConfig(sdk_provider_name="openai"),
-            client_constructor_kwargs={
+            client_kwargs={
                 "organization": "org-123",
                 "base_url": "https://custom.openai.com",
             },

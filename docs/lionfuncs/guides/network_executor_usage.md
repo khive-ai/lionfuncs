@@ -201,7 +201,7 @@ sdk_config = ServiceEndpointConfig(
         sdk_provider_name="openai",
         default_sdk_method_name="chat.completions.create"
     ),
-    client_constructor_kwargs={"organization": "your-org-id"},
+    client_kwargs={"organization": "your-org-id"},
     default_request_kwargs={"model": "gpt-4"}
 )
 
