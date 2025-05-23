@@ -170,7 +170,7 @@ class ALCallParams(CallParams):
     retry_default: Any = Field(default_factory=lambda: UNDEFINED)
     retry_timeout: Optional[float] = None
     retry_timing: bool = False
-    max_concurrent: Optional[int] = None
+    max_concurrent: int | None = None
     throttle_period: Optional[float] = None
     flatten: bool = False
     dropna: bool = False
@@ -228,7 +228,7 @@ async def alcall(
     retry_default: Any = UNDEFINED,
     retry_timeout: Optional[float] = None,
     retry_timing: bool = False,
-    max_concurrent: Optional[int] = None,
+    max_concurrent: int | None = None,
     throttle_period: Optional[float] = None,
     flatten: bool = False,
     dropna: bool = False,
@@ -378,7 +378,7 @@ class BCallParams(CallParams):
     retry_default: Any = Field(default_factory=lambda: UNDEFINED)
     retry_timeout: Optional[float] = None
     retry_timing: bool = False
-    max_concurrent: Optional[int] = None
+    max_concurrent: int | None = None
     throttle_period: Optional[float] = None
     flatten: bool = False
     dropna: bool = False
@@ -437,7 +437,7 @@ async def bcall(
     retry_default: Any = UNDEFINED,
     retry_timeout: Optional[float] = None,
     retry_timing: bool = False,
-    max_concurrent: Optional[int] = None,
+    max_concurrent: int | None = None,
     throttle_period: Optional[float] = None,
     flatten: bool = False,
     dropna: bool = False,

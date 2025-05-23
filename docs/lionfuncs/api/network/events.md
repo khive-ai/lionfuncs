@@ -42,29 +42,29 @@ progresses through the execution pipeline.
 
 #### Attributes
 
-| Name                    | Type                          | Description                                          |
-| ----------------------- | ----------------------------- | ---------------------------------------------------- |
-| `request_id`            | `str`                         | Unique identifier for the request (e.g., UUID)       |
-| `created_at`            | `datetime.datetime`           | When the event was created                           |
-| `updated_at`            | `datetime.datetime`           | When the event was last updated                      |
-| `status`                | `RequestStatus`               | Current status of the request                        |
-| `endpoint_url`          | `Optional[str]`               | URL of the API endpoint                              |
-| `method`                | `Optional[str]`               | HTTP method (e.g., "GET", "POST")                    |
-| `headers`               | `Optional[dict[str, Any]]`    | Request headers                                      |
-| `payload`               | `Optional[Any]`               | Request payload/body                                 |
-| `num_api_tokens_needed` | `int`                         | Number of API-specific tokens this call will consume |
-| `response_status_code`  | `Optional[int]`               | HTTP status code of the response                     |
-| `response_headers`      | `Optional[dict[str, Any]]`    | Response headers                                     |
-| `response_body`         | `Optional[Any]`               | Response body                                        |
-| `error_type`            | `Optional[str]`               | Type of error if the request failed                  |
-| `error_message`         | `Optional[str]`               | Error message if the request failed                  |
-| `error_details`         | `Optional[str]`               | Detailed error information (e.g., traceback)         |
-| `queued_at`             | `Optional[datetime.datetime]` | When the request was queued                          |
-| `processing_started_at` | `Optional[datetime.datetime]` | When processing started                              |
-| `call_started_at`       | `Optional[datetime.datetime]` | When the API call started                            |
-| `completed_at`          | `Optional[datetime.datetime]` | When the request completed (or failed/cancelled)     |
-| `logs`                  | `list[str]`                   | Log messages for the request                         |
-| `metadata`              | `dict[str, Any]`              | Custom metadata for the request                      |
+| Name                    | Type                | Description                                          |
+| ----------------------- | ------------------- | ---------------------------------------------------- |
+| `request_id`            | `str`               | Unique identifier for the request (e.g., UUID)       |
+| `created_at`            | `datetime.datetime` | When the event was created                           |
+| `updated_at`            | `datetime.datetime` | When the event was last updated                      |
+| `status`                | `RequestStatus`     | Current status of the request                        |
+| `endpoint_url`          | `str                | None`                                                |
+| `method`                | `str                | None`                                                |
+| `headers`               | `dict               | None`                                                |
+| `payload`               | `Any                | None`                                                |
+| `num_api_tokens_needed` | `int`               | Number of API-specific tokens this call will consume |
+| `response_status_code`  | `int                | None`                                                |
+| `response_headers`      | `dict               | None`                                                |
+| `response_body`         | `Any                | None`                                                |
+| `error_type`            | `str                | None`                                                |
+| `error_message`         | `str                | None`                                                |
+| `error_details`         | `str                | None`                                                |
+| `queued_at`             | `datetime.datetime  | None`                                                |
+| `processing_started_at` | `datetime.datetime  | None`                                                |
+| `call_started_at`       | `datetime.datetime  | None`                                                |
+| `completed_at`          | `datetime.datetime  | None`                                                |
+| `logs`                  | `list[str]`         | Log messages for the request                         |
+| `metadata`              | `dict[str, Any]`    | Custom metadata for the request                      |
 
 #### Methods
 
@@ -89,7 +89,7 @@ event.update_status(RequestStatus.PROCESSING)
 ##### set_result
 
 ```python
-def set_result(self, status_code: int, headers: Optional[dict], body: Optional[Any]) -> None
+def set_result(self, status_code: int, headers: Optional[dict], body: Any | None) -> None
 ```
 
 Set the result of the request and update status to COMPLETED.

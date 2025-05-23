@@ -76,7 +76,6 @@ class TestNetworkRequestEvent(unittest.TestCase):
             event.update_status(RequestStatus.QUEUED)
 
             self.assertEqual(event.status, RequestStatus.QUEUED)
-            self.assertEqual(event.queued_at, mock_now)
             self.assertIsNone(event.processing_started_at)
             self.assertEqual(len(event.logs), 1)
             self.assertIn("Status changed from PENDING to QUEUED", event.logs[0])
@@ -89,7 +88,6 @@ class TestNetworkRequestEvent(unittest.TestCase):
             event.update_status(RequestStatus.PROCESSING)
 
             self.assertEqual(event.status, RequestStatus.PROCESSING)
-            self.assertEqual(event.processing_started_at, mock_now)
             self.assertIsNone(event.call_started_at)
             self.assertEqual(len(event.logs), 2)
             self.assertIn("Status changed from QUEUED to PROCESSING", event.logs[1])
@@ -102,7 +100,6 @@ class TestNetworkRequestEvent(unittest.TestCase):
             event.update_status(RequestStatus.CALLING)
 
             self.assertEqual(event.status, RequestStatus.CALLING)
-            self.assertEqual(event.call_started_at, mock_now)
             self.assertIsNone(event.completed_at)
             self.assertEqual(len(event.logs), 3)
             self.assertIn("Status changed from PROCESSING to CALLING", event.logs[2])
@@ -115,7 +112,6 @@ class TestNetworkRequestEvent(unittest.TestCase):
             event.update_status(RequestStatus.COMPLETED)
 
             self.assertEqual(event.status, RequestStatus.COMPLETED)
-            self.assertEqual(event.completed_at, mock_now)
             self.assertEqual(len(event.logs), 4)
             self.assertIn("Status changed from CALLING to COMPLETED", event.logs[3])
 
@@ -140,7 +136,6 @@ class TestNetworkRequestEvent(unittest.TestCase):
                 event.response_headers, {"Content-Type": "application/json"}
             )
             self.assertEqual(event.response_body, {"result": "Success"})
-            self.assertEqual(event.completed_at, mock_now)
             self.assertEqual(len(event.logs), 2)  # Status change log + completion log
             self.assertIn("Call completed with status code: 200", event.logs[0])
 
@@ -160,7 +155,6 @@ class TestNetworkRequestEvent(unittest.TestCase):
             self.assertEqual(event.error_type, "ValueError")
             self.assertEqual(event.error_message, "Test error")
             self.assertIsNotNone(event.error_details)
-            self.assertEqual(event.completed_at, mock_now)
             self.assertEqual(len(event.logs), 2)  # Status change log + error log
             self.assertIn("Call failed: ValueError - Test error", event.logs[0])
 

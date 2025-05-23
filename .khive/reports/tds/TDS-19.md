@@ -246,7 +246,7 @@ class HttpTransportConfig(BaseModel):
 class SdkTransportConfig(BaseModel):
     sdk_provider_name: str # e.g., "openai", "anthropic" (maps to adapter factory)
     # Default SDK method to call if not specified in iModel.invoke()
-    # default_sdk_method_name: Optional[str] = None
+    # default_sdk_method_name: str | None = None
     pass
 
 class ServiceEndpointConfig(BaseModel):
@@ -254,8 +254,8 @@ class ServiceEndpointConfig(BaseModel):
     transport_type: Literal["http", "sdk"] = Field(description="Specifies if direct HTTP or an SDK adapter is used.")
 
     # Common fields for both transport types
-    api_key: Optional[str] = Field(None, description="API key. Can be set via env var or direct value.")
-    base_url: Optional[str] = Field(None, description="Base URL for HTTP calls or if required by an SDK.")
+    api_key: str | None = Field(None, description="API key. Can be set via env var or direct value.")
+    base_url: str | None = Field(None, description="Base URL for HTTP calls or if required by an SDK.")
     timeout: float = Field(60.0, description="Default request timeout in seconds.")
 
     # Headers for HTTP transport, can also be used by some SDKs if they accept custom headers.
@@ -477,9 +477,9 @@ class iModel:
         self,
         request_payload: Any,  # Can be a dict or Pydantic model
         num_api_tokens_needed: int = 0,
-        http_path: Optional[str] = None, # e.g., "v1/chat/completions"
-        http_method: Optional[str] = None, # Overrides ServiceEndpointConfig.http_config.method
-        sdk_method_name: Optional[str] = None, # e.g., "chat.completions.create"
+        http_path: str | None = None, # e.g., "v1/chat/completions"
+        http_method: str | None = None, # Overrides ServiceEndpointConfig.http_config.method
+        sdk_method_name: str | None = None, # e.g., "chat.completions.create"
         # Additional kwargs to pass to AsyncAPIClient.request or SDKAdapter.call
         # These are merged with Endpoint's default_request_kwargs and the payload
         **additional_request_params: Any

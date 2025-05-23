@@ -642,7 +642,7 @@ within the `ConcurrentPile` concurrently:
     external service (via an API call represented by `func`) with built-in
     retries, delays, batching, and error handling.
   - **Implementation Sketch:** A method like
-    `async def async_process_with_retries(self, item_ids: List[str], processing_func: Callable, retry_params: dict = None, batch_size: Optional[int] = None)`
+    `async def async_process_with_retries(self, item_ids: List[str], processing_func: Callable, retry_params: dict = None, batch_size: int | None = None)`
     could retrieve the specified items and then use `alcall` or `bcall` (from
     [`src/lionfuncs/async_utils.py`](src/lionfuncs/async_utils.py)) to manage
     their processing.

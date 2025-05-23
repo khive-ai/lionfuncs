@@ -28,7 +28,7 @@ class TestSchemaUtilsEnhanced:
     def test_get_type_name_with_complex_union(self):
         """Test _get_type_name with complex Union types."""
         assert _get_type_name(Union[str, int, bool]) == "any"
-        assert _get_type_name(Union[str, None]) == "string"  # Optional[str]
+        assert _get_type_name(Union[str, None]) == "string"  # str | None
         assert _get_type_name(Optional[Union[str, int]]) == "any"
 
     def test_get_type_name_with_custom_class(self):
@@ -109,12 +109,12 @@ class TestSchemaUtilsEnhanced:
             street: str
             city: str
             country: str
-            postal_code: Optional[str] = None
+            postal_code: str | None = None
 
         class User(BaseModel):
             name: str
             age: int
-            email: Optional[str] = None
+            email: str | None = None
             is_active: bool = True
             tags: list[str] = Field(default_factory=list)
             address: Optional[Address] = None
@@ -176,10 +176,10 @@ class TestSchemaUtilsEnhanced:
         def complex_function(
             user_id: int,
             query: str,
-            filters: Optional[dict[str, Any]] = None,
+            filters: dict | None = None,
             page: int = 1,
             page_size: int = 10,
-            sort_by: Optional[str] = None,
+            sort_by: str | None = None,
         ) -> dict[str, Any]:
             """Search for user data based on query and filters.
 

@@ -75,7 +75,7 @@ Get X-API-Key header.
 def get_header(
     auth_type: AUTH_TYPES,
     content_type: str = "application/json",
-    api_key: Optional[str] = None,
+    api_key: str | None = None,
     default_headers: Optional[dict[str, str]] = None,
 ) -> dict[str, str]
 ```
@@ -86,8 +86,7 @@ Get headers for API requests.
   "x-api-key").
 - **content_type** (`str`, optional): The content type to use. Defaults to
   `"application/json"`.
-- **api_key** (`Optional[str]`, optional): The API key to use. Defaults to
-  `None`.
+- **api_key** (`str | None`, optional): The API key to use. Defaults to `None`.
 - **default_headers** (`Optional[dict[str, str]]`, optional): Default headers to
   include. Defaults to `None`.
 
@@ -137,7 +136,7 @@ Configuration for an API endpoint.
 - **provider** (`str`): The provider name.
 - **transport_type** (`Literal["http", "sdk"]`): The transport type. Default:
   `"http"`.
-- **base_url** (`Optional[str]`): The base URL for the API. Default: `None`.
+- **base_url** (`str | None`): The base URL for the API. Default: `None`.
 - **endpoint** (`str`): The endpoint path.
 - **endpoint_params** (`Optional[list[str]]`): Parameters for the endpoint path.
   Default: `None`.
@@ -146,7 +145,7 @@ Configuration for an API endpoint.
 - **content_type** (`str`): The content type. Default: `"application/json"`.
 - **auth_type** (`AUTH_TYPES`): The authentication type. Default: `"bearer"`.
 - **default_headers** (`dict[str, str]`): Default headers. Default: `{}`.
-- **api_key** (`Optional[str]`): The API key. Default: `None`.
+- **api_key** (`str | None`): The API key. Default: `None`.
 - **timeout** (`int`): The timeout in seconds. Default: `300`.
 - **max_retries** (`int`): The maximum number of retries. Default: `3`.
 - **kwargs** (`dict[str, Any]`): Additional keyword arguments. Default: `{}`.
@@ -731,8 +730,8 @@ Configuration for SDK transport in ServiceEndpointConfig.
 
 - **sdk_provider_name** (`str`): The name of the SDK provider (e.g., "openai",
   "anthropic").
-- **default_sdk_method_name** (`Optional[str]`): Default SDK method to call if
-  not specified in invoke(). Default: `None`.
+- **default_sdk_method_name** (`str | None`): Default SDK method to call if not
+  specified in invoke(). Default: `None`.
 
 ### ServiceEndpointConfig
 
@@ -750,10 +749,10 @@ types.
   'openai_chat_completions_gpt4').
 - **transport_type** (`Literal["http", "sdk"]`): Specifies if direct HTTP or an
   SDK adapter is used.
-- **api_key** (`Optional[str]`): API key. Can be set via env var or direct
-  value. Default: `None`.
-- **base_url** (`Optional[str]`): Base URL for HTTP calls or if required by an
-  SDK. Default: `None`.
+- **api_key** (`str | None`): API key. Can be set via env var or direct value.
+  Default: `None`.
+- **base_url** (`str | None`): Base URL for HTTP calls or if required by an SDK.
+  Default: `None`.
 - **timeout** (`float`): Default request timeout in seconds. Default: `60.0`.
 - **default_headers** (`dict[str, str]`): Default headers for HTTP requests.
   Default: `{}`.

@@ -293,12 +293,12 @@ class Executor:
     async def submit_task(
         self,
         api_call_coroutine: Callable[[], Coroutine[Any, Any, Any]], # Should return (status_code, headers, body)
-        endpoint_url: Optional[str] = None,
-        method: Optional[str] = None,
-        headers: Optional[Dict[str, Any]] = None,
-        payload: Optional[Any] = None,
+        endpoint_url: str | None = None,
+        method: str | None = None,
+        headers: dict | None = None,
+        payload: Any | None = None,
         num_api_tokens_needed: int = 0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict | None = None
     ) -> NetworkRequestEvent:
         """
         Submits a new API call task to the executor.
@@ -396,29 +396,29 @@ class NetworkRequestEvent:
     status: RequestStatus = RequestStatus.PENDING
 
     # Request details
-    endpoint_url: Optional[str] = None
-    method: Optional[str] = None
-    headers: Optional[Dict[str, Any]] = None
-    payload: Optional[Any] = None # Or request_body
+    endpoint_url: str | None = None
+    method: str | None = None
+    headers: dict | None = None
+    payload: Any | None = None # Or request_body
 
     # Execution details
     num_api_tokens_needed: int = 0 # For API token rate limiter
 
     # Response details
-    response_status_code: Optional[int] = None
-    response_headers: Optional[Dict[str, Any]] = None
-    response_body: Optional[Any] = None
+    response_status_code: int | None = None
+    response_headers: dict | None = None
+    response_body: Any | None = None
 
     # Error details
-    error_type: Optional[str] = None
-    error_message: Optional[str] = None
-    error_details: Optional[str] = None # Store traceback string
+    error_type: str | None = None
+    error_message: str | None = None
+    error_details: str | None = None # Store traceback string
 
     # Timing
-    queued_at: Optional[datetime.datetime] = None
-    processing_started_at: Optional[datetime.datetime] = None
-    call_started_at: Optional[datetime.datetime] = None
-    completed_at: Optional[datetime.datetime] = None # or failed_at / cancelled_at
+    queued_at: datetime.datetime | None = None
+    processing_started_at: datetime.datetime | None = None
+    call_started_at: datetime.datetime | None = None
+    completed_at: datetime.datetime | None = None # or failed_at / cancelled_at
 
     # Logs/Metadata
     logs: List[str] = field(default_factory=list)
@@ -454,7 +454,7 @@ class NetworkRequestEvent:
             #     self.completion_event.set()
         self._update_timestamp()
 
-    def set_result(self, status_code: int, headers: Optional[Dict], body: Optional[Any]):
+    def set_result(self, status_code: int, headers: Optional[Dict], body: Any | None):
         self.response_status_code = status_code
         self.response_headers = headers
         self.response_body = body

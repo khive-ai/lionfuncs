@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 from pydantic import BaseModel, Field
@@ -1523,14 +1523,14 @@ class TestToDict:
 class User(BaseModel):
     name: str
     age: int
-    email: Optional[str] = None
+    email: str | None = None
     tags: list[str] = Field(default_factory=list)
 
 
 class UserWithOptions(BaseModel):
     name: str
     age: int
-    email: Optional[str] = None
+    email: str | None = None
     internal_id: str = "default"
 
 

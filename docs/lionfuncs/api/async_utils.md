@@ -29,7 +29,7 @@ async def alcall(
     retry_default: Any = UNDEFINED,
     retry_timeout: Optional[float] = None,
     retry_timing: bool = False,
-    max_concurrent: Optional[int] = None,
+    max_concurrent: int | None = None,
     throttle_period: Optional[float] = None,
     flatten: bool = False,
     dropna: bool = False,
@@ -67,7 +67,7 @@ control over concurrency, retries, and result formatting.
   seconds. Defaults to `None`.
 - **retry_timing** (`bool`, optional): Whether to include timing information in
   the results. Defaults to `False`.
-- **max_concurrent** (`Optional[int]`, optional): Maximum number of concurrent
+- **max_concurrent** (`int | None`, optional): Maximum number of concurrent
   calls. Defaults to `None`.
 - **throttle_period** (`Optional[float]`, optional): Minimum time between calls
   in seconds. Defaults to `None`.
@@ -143,7 +143,7 @@ async def bcall(
     retry_default: Any = UNDEFINED,
     retry_timeout: Optional[float] = None,
     retry_timing: bool = False,
-    max_concurrent: Optional[int] = None,
+    max_concurrent: int | None = None,
     throttle_period: Optional[float] = None,
     flatten: bool = False,
     dropna: bool = False,
@@ -181,7 +181,7 @@ same fine-grained control as `alcall`.
   seconds. Defaults to `None`.
 - **retry_timing** (`bool`, optional): Whether to include timing information in
   the results. Defaults to `False`.
-- **max_concurrent** (`Optional[int]`, optional): Maximum number of concurrent
+- **max_concurrent** (`int | None`, optional): Maximum number of concurrent
   calls within each batch. Defaults to `None`.
 - **throttle_period** (`Optional[float]`, optional): Minimum time between calls
   in seconds. Defaults to `None`.
@@ -440,7 +440,7 @@ def __init__(
     retry_default: Any = UNDEFINED,
     retry_timeout: Optional[float] = None,
     retry_timing: bool = False,
-    max_concurrent: Optional[int] = None,
+    max_concurrent: int | None = None,
     throttle_period: Optional[float] = None,
     flatten: bool = False,
     dropna: bool = False,
@@ -511,7 +511,7 @@ def __init__(
     retry_default: Any = UNDEFINED,
     retry_timeout: Optional[float] = None,
     retry_timing: bool = False,
-    max_concurrent: Optional[int] = None,
+    max_concurrent: int | None = None,
     throttle_period: Optional[float] = None,
     flatten: bool = False,
     dropna: bool = False,

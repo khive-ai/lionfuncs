@@ -156,12 +156,12 @@ class Executor:
         api_call_coroutine: Callable[
             [], Coroutine[Any, Any, Any]
         ],  # Should return (status_code, headers, body)
-        endpoint_url: Optional[str] = None,
-        method: Optional[str] = None,
-        headers: Optional[dict[str, Any]] = None,
-        payload: Optional[Any] = None,
+        endpoint_url: str | None = None,
+        method: str | None = None,
+        headers: dict | None = None,
+        payload: Any | None = None,
         num_api_tokens_needed: int = 0,
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict | None = None,
     ) -> NetworkRequestEvent:
         """
         Submit a new API call task to the executor.

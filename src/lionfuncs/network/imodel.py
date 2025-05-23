@@ -51,11 +51,11 @@ class iModel:
         self,
         request_payload: Any,  # Can be a dict or Pydantic model
         num_api_tokens_needed: int = 0,
-        http_path: Optional[str] = None,  # e.g., "v1/chat/completions"
+        http_path: str | None = None,  # e.g., "v1/chat/completions"
         http_method: Optional[
             str
         ] = None,  # Overrides ServiceEndpointConfig.http_config.method
-        sdk_method_name: Optional[str] = None,  # e.g., "chat.completions.create"
+        sdk_method_name: str | None = None,  # e.g., "chat.completions.create"
         # Additional kwargs to pass to AsyncAPIClient.request or SDKAdapter.call
         # These are merged with Endpoint's default_request_kwargs and the payload
         **additional_request_params: Any,

@@ -620,7 +620,7 @@ def test_function_to_openai_schema_complex_types():
     def complex_function(
         a: List[int],
         b: Dict[str, Any],
-        c: Optional[str] = None,
+        c: str | None = None,
         d: Literal["option1", "option2"] = "option1"
     ) -> Dict[str, Any]:
         """Complex function with various parameter types."""

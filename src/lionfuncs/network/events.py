@@ -11,9 +11,12 @@ including status, timing, and result information.
 
 import datetime
 import traceback
-from dataclasses import dataclass, field
+from dataclasses import field
 from enum import Enum
 from typing import Any, Optional
+
+from pydantic import field_serializer
+from pydapter.protocols.temporal import Temporal
 
 
 class RequestStatus(str, Enum):
@@ -30,8 +33,7 @@ class RequestStatus(str, Enum):
     CANCELLED = "CANCELLED"  # Task was cancelled
 
 
-@dataclass
-class NetworkRequestEvent:
+class NetworkRequestEvent(Temporal):
     """
     Event class for tracking the lifecycle of a network request.
 
@@ -39,43 +41,47 @@ class NetworkRequestEvent:
     an API request as it progresses through the execution pipeline.
     """
 
-    request_id: str  # e.g., uuid, should be set by Executor on creation
-    created_at: datetime.datetime = field(default_factory=datetime.datetime.utcnow)
-    updated_at: datetime.datetime = field(default_factory=datetime.datetime.utcnow)
+    request_id: str
     status: RequestStatus = RequestStatus.PENDING
 
     # Request details
-    endpoint_url: Optional[str] = None
-    method: Optional[str] = None
-    headers: Optional[dict[str, Any]] = None
-    payload: Optional[Any] = None  # Or request_body
+    endpoint_url: str | None = None
+    method: str | None = None
+    headers: dict | None = None
+    payload: Any | None = None  # Or request_body
 
     # Execution details
     num_api_tokens_needed: int = 0  # For API token rate limiter
 
     # Response details
-    response_status_code: Optional[int] = None
-    response_headers: Optional[dict[str, Any]] = None
-    response_body: Optional[Any] = None
+    response_status_code: int | None = None
+    response_headers: dict | None = None
+    response_body: Any | None = None
 
     # Error details
-    error_type: Optional[str] = None
-    error_message: Optional[str] = None
-    error_details: Optional[str] = None  # Store traceback string
+    error_type: str | None = None
+    error_message: str | None = None
+    error_details: str | None = None  # Store traceback string
 
     # Timing
-    queued_at: Optional[datetime.datetime] = None
-    processing_started_at: Optional[datetime.datetime] = None
-    call_started_at: Optional[datetime.datetime] = None
-    completed_at: Optional[datetime.datetime] = None  # or failed_at / cancelled_at
+    queued_at: datetime.datetime | None = None
+    processing_started_at: datetime.datetime | None = None
+    call_started_at: datetime.datetime | None = None
+    completed_at: datetime.datetime | None = None  # or failed_at / cancelled_at
 
     # Logs/Metadata
     logs: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
+    @field_serializer(
+        "queued_at", "processing_started_at", "call_started_at", "completed_at"
+    )
+    def _serialize_various_dt(self, v: datetime.datetime | None) -> str | None:
+        return v.isoformat() if v else None
+
     def _update_timestamp(self) -> None:
         """Update the updated_at timestamp to the current time."""
-        self.updated_at = datetime.datetime.utcnow()
+        self.updated_at = datetime.datetime.now(datetime.timezone.utc)
 
     def update_status(self, new_status: RequestStatus) -> None:
         """
@@ -86,7 +92,7 @@ class NetworkRequestEvent:
         """
         old_status = self.status
         self.status = new_status
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc)
 
         if old_status != new_status:  # Log status change
             self.add_log(
@@ -109,7 +115,7 @@ class NetworkRequestEvent:
         self._update_timestamp()
 
     def set_result(
-        self, status_code: int, headers: Optional[dict], body: Optional[Any]
+        self, status_code: int, headers: Optional[dict], body: Any | None
     ) -> None:
         """
         Set the result of the request and update status to COMPLETED.
@@ -145,5 +151,7 @@ class NetworkRequestEvent:
         Args:
             message: The message to add.
         """
-        self.logs.append(f"{datetime.datetime.utcnow().isoformat()} - {message}")
+        self.logs.append(
+            f"{datetime.datetime.now(datetime.timezone.utc).isoformat()} - {message}"
+        )
         self._update_timestamp()

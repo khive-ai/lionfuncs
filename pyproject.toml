@@ -1,6 +1,6 @@
 [project]
 name            = "lionfuncs"
-version         = "3.2.0"
+version         = "3.2.1"
 description     = "Hnady python functions"
 readme          = "README.md"
 requires-python = ">=3.10"
@@ -22,7 +22,7 @@ openai = [
     "openai>=1.70.0",
 ]
 anthropic = [
-    "anthropic>=0.5.0",
+    "anthropic>=0.50.0",
 ]
 dirtyjson = [
     "dirtyjson>=1.0.8",

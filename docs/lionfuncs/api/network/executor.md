@@ -63,12 +63,12 @@ Initialize the Executor.
 async def submit_task(
     self,
     api_call_coroutine: Callable[[], Coroutine[Any, Any, Any]],
-    endpoint_url: Optional[str] = None,
-    method: Optional[str] = None,
-    headers: Optional[dict[str, Any]] = None,
-    payload: Optional[Any] = None,
+    endpoint_url: str | None = None,
+    method: str | None = None,
+    headers: dict | None = None,
+    payload: Any | None = None,
     num_api_tokens_needed: int = 0,
-    metadata: Optional[dict[str, Any]] = None,
+    metadata: dict | None = None,
 ) -> NetworkRequestEvent
 ```
 

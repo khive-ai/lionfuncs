@@ -1,6 +1,6 @@
 """Tests for the schema_utils module."""
 
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from pydantic import BaseModel, Field
 
@@ -29,7 +29,7 @@ class TestSchemaUtils:
         """Test _get_type_name with complex types."""
         assert _get_type_name(list[str]) == "array"
         assert _get_type_name(dict[str, int]) == "object"
-        assert _get_type_name(Optional[str]) == "string"
+        assert _get_type_name(str | None) == "string"
         assert _get_type_name(Union[str, int]) == "any"
 
     def test_extract_docstring_parts_empty(self):
@@ -84,7 +84,7 @@ class TestSchemaUtils:
         class User(BaseModel):
             name: str
             age: int
-            email: Optional[str] = None
+            email: str | None = None
 
         raw_schema = pydantic_model_to_openai_schema(
             User,
@@ -157,7 +157,7 @@ class TestSchemaUtils:
         def complex_function(
             a: list[int],
             b: dict[str, Any],
-            c: Optional[str] = None,
+            c: str | None = None,
             d: Union[int, str] = 0,
         ) -> dict[str, Any]:
             """Complex function with various parameter types."""
@@ -180,7 +180,7 @@ class TestSchemaUtils:
         class UserModel(BaseModel):
             name: str
             age: int
-            email: Optional[str] = None
+            email: str | None = None
             tags: list[str] = Field(default_factory=list)
 
         def create_user(user: UserModel) -> dict:

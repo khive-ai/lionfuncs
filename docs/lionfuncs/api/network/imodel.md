@@ -84,9 +84,9 @@ async def invoke(
     self,
     request_payload: Any,  # Can be a dict or Pydantic model
     num_api_tokens_needed: int = 0,
-    http_path: Optional[str] = None,  # e.g., "v1/chat/completions"
-    http_method: Optional[str] = None,  # Overrides ServiceEndpointConfig.http_config.method
-    sdk_method_name: Optional[str] = None,  # e.g., "chat.completions.create"
+    http_path: str | None = None,  # e.g., "v1/chat/completions"
+    http_method: str | None = None,  # Overrides ServiceEndpointConfig.http_config.method
+    sdk_method_name: str | None = None,  # e.g., "chat.completions.create"
     **additional_request_params: Any,
 ) -> NetworkRequestEvent
 ````

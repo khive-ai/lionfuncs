@@ -68,7 +68,7 @@ class HeaderFactory:
     def get_header(
         auth_type: AUTH_TYPES,
         content_type: str = "application/json",
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         default_headers: Optional[dict[str, str]] = None,
     ) -> dict[str, str]:
         """
@@ -108,7 +108,7 @@ class EndpointConfig(BaseModel):
     name: str
     provider: str
     transport_type: Literal["http", "sdk"] = "http"
-    base_url: Optional[str] = None
+    base_url: str | None = None
     endpoint: str
     endpoint_params: Optional[list[str]] = None
     method: str = "POST"
@@ -116,7 +116,7 @@ class EndpointConfig(BaseModel):
     content_type: str = "application/json"
     auth_type: AUTH_TYPES = "bearer"
     default_headers: dict[str, str] = Field(default_factory=dict)
-    api_key: Optional[str] = None
+    api_key: str | None = None
     timeout: int = 300
     max_retries: int = 3
     kwargs: dict[str, Any] = Field(default_factory=dict)
@@ -665,7 +665,7 @@ class SdkTransportConfig(BaseModel):
     """Configuration for SDK transport in ServiceEndpointConfig."""
 
     sdk_provider_name: str  # e.g., "openai", "anthropic" (maps to adapter factory)
-    default_sdk_method_name: Optional[str] = (
+    default_sdk_method_name: str | None = (
         None  # Default SDK method to call if not specified in invoke()
     )
 
@@ -686,10 +686,10 @@ class ServiceEndpointConfig(BaseModel):
     )
 
     # Common fields for both transport types
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         None, description="API key. Can be set via env var or direct value."
     )
-    base_url: Optional[str] = Field(
+    base_url: str | None = Field(
         None, description="Base URL for HTTP calls or if required by an SDK."
     )
     timeout: float = Field(60.0, description="Default request timeout in seconds.")

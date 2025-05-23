@@ -381,7 +381,7 @@ def circuit_breaker(
     recovery_time: float = 30.0,
     half_open_max_calls: int = 1,
     excluded_exceptions: Optional[set[type[Exception]]] = None,
-    name: Optional[str] = None,
+    name: str | None = None,
 ) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """
     Decorator to apply circuit breaker pattern to an async function.

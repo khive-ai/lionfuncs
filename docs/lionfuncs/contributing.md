@@ -196,7 +196,7 @@ For more complex types, use the `typing` module:
 ```python
 from typing import List, Dict, Optional, Union, Callable, Any
 
-def process_items(items: List[Dict[str, Any]]) -> Optional[str]:
+def process_items(items: List[Dict[str, Any]]) -> str | None:
     ...
 ```
 

@@ -13,6 +13,7 @@ __all__ = ["function_to_openai_schema", "pydantic_model_to_openai_schema"]
 # Python type to JSON schema type mapping
 _PY_TO_JSON_TYPE_MAP = {
     "str": "string",
+    "str | None": "string",
     "int": "integer",
     "float": "number",
     "bool": "boolean",
